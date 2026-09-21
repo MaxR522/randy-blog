@@ -1,0 +1,151 @@
+# =============================================================================
+# Docker Compose — development environment
+# =============================================================================
+# Services:
+# - setup:     one-shot, installs Composer and npm dependencies
+# - app:       FrankenPHP + Laravel Octane (reloads on file changes)
+# - queue:     queue worker (database driver)
+# - scheduler: Laravel scheduler (schedule:work)
+# - vite:      Vite dev server with HMR, also serves Inertia SSR in dev
+# - postgres:  PostgreSQL 18
+# - mailpit:   catches every email sent in development (http://localhost:8025)
+#
+# The application reads its configuration from .env (bind-mounted). The values
+# below only override what differs inside the Docker network, so the same .env
+# also works for commands run from the host (php artisan test, ...).
+#
+# Start:  docker compose up -d
+# Logs:   docker compose logs -f app
+# Shell:  docker compose exec app sh
+# =============================================================================
+
+x-php: &php
+    build:
+        context: .
+        args:
+            UID: ${UID:-1000}
+            GID: ${GID:-1000}
+    image: randy-blog-dev
+    user: '${UID:-1000}:${GID:-1000}'
+    volumes:
+        - .:/app
+        # Alpine (musl) node_modules, kept apart from the host's own node_modules
+        - node_modules:/app/node_modules
+    environment:
+        DB_HOST: postgres
+        DB_PORT: 5432
+        MAIL_HOST: mailpit
+        MAIL_PORT: 1025
+        # Laravel reaches the Vite dev server (Inertia SSR in dev) through the
+        # Docker network, the browser keeps using http://localhost:5173
+        INERTIA_SSR_HOT_URL: http://vite:5173
+
+x-depends-on-setup: &depends-on-setup
+    setup:
+        condition: service_completed_successfully
+    postgres:
+        condition: service_healthy
+
+services:
+    # ===========================================================================
+    # Setup: installs dependencies once, before the other services start
+    # ===========================================================================
+    setup:
+        <<: *php
+        command: sh -c "composer install --no-interaction && npm ci"
+        restart: 'no'
+
+    # ===========================================================================
+    # App: FrankenPHP + Laravel Octane
+    # ===========================================================================
+    app:
+        <<: *php
+        container_name: randy-blog-app
+        restart: unless-stopped
+        ports:
+            - '${APP_PORT:-8000}:8000'
+        command: >
+            php artisan octane:start
+            --server=frankenphp
+            --host=0.0.0.0
+            --port=8000
+            --workers=2
+            --watch
+        depends_on: *depends-on-setup
+
+    # ===========================================================================
+    # Queue: processes queued jobs (restarts itself on code changes)
+    # ===========================================================================
+    queue:
+        <<: *php
+        container_name: randy-blog-queue
+        restart: unless-stopped
+        command: php artisan queue:listen --tries=3 --timeout=60 --sleep=3
+        depends_on: *depends-on-setup
+
+    # ===========================================================================
+    # Scheduler: runs scheduled tasks every minute
+    # ===========================================================================
+    scheduler:
+        <<: *php
+        container_name: randy-blog-scheduler
+        restart: unless-stopped
+        command: php artisan schedule:work
+        depends_on: *depends-on-setup
+
+    # ===========================================================================
+    # Vite: dev server with HMR (+ Inertia SSR in development)
+    # ===========================================================================
+    # Runs in the PHP image so the Wayfinder plugin can call `php artisan`.
+    vite:
+        <<: *php
+        container_name: randy-blog-vite
+        restart: unless-stopped
+        ports:
+            - '5173:5173'
+        command: npm run dev
+        depends_on:
+            setup:
+                condition: service_completed_successfully
+
+    # ===========================================================================
+    # PostgreSQL 18
+    # ===========================================================================
+    postgres:
+        image: postgres:18-alpine
+        container_name: randy-blog-postgres
+        restart: unless-stopped
+        ports:
+            - '${FORWARD_DB_PORT:-5432}:5432'
+        environment:
+            POSTGRES_USER: ${DB_USERNAME:-randy}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+            POSTGRES_DB: ${DB_DATABASE:-randy_blog}
+        volumes:
+            - postgres_data:/var/lib/postgresql
+            # Creates the test database on first start
+            - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}',
+                ]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
+    # ===========================================================================
+    # Mailpit: development mail catcher
+    # ===========================================================================
+    mailpit:
+        image: axllent/mailpit:latest
+        container_name: randy-blog-mailpit
+        restart: unless-stopped
+        ports:
+            - '${FORWARD_MAILPIT_PORT:-1025}:1025'
+            - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
+
+volumes:
+    postgres_data:
+    node_modules:

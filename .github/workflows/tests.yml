@@ -13,6 +13,31 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    # The migrations use PostgreSQL-only features (tsvector, unaccent, partial
+    # indexes), so the test suite runs against PostgreSQL, never SQLite.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: randy
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: randy_blog_testing
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U randy -d randy_blog_testing"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: randy_blog_testing
+      DB_USERNAME: randy
+      DB_PASSWORD: password
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -36,3 +61,6 @@ jobs:
 
       - name: Run CI Checks
         run: composer ci:check
+
+      - name: Build SSR Bundle
+        run: npm run build:ssr

@@ -1,0 +1,72 @@
+# =============================================================================
+# Docker ignore file
+# =============================================================================
+# Keeps the build context small (the development image only needs
+# docker/php/dev.ini) and keeps local secrets out of it.
+# =============================================================================
+
+# Dependencies (installed by the setup service)
+/vendor
+/node_modules
+
+# Build artifacts
+/bootstrap/ssr
+/bootstrap/cache/*.php
+/public/build
+/public/hot
+/public/storage
+
+# Storage and caches
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/app/public/*
+/storage/pail
+!storage/**/.gitignore
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+/auth.json
+
+# Git
+.git
+.github
+
+# IDE, AI agents and editor files
+.idea
+.vscode
+.fleet
+.zed
+.claude
+.agents
+.cursor
+.junie
+.mcp.json
+AGENTS.md
+CLAUDE.md
+boost.json
+*.swp
+*~
+
+# Tests and tooling caches
+/tests
+/coverage
+.phpunit.cache
+.phpunit.result.cache
+phpunit.xml
+
+# Docker files
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Documentation
+/docs
+README.md
+
+# Logs
+*.log

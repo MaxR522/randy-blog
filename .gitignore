@@ -41,3 +41,8 @@ yarn-error.log
 /boost.json
 /opencode.json
 /opencode.jsonc
+
+# FrankenPHP / Caddy files created by Octane outside Docker
+/frankenphp
+/public/frankenphp-worker.php
+/caddy

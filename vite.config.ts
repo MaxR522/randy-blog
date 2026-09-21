@@ -29,6 +29,17 @@ export default defineConfig({
         }),
     ]),
     server: {
+        // Listen on every interface so the Vite container is reachable from
+        // the host browser and from the app container (dev SSR).
+        host: '0.0.0.0',
+        port: 5173,
+        strictPort: true,
+        // The app container calls the dev SSR endpoint at http://vite:5173.
+        allowedHosts: ['vite'],
+        // The browser connects to the dev server through the published port.
+        hmr: {
+            host: 'localhost',
+        },
         watch: {
             ignored: [
                 '**/.agents/**',
@@ -66,6 +77,7 @@ export default defineConfig({
         ignorePatterns: [
             '.github/**',
             'composer.json',
+            'docs/**',
             'resources/js/components/ui/*',
             'resources/views/mail/*',
         ],
