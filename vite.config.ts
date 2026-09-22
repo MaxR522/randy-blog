@@ -15,11 +15,13 @@ export default defineConfig({
             fonts: [
                 bunny('Inter', {
                     weights: [400, 500, 600, 700],
-                }),
-                bunny('Newsreader', {
-                    weights: [400, 600],
                     styles: ['normal', 'italic'],
-                    preload: [{ weight: 400 }, { weight: 600 }],
+                    preload: [
+                        { weight: 400, style: 'normal' },
+                        { weight: 500, style: 'normal' },
+                        { weight: 600, style: 'normal' },
+                        { weight: 700, style: 'normal' },
+                    ],
                 }),
             ],
         }),

@@ -11,14 +11,17 @@ Build the public site exactly from the approved design. The admin panel is out o
 
 1. Read `docs/public-design-system.md` (tokens, type scale, component recipes, page structure, accessibility calls).
 2. Open the matching board in `docs/design/boards/` and read the real values (sizes, spacing, copy). The board wins over the summary if they differ:
-   - components: `Composants-Navigation`, `Composants-Cartes`, `Composants-Article`, `Composants-Abonnement`, `Confirmations`
-   - pages: `Accueil`, `Article`, `Auteur`, `Recherche`, `Recherche-vide`, `Page-404` (each also `-360` for mobile), `Newsletter`, `Newsletter-360`
+    - components: `Composants-Navigation`, `Composants-Cartes`, `Composants-Article`, `Composants-Abonnement`, `Confirmations`
+    - pages: `Accueil`, `Article`, `Auteur`, `Recherche`, `Recherche-vide`, `Page-404` (each also `-360` for mobile), `Newsletter`, `Newsletter-360`
 3. Use exact French copy from `resources/js/lib/labels.fr.ts`. Do not invent or reword labels.
 
 ## Rules
 
-- Tailwind v4 with the tokens from `resources/css/theme.css`. Use token utilities (`text-primary`, `bg-accent-50`, `text-h1`, `font-serif`, `aspect-card`, `px-gutter`, `pt-section`), never raw hex values, except the two button greys named in the doc.
-- Serif (Newsreader) for headings, chapô and article body; Inter for everything else. Two families only.
+- Tailwind v4 with the tokens from `resources/css/theme.css`. Use token utilities (`text-primary`, `bg-accent-50`, `text-h1`, `font-sans`, `aspect-card`, `px-gutter`, `pt-section`), never raw hex values, except the two button greys named in the doc.
+- One family, everywhere: Inter for display, headings, chapô, article body and UI. No second typeface.
+- Focus ring is `accent-600` on buttons and links, but a black (`primary`) ring on text inputs (search, subscribe) — the theme's base layer already does this; do not override it per component.
+- The SubscriptionBlock's email input and its « S'abonner » button are a fixed 52 px tall on every breakpoint. Do not give the input `flex-1` on mobile: the mobile wrapper is `flex-col`, and `flex-1` (⇒ `flex-basis: 0%`) overrides an explicit `height`/`h-[52px]` on that axis, collapsing the input to ~21 px. Use `w-full` + `h-[52px]` on mobile; keep `flex-1` only on the desktop row layout, where the main axis is width.
+- No wordmark in the navbar, on any device — just the contextual link and « S'abonner ». The wordmark stays in the footer.
 - One accent (Bleu encre), used sparingly. Buttons stay monochrome. No gradients; the only shadow is the scrolled navbar.
 - Every card image uses `aspect-card w-full rounded-sm object-cover`; the article cover and video use `aspect-cover`; avatars `aspect-avatar rounded-full`.
 - Article body HTML (from TinyMCE) goes inside `.article-body`; the Encadré is `<div class="callout-box">`. Do not restyle prose elements individually.

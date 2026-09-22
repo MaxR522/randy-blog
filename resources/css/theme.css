@@ -1,6 +1,6 @@
 /* ============================================================
    Randy Donny — public site theme (Tailwind CSS v4)
-   Load: Inter 400/500/600/700 + Newsreader (opsz 6..72) 400, 600, italic 400
+   Load: Inter 400/500/600/700, italic included. One family, site-wide.
    ============================================================ */
 
 @theme static {
@@ -14,8 +14,11 @@
     --font-sans:
         'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
         sans-serif;
+    /* One family site-wide. --font-serif is kept as an alias to Inter, not a
+     second typeface, so any markup still using font-serif keeps working. */
     --font-serif:
-        'Newsreader', 'Source Serif 4', Georgia, 'Times New Roman', serif;
+        'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+        sans-serif;
 
     /* ---- Neutrals (unchanged from the admin) ---- */
     --color-primary: #2b2b2b;
@@ -81,20 +84,20 @@
     --text-section--letter-spacing: -0.01em;
     --text-section--font-weight: 600;
 
-    --text-card-hero: 1.875rem; /* 30 */
-    --text-card-hero--line-height: 1.08;
-    --text-card-large: 1.75rem; /* 28 */
+    /* No --text-card-hero: the featured/hero card was removed — the home
+       banner carries no article, just the tagline and search. */
+    --text-card-large: 1.375rem; /* 22 — sized down: real titles run much longer than the sample copy */
     --text-card-large--line-height: 1.12;
-    --text-card: 1.25rem; /* 20 */
+    --text-card: 1.0625rem; /* 17 — sized down for the same reason */
     --text-card--line-height: 1.25;
-    --text-card-wide: 1.5rem; /* 24, cards wider than ~380px */
+    --text-card-wide: 1.25rem; /* 20, cards wider than ~380px */
     --text-card-wide--line-height: 1.25;
     --text-card-compact: 1.0625rem; /* 17 */
     --text-card-compact--line-height: 1.3;
 
-    --text-chapo: 1.1875rem; /* 19, serif */
+    --text-chapo: 1.1875rem; /* 19 */
     --text-chapo--line-height: 1.45;
-    --text-prose: 1.125rem; /* 18, serif */
+    --text-prose: 1.125rem; /* 18, article body */
     --text-prose--line-height: 1.65;
     --text-body: 1rem; /* 16, Inter */
     --text-body--line-height: 1.6;
@@ -147,10 +150,14 @@
     --ease-standard: cubic-bezier(0.2, 0, 0, 1);
     --ease-out: cubic-bezier(0, 0, 0.2, 1);
 
-    /* ---- Focus ---- */
+    /* ---- Focus ----
+     Two ring colours: accent-600 stays the default (it reads on the dark
+     primary button); text inputs (search, subscribe) use a black ring
+     instead, since accent-600 read as an odd blue on a plain white field. */
     --focus-ring-width: 2px;
     --focus-ring-offset: 2px;
     --focus-ring-color: var(--color-accent-600);
+    --focus-ring-color-input: var(--color-primary);
 }
 
 /* ---- Responsive values (Tailwind utilities read these variables) ---- */
@@ -160,7 +167,6 @@
         --text-h1: 2.5rem; /* 40 */
         --text-h2: 1.75rem; /* 28 */
         --text-chapo: 1.25rem; /* 20 */
-        --text-card-hero: 2.125rem;
         --spacing-gutter: 1.5rem; /* 24 */
         --spacing-grid: 1.5rem;
     }
@@ -173,9 +179,8 @@
         --text-h2: 2rem; /* 32 */
         --text-h3: 1.5rem; /* 24 */
         --text-section: 1.875rem; /* 30 */
-        --text-card-hero: 2.5rem; /* 40 */
-        --text-card-large: 2.125rem; /* 34 */
-        --text-card: 1.3125rem; /* 21 */
+        --text-card-large: 1.625rem; /* 26 */
+        --text-card: 1.125rem; /* 18 */
         --text-chapo: 1.375rem; /* 22 */
         --text-prose: 1.25rem; /* 20 */
         --text-prose--line-height: 1.7;
@@ -204,6 +209,13 @@
     :focus-visible {
         outline: var(--focus-ring-width) solid var(--focus-ring-color);
         outline-offset: var(--focus-ring-offset);
+    }
+    /* Text inputs get a black ring instead of accent-600 (blue) — clearer
+     against a white field. Buttons and links keep the accent ring. */
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+        outline-color: var(--focus-ring-color-input);
     }
     @media (prefers-reduced-motion: reduce) {
         *,
