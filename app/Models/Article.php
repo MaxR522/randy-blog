@@ -111,14 +111,19 @@ class Article extends Model
      */
     protected function publishedDateLabel(): Attribute
     {
-        return Attribute::get(function (): ?string {
-            if ($this->published_date === null) {
-                return null;
-            }
+        return Attribute::get(fn (): ?string => $this->published_date === null
+            ? null
+            : self::frenchDate($this->published_date));
+    }
 
-            $date = $this->published_date->timezone(config('app.display_timezone'))->locale('fr');
+    /**
+     * Format a date in French, in the display timezone, with « 1er » for the first day of the month.
+     */
+    private static function frenchDate(CarbonImmutable $date): string
+    {
+        /** @var CarbonImmutable $date */
+        $date = $date->setTimezone(config()->string('app.display_timezone'))->locale('fr');
 
-            return ($date->day === 1 ? '1er' : $date->day).' '.$date->translatedFormat('F Y');
-        });
+        return ($date->day === 1 ? '1er' : $date->day).' '.$date->translatedFormat('F Y');
     }
 }

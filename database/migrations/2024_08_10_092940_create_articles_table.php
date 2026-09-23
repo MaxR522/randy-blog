@@ -28,7 +28,7 @@ return new class extends Migration
             $table->integer('shares')->default(0);
             $table->integer('read_duration')->default(0);
             $table->enum('status', ['DRAFT', 'PUBLISHED', 'ARCHIVED'])->default('DRAFT');
-            $table->foreignId('author_id')->constrained('users', 'id')->onDelete('cascade')->nullable(false);
+            $table->foreignId('author_id')->constrained('users', 'id')->onDelete('cascade');
             $table->softDeletes();
             $table->timestamps();
         });
