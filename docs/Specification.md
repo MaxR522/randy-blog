@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Status | Draft for review |
-| Last update | 2026-09-19 |
+| Last update | 2026-09-23 |
 | V1 codebase | `/home/mario/Projects/personal-blog` |
 | Previous V2 attempt | `/home/mario/Projects/personal-blog-2` |
 
@@ -192,10 +192,10 @@ Subscription block placed at the bottom of the home page, anchor `#abonnement`.
 - **PUB-MISC-1** « Politique de confidentialité » page (kept from V1, updated: no AdSense, newsletter data, GA4).
 - **PUB-MISC-2** Cookie consent banner (opt-in). GA4 only loads after consent. No other trackers.
 - **PUB-MISC-3** Custom French error pages: 404 « Page introuvable », 500, 503 (maintenance).
-- **PUB-MISC-4** SEO (kept from V1, fixed):
+- **PUB-MISC-4** SEO (kept from V1, fixed). Summary below; the full requirements are in `docs/seo-accessibility.md` Part A, which wins if the two differ. SEO is implemented in one pass once all public pages exist:
   - Per-page `<title>`, meta description (article `description`, fallback: chapô), canonical URL.
   - Open Graph + Twitter cards (`@randydonny`), with the article cover as image and a default image for other pages.
-  - JSON-LD `NewsArticle` (article pages) with the **real** `datePublished` / `dateModified` (V1 bug: always `now()`), `Person` (profile page).
+  - JSON-LD `BlogPosting` (article pages; `NewsArticle` in the first draft, see `docs/seo-accessibility.md` SEO-LD-4) with the **real** `datePublished` / `dateModified` (V1 bug: always `now()`), `Person` (profile page).
   - `sitemap.xml` and `sitemap-news.xml`, `robots.txt` disallowing `/admin`.
   - Meta keywords from the article `keywords` field.
 - **PUB-MISC-5** `ads.txt` is removed.
@@ -438,7 +438,8 @@ Each field is displayed read-only with a « Modifier » button. Clicking it repl
 
 ### 6.6 Accessibility
 
-- **NFR-A11Y-1** WCAG 2.2 AA basics: semantic HTML, keyboard navigation, visible focus, sufficient contrast, `alt` text on images (article cover alt = title if nothing else), labelled form fields, accessible modals.
+- **NFR-A11Y-1** The public site MUST conform to WCAG 2.2 level AA: usable with a screen reader (NVDA, VoiceOver) and with the keyboard alone, semantic HTML and landmarks, correct ARIA, visible focus, sufficient contrast, `alt` text on images (article cover alt = title if nothing else), labelled form fields, announced dynamic changes, accessible modals.
+- **NFR-A11Y-2** The detailed requirements (component-by-component ARIA, images, article body, forms, verification) are in `docs/seo-accessibility.md` Part B and C.
 
 ---
 
