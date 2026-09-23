@@ -22,7 +22,11 @@ class ArticleFactory extends Factory
     {
         $title = fake()->unique()->sentence(6);
         $leadParagraph = fake()->paragraph();
-        $content = fake()->paragraphs(5, true);
+        /** @var list<string> $paragraphs */
+        $paragraphs = fake()->paragraphs(5);
+        $content = implode("\n\n", $paragraphs);
+        /** @var list<string> $keywords */
+        $keywords = fake()->words(4);
 
         return [
             'title' => $title,
@@ -33,7 +37,7 @@ class ArticleFactory extends Factory
             'cover_photo' => 'https://res.cloudinary.com/randy-blog/image/upload/f_auto,q_70/'.Str::random(20),
             'cover_photo_credit' => fake()->name(),
             'description' => fake()->text(160),
-            'keywords' => implode(',', fake()->words(4)),
+            'keywords' => implode(',', $keywords),
             'status' => ArticleStatus::Draft,
             'published_date' => null,
             'is_featured' => false,

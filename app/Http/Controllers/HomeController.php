@@ -8,7 +8,7 @@ use App\Models\Category;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -83,19 +83,21 @@ class HomeController extends Controller
     /**
      * Categories with enough published articles, most recently fed first, each with its latest articles.
      *
-     * @return list<array{id: int, name: string, articles: array<int, mixed>}>
+     * @return array<int, array{id: int, name: string, articles: array<mixed>}>
      */
     private function categorySections(): array
     {
+        $published = fn (Builder $query): Builder => self::onlyPublished($query);
+
         return Category::query()
-            ->whereHas('articles', fn (Builder $query) => $query->published(), '>=', self::CategoryMinimumArticles)
-            ->withMax(['articles as latest_published_date' => fn (Builder $query) => $query->published()], 'published_date')
+            ->whereHas('articles', $published, '>=', self::CategoryMinimumArticles)
+            ->withMax(['articles as latest_published_date' => $published], 'published_date')
             ->orderByDesc('latest_published_date')
             ->limit(self::CategoryRows)
-            ->with(['articles' => fn (BelongsToMany $query) => $query
-                ->published()
+            ->with('articles', fn (Relation $query): Relation => $query
+                ->where(fn (Builder $query) => $published($query))
                 ->latest('published_date')
-                ->limit(self::CategoryRowSize)])
+                ->limit(self::CategoryRowSize))
             ->get()
             ->map(fn (Category $category): array => [
                 'id' => $category->id,
@@ -103,5 +105,16 @@ class HomeController extends Controller
                 'articles' => ArticleCardResource::collection($category->articles)->resolve(),
             ])
             ->all();
+    }
+
+    /**
+     * Restrict a relation query on articles to published ones.
+     *
+     * @param  Builder<Article>  $query
+     * @return Builder<Article>
+     */
+    private static function onlyPublished(Builder $query): Builder
+    {
+        return $query->published();
     }
 }

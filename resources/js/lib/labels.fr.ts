@@ -109,6 +109,17 @@ export const labels = {
         refuse: 'Refuser',
         customize: 'Personnaliser',
     },
+    a11y: {
+        // Screen reader only copy (skip link, landmarks, announcements), see docs/seo-accessibility.md.
+        skipToContent: 'Aller au contenu',
+        mainNav: 'Navigation principale',
+        newTab: '(nouvel onglet)',
+        moreArticlesLoaded: (count: number) =>
+            count === 1
+                ? '1 article supplémentaire chargé'
+                : `${count} articles supplémentaires chargés`,
+        allArticlesShown: 'Tous les articles sont affichés',
+    },
     newsletter: {
         readArticle: "Lire l'article",
         footer: 'Vous recevez cet email car vous êtes abonné à la newsletter de Randy Donny.',

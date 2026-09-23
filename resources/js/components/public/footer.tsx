@@ -6,6 +6,7 @@ import {
     XIcon,
     YouTubeIcon,
 } from '@/components/public/brand-icons';
+import { ExternalLink } from '@/components/public/external-link';
 import { labels } from '@/lib/labels.fr';
 import { socialUrls } from '@/lib/social';
 import { frenchTypography } from '@/lib/typography';
@@ -63,15 +64,13 @@ export function Footer() {
                         <ul className="tablet:grid-cols-1 grid grid-cols-2 gap-x-4">
                             {socialLinks.map(({ label, href, Icon }) => (
                                 <li key={label}>
-                                    <a
+                                    <ExternalLink
                                         href={href}
-                                        target="_blank"
-                                        rel="noopener"
                                         className={footerLinkClasses}
                                     >
                                         <Icon className="size-5 flex-none" />
                                         {label}
-                                    </a>
+                                    </ExternalLink>
                                 </li>
                             ))}
                         </ul>

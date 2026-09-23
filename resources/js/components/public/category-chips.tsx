@@ -12,7 +12,7 @@ export function CategoryChips({ categories, className }: CategoryChipsProps) {
     }
 
     return (
-        <ul className={cn('flex flex-wrap gap-1.5', className)}>
+        <ul role="list" className={cn('flex flex-wrap gap-1.5', className)}>
             {categories.map((category) => (
                 <li
                     key={category.id}
