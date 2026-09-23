@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { CircleAlert } from 'lucide-react';
 import type { FormEvent } from 'react';
+import { useEffect, useRef } from 'react';
 import { Button } from '@/components/public/button';
 import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/lib/typography';
@@ -26,6 +27,20 @@ export function SubscriptionBlock({
     onSubmit = (event) => event.preventDefault(),
 }: SubscriptionBlockProps) {
     const isLoading = status === 'loading';
+    const emailRef = useRef<HTMLInputElement>(null);
+    const successRef = useRef<HTMLParagraphElement>(null);
+
+    useEffect(() => {
+        if (error) {
+            emailRef.current?.focus();
+        }
+    }, [error]);
+
+    useEffect(() => {
+        if (status === 'success') {
+            successRef.current?.focus();
+        }
+    }, [status]);
 
     return (
         <section
@@ -48,7 +63,9 @@ export function SubscriptionBlock({
                 <div className="flex flex-col gap-4">
                     {status === 'success' ? (
                         <p
+                            ref={successRef}
                             role="status"
+                            tabIndex={-1}
                             className="text-body-small rounded-md border border-green-600 bg-green-50 p-4 font-medium text-green-700"
                         >
                             {frenchTypography(labels.subscription.success)}
@@ -67,6 +84,7 @@ export function SubscriptionBlock({
                             </label>
                             <div className="tablet:flex-row flex flex-col gap-3">
                                 <input
+                                    ref={emailRef}
                                     id="abonnement-email"
                                     name="email"
                                     type="email"
@@ -78,7 +96,9 @@ export function SubscriptionBlock({
                                     }
                                     aria-invalid={error ? true : undefined}
                                     aria-describedby={
-                                        error ? 'abonnement-erreur' : undefined
+                                        error
+                                            ? 'abonnement-erreur abonnement-consentement'
+                                            : 'abonnement-consentement'
                                     }
                                     className="border-grey-medium text-body text-primary placeholder:text-grey-dark focus-visible:border-primary tablet:w-auto tablet:min-w-0 tablet:flex-1 h-13 w-full rounded-md border bg-white px-4 aria-invalid:border-red-600 aria-invalid:ring-1 aria-invalid:ring-red-600"
                                 />
@@ -106,7 +126,10 @@ export function SubscriptionBlock({
                             )}
                         </form>
                     )}
-                    <p className="text-caption text-grey-dark">
+                    <p
+                        id="abonnement-consentement"
+                        className="text-caption text-grey-dark"
+                    >
                         {consentText}
                         <Link
                             href={privacy()}

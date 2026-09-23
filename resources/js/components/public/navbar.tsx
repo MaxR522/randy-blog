@@ -89,7 +89,7 @@ export function Navbar({ variant, authorUrl }: NavbarProps) {
             )}
         >
             <div className="px-gutter tablet:h-17 tablet:py-0 mx-auto flex min-h-11 w-full max-w-7xl items-center justify-between gap-4 py-3">
-                <nav aria-label="Navigation" className="min-w-0">
+                <nav aria-label={labels.a11y.mainNav} className="min-w-0">
                     <ContextualLink variant={variant} authorUrl={authorUrl} />
                 </nav>
                 <a href={subscribeHref} className={buttonClasses('primary')}>

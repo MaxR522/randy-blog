@@ -97,32 +97,43 @@ type StandardCardLayout =
     | 'compact-below-laptop'
     | 'row';
 
+/**
+ * `item` sizes the list item (width, snap, hairline), `article` lays out image and text inside it.
+ */
 const standardLayouts: Record<
     StandardCardLayout,
-    { article: string; image: string; title: string; date: string }
+    {
+        item: string;
+        article: string;
+        image: string;
+        title: string;
+        date: string;
+    }
 > = {
     stack: {
+        item: '',
         article: 'flex flex-col',
         image: '',
         title: 'mt-3.5 text-card',
         date: 'mt-2',
     },
     'compact-below-laptop': {
-        article:
-            'flex items-start gap-4 border-b border-grey-light py-4 laptop:flex-col laptop:gap-0 laptop:border-0 laptop:py-0',
+        item: 'border-b border-grey-light py-4 laptop:border-0 laptop:py-0',
+        article: 'flex items-start gap-4 laptop:flex-col laptop:gap-0',
         image: 'w-24 flex-none laptop:w-full',
         title: 'text-card-compact laptop:mt-3.5 laptop:text-card',
         date: 'mt-1.5 laptop:mt-2',
     },
     row: {
-        article: 'flex w-62 flex-none snap-start flex-col tablet:w-auto',
+        item: 'w-62 flex-none snap-start tablet:w-auto',
+        article: 'flex flex-col',
         image: '',
         title: 'mt-3 text-lg/[1.3] tablet:mt-3.5 tablet:text-card',
         date: 'mt-1.5 tablet:mt-2',
     },
     'compact-below-tablet': {
-        article:
-            'flex items-start gap-4 border-b border-grey-light py-4 tablet:flex-col tablet:gap-0 tablet:border-0 tablet:py-0',
+        item: 'border-b border-grey-light py-4 tablet:border-0 tablet:py-0',
+        article: 'flex items-start gap-4 tablet:flex-col tablet:gap-0',
         image: 'w-24 flex-none tablet:w-full',
         title: 'text-card-compact tablet:mt-3.5 tablet:text-card laptop:text-card-wide',
         date: 'mt-1.5 tablet:mt-2',
@@ -136,7 +147,8 @@ type StandardCardProps = {
 };
 
 /**
- * Grid and row card: image, title, date.
+ * Grid and row card: image, title, date. Renders a list item: place it in a `<ul role="list">`,
+ * so screen readers announce the group and its size.
  */
 export function StandardCard({
     article,
@@ -146,20 +158,22 @@ export function StandardCard({
     const classes = standardLayouts[layout];
 
     return (
-        <article className={cn('min-w-0', classes.article)}>
-            <ImageLink
-                article={article}
-                sizes={sizes}
-                className={classes.image}
-            />
-            <div className="min-w-0">
-                <h3 className={cn(titleClasses, classes.title)}>
-                    <Link href={article.url} className={titleLinkClasses}>
-                        {frenchTypography(article.title)}
-                    </Link>
-                </h3>
-                <ArticleDate article={article} className={classes.date} />
-            </div>
-        </article>
+        <li className={cn('min-w-0', classes.item)}>
+            <article className={cn('min-w-0', classes.article)}>
+                <ImageLink
+                    article={article}
+                    sizes={sizes}
+                    className={classes.image}
+                />
+                <div className="min-w-0">
+                    <h3 className={cn(titleClasses, classes.title)}>
+                        <Link href={article.url} className={titleLinkClasses}>
+                            {frenchTypography(article.title)}
+                        </Link>
+                    </h3>
+                    <ArticleDate article={article} className={classes.date} />
+                </div>
+            </article>
+        </li>
     );
 }
