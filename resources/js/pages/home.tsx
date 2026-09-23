@@ -170,7 +170,7 @@ export default function Home({
 
             <section className="border-grey-light border-b">
                 <div className={`${container} laptop:py-18 pt-10 pb-12`}>
-                    <div className="max-w-[45rem] min-w-0">
+                    <div className="max-w-180 min-w-0">
                         <h1 className="text-display font-sans text-balance">
                             {frenchTypography(labels.brand.tagline)}
                         </h1>

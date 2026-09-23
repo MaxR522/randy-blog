@@ -73,7 +73,7 @@ export function LargeCard({ article }: { article: ArticleCard }) {
                 </Link>
             </h3>
             {article.chapo && (
-                <p className="text-grey-dark laptop:text-base/normal mt-2.5 font-sans text-[0.9375rem]/normal text-pretty">
+                <p className="text-grey-dark laptop:text-base/normal text-button/normal mt-2.5 font-sans text-pretty">
                     {frenchTypography(article.chapo)}
                 </p>
             )}

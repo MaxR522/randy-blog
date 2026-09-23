@@ -55,7 +55,7 @@ export function SearchBar({ defaultValue = '' }: SearchBarProps) {
             <button
                 type="submit"
                 aria-label={labels.search.submit}
-                className="bg-primary text-button ease-standard hover:bg-primary-hover tablet:w-auto tablet:px-7 flex h-full w-14 flex-none items-center justify-center rounded-r-[3px] font-semibold text-white transition-colors duration-(--duration-base) focus-visible:outline-offset-[-4px] focus-visible:outline-white"
+                className="bg-primary text-button ease-standard hover:bg-primary-hover tablet:w-auto tablet:px-7 flex h-full w-14 flex-none items-center justify-center rounded-r-[3px] font-semibold text-white transition-colors duration-(--duration-base) focus-visible:-outline-offset-4 focus-visible:outline-white"
             >
                 <Search
                     aria-hidden="true"
