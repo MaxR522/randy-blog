@@ -14,6 +14,28 @@ export type ArticleCard = {
     categories: ArticleCategory[];
 };
 
+export type ArticleAuthor = {
+    name: string;
+    url: string;
+};
+
+export type ArticleDetail = {
+    id: number;
+    title: string;
+    url: string;
+    description: string;
+    cover: string | null;
+    coverAlt: string;
+    coverCredit: string | null;
+    chapoHtml: string;
+    contentHtml: string;
+    date: string | null;
+    dateLabel: string | null;
+    readingTime: number;
+    categories: ArticleCategory[];
+    author: ArticleAuthor | null;
+};
+
 export type CategorySection = {
     id: number;
     name: string;

@@ -30,7 +30,7 @@ Use tokens, never raw hex values, except for the two one-off button greys noted 
 | Radii | `sm 2px` images and chips, `md 4px` buttons and inputs, `lg 6px` cookie banner and toast. The Encadré has radius 0 | `rounded-sm/md/lg` |
 | Shadow | `--shadow-navbar` | `shadow-navbar` |
 | Ratios | `--aspect-card 3/2` (every card and thumbnail), `--aspect-cover 16/9` (article cover, video), `--aspect-avatar 1/1` | `aspect-card`, `aspect-cover`, `aspect-avatar` |
-| Measures | `--container-article 38rem` (608), `--container-article-header 52.5rem` (840), `--container-article-cover 70rem` (1120) | `max-w-article`, `max-w-article-header`, `max-w-article-cover` |
+| Measures | `--container-article 52.5rem` (840, same as the header), `--container-article-header 52.5rem` (840), `--container-article-cover 70rem` (1120) | `max-w-article`, `max-w-article-header`, `max-w-article-cover` |
 | Motion | `--duration-fast 120ms`, `--duration-base 200ms`, `--duration-slow 320ms`, `--ease-standard`, `--ease-out` | `duration-(--duration-fast)`, `ease-standard` |
 | Focus | 2 px, offset 2 px, on `:focus-visible` (set in the base layer, never remove). `accent-600` on buttons and links; `primary` (near-black) on text inputs via `--focus-ring-color-input`, since accent-600 read as an odd blue on a plain white field | |
 | Breakpoints | `tablet 768`, `laptop 1024`, `desktop 1280` (same values as Tailwind `md`, `lg`, `xl`) | `tablet:`, `laptop:`, `desktop:` |
@@ -52,23 +52,25 @@ Set the family with `font-sans` (the only family — `font-serif` still resolves
 
 | Style | Classes | Mobile | Desktop | Notes |
 |---|---|---|---|---|
-| Display | `font-sans text-display` | 44 / 1.02 | 72 / 1.0 | home banner title. Tablet 56 |
-| H1 | `font-sans text-h1` | 34 / 1.12 | 52 / 1.08 | article title, page titles. Tablet 40 |
-| H2 | `font-sans text-h2` | 26 / 1.2 | 32 / 1.2 | article body h2 |
-| Section title | `font-sans text-section` | 26 | 30 | section headers |
-| H3 | `font-sans text-h3` | 21 | 24 | |
-| H4 | `font-sans text-h4` | 17 | 17 | Inter 600 |
-| Card large | `font-sans text-card-large` | 22 | 26 | no separate hero/featured size — that card was removed |
+| Display | `font-sans text-display` | 44 / 1.1 | 72 / 1.0 | home banner title. Tablet 56 |
+| H1 | `font-sans text-h1` | 30 / 1.3 | 52 / 1.08 | article title, page titles. Tablet 40. Mobile: `text-pretty` + hyphenation, see ArticleHeader |
+| H2 | `font-sans text-h2` | 26 / 1.3 | 32 / 1.2 | article body h2 |
+| Section title | `font-sans text-section` | 26 / 1.25 | 30 / 1.15 | section headers |
+| H3 | `font-sans text-h3` | 21 / 1.38 | 24 / 1.3 | |
+| H4 | `font-sans text-h4` | 17 / 1.45 | 17 / 1.4 | Inter 600 |
+| Card large | `font-sans text-card-large` | 22 / 1.2 | 26 / 1.12 | no separate hero/featured size — that card was removed |
 | Card | `font-sans text-card` | 17 | 18 | `text-card-wide` (20) when the card is wider than about 380 px. Sized down from the first draft: real titles run longer than the sample copy and wrapped to 3–4 lines at the old sizes |
 | Card compact | `font-sans text-card-compact` | 17 | 17 | |
 | Chapô | `font-sans text-chapo text-grey-dark` | 19 / 1.45 | 22 / 1.45 | weight 400 |
-| Article body | `.article-body` | 18 / 1.65 | 20 / 1.7 | Inter 400, column 608 px (about 68 characters) |
+| Article body | `.article-body` | 18 / 1.65 | 20 / 1.7 | Inter 400, column 840 px on large screens — same width as the title block |
 | Body (UI) | `font-sans text-body` | 16 / 1.6 | 16 | |
 | Body small | `text-body-small` | 14 | 14 | |
 | Caption | `text-caption text-grey-dark` | 13 | 13 | |
 | Meta | `text-meta font-medium text-grey-dark` | 13 | 13 | dates, reading time |
 | Overline | `text-overline font-semibold uppercase` | 12 | 12 | tracking .08em; category labels |
 | Button | `text-button font-semibold` | 15 | 15 | |
+
+Titles get a looser line height on mobile only (under 768 px) so wrapped lines breathe; from tablet up they return to the tighter desktop values. The tokens carry both, so `text-h1` etc. need no extra class.
 
 Article body uses the same Inter family as everything else: one voice throughout, from headings to tables to captions, with no second typeface to load or fall out of sync.
 
@@ -159,11 +161,12 @@ Full-width band, `bg-accent-50 border-y border-accent-200`, padding 80 (48 mobil
 
 ### Article components
 - **ArticleHeader**: chips, meta line « 19 septembre 2026 · 6 min de lecture », `h1`, chapô, byline « Par Randy Donny » (name links to the author page). Block max 840, centred from 768, left-aligned on mobile.
+  Mobile title: 30 px, `text-pretty hyphens-auto` so lines fill the width and long words break with a hyphen (« Mada-gascar ») instead of leaving half-empty lines; from tablet `tablet:text-balance tablet:hyphens-manual`. The theme's base layer already sets this for `h1, h2` under 768 px, including `hyphenate-limit-chars: 8 4 4` (only words of 8+ letters break, 4+ letters each side). Do not put a plain `text-balance` on the title, since a utility would override the base rule on mobile. Hyphenation needs `<html lang="fr">`. If you need to control a specific break, a soft hyphen (`&shy;`) in the title works everywhere.
 - **ShareButtons**: Facebook, X, LinkedIn, « Copier le lien ». 44 px tall, `border-grey-light rounded-md`, icon + label on desktop; 44 × 44 icon squares (with `aria-label`) on mobile. Copied state: green-50 / green-600 border / green-700, « Lien copié », plus the toast and a live region, back to default after 2 s.
-- **AudioSlot** (« Écouter l'article »): 54 px bordered box, 44 px square primary play button, label + « Lecture audio · 6 min ». Playing state: pause button, title, `1:24 / 6:00`, 4 px progress bar in accent-600. The feature is undecided: keep it a slot that can host any player.
-- **Cover**: `aspect-cover`, max 1120, full-bleed on mobile, caption « Crédit photo : … » (`text-caption text-grey-dark`, right-aligned on desktop).
-- **Article body**: wrap the TinyMCE HTML in `<div class="article-body">`. Everything (p, h2–h4, a, ul/ol, blockquote, figure/figcaption, table, `.video`, `.callout-box`) is styled by the theme without extra classes. Wrap YouTube iframes in `<div class="video">`.
-- **Encadré**: `<div class="callout-box">…</div>` with any paragraphs, one optional `h4`, lists. The « Encadré » overline is a `::before`, editors never type it. Breaks 32 px out of the 608 column on desktop, edge to edge on mobile.
+- **AudioSlot** (« Écouter l'article »): 54 px bordered box, 44 px square primary play button, label + « Lecture audio · 6 min ». Playing state: pause button, title, `1:24 / 6:00`, 4 px progress bar in accent-600. The feature is undecided: keep it a slot that can host any player. For now it is static: the button carries `aria-disabled="true"` and no handler, and the duration shows the reading time. Tools bar: audio slot left, share buttons right, between hairlines; stacked, full width, on mobile.
+- **Cover**: `aspect-cover`, max 1120, full-bleed on mobile, caption with the credit alone, no « Crédit photo : » prefix (`text-caption text-grey-dark`, right-aligned on desktop).
+- **Article body**: wrap the TinyMCE HTML in `<div class="article-body">`. Everything (p, h2–h4, a, ul/ol, blockquote, figure/figcaption, table, `.video`, `.callout-box`) is styled by the theme without extra classes. Wrap YouTube iframes in `<div class="video">`. V1 articles also embed Cloudinary MP4s as `<video><source>`: the sanitizer keeps them (Cloudinary sources only, controls forced, `preload="metadata"`) and the theme shows them full column width. The first element has no top margin (the wrapper's 56 / 32 px padding is the whole gap under the cover). Lists show their markers (disc, circle when nested, decimal) in accent-600: Tailwind's preflight removes them, the theme restores them. Images are centred; their captions stay left-aligned.
+- **Encadré**: `<div class="callout-box">…</div>` with any paragraphs, one optional `h4`, lists. No « Encadré » overline (removed after review, overrides the boards): the tinted box and its left rule are enough; `role="note"` stays for screen readers. Breaks one gutter out of the 840 column (32 px on desktop, 24 on tablet so it never overflows the page while the column fills the container), edge to edge on mobile.
 - **End-of-article CTA**: top 2 px rule, one line « Ce texte vous a plu ? Recevez les prochains directement par email. » + secondary « S'abonner » linking to `/#abonnement`.
 - **Previous / next**: two cells side by side (divider between), stacked on mobile; overline « Article précédent » (arrow-left) / « Article suivant » (arrow-right) in accent-700, Inter 26 (21) title, date. Each cell is one link.
 - **PreviewBanner** (logged-in author only, above the navbar): `bg-yellow-50 border-b border-yellow-600 text-yellow-800`, eye icon, « Aperçu — cet article n'est pas publié ».

@@ -52,7 +52,7 @@ export function SubscriptionBlock({
                 <div>
                     <h2
                         id="abonnement-titre"
-                        className="laptop:text-5xl/[1.05] font-sans text-[2.125rem] leading-[1.05] font-semibold tracking-[-0.02em]"
+                        className="laptop:text-5xl/[1.05] tablet:leading-[1.05] font-sans text-[2.125rem] leading-[1.15] font-semibold tracking-[-0.02em]"
                     >
                         {labels.subscription.title}
                     </h2>

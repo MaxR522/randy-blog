@@ -22,7 +22,7 @@ a{color:#365AC0}a:hover{color:#1E367E}
 
 </style>
 </helmet>
-<div data-rd-root style="width:1440px;height:3970px;box-sizing:border-box;display:flex;flex-direction:column;background:#FFFFFF;color:#2B2B2B;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;-webkit-font-smoothing:antialiased">
+<div data-rd-root style="width:1440px;height:4009px;box-sizing:border-box;display:flex;flex-direction:column;background:#FFFFFF;color:#2B2B2B;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;-webkit-font-smoothing:antialiased">
 <header style="padding:80px 80px 48px;border-bottom:2px solid #2B2B2B"><p style="margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;font-weight:600;font-size:12px;line-height:16px;letter-spacing:0.08em;text-transform:uppercase;color:#636363;">Randy Donny · Public site · Design system V2</p><h1 style="margin:16px 0 0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;font-weight:600;font-size:72px;line-height:1;letter-spacing:-0.03em;color:#2B2B2B">Tokens</h1><p style="margin:20px 0 0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;font-weight:400;font-size:18px;line-height:28px;letter-spacing:0;color:#2B2B2B;max-width:820px">Tailwind CSS v4 <code style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:15px">@theme</code> block, ready to paste. Existing names are kept (<code style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:15px">--color-primary</code>, <code style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:15px">--color-grey-*</code>, <code style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:15px">--font-sans</code>); new ones are added beside them. Mobile values are the base; tablet and laptop override them in the second column.</p></header>
 <section style="padding:56px 80px 0"><div style="display:flex;gap:32px;align-items:flex-start"><div style="flex:1;min-width:0"><p style="margin:0 0 12px;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;font-weight:600;font-size:12px;line-height:16px;letter-spacing:0.08em;text-transform:uppercase;color:#636363">1 · @theme</p><pre style="margin:0;padding:24px;background:#F4F4F4;border:1px solid #D4D4D4;border-radius:4px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;line-height:19px;color:#2B2B2B;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2">@import "tailwindcss";
 
@@ -84,7 +84,7 @@ a{color:#365AC0}a:hover{color:#1E367E}
   --text-display--letter-spacing: -0.025em;
   --text-display--font-weight: 600;
 
-  --text-h1: 2.125rem;               /* 34 */
+  --text-h1: 1.875rem;               /* 30 on mobile (was 34: long French titles ran 5+ lines) */
   --text-h1--line-height: 1.12;
   --text-h1--letter-spacing: -0.02em;
   --text-h1--font-weight: 600;
@@ -145,7 +145,7 @@ a{color:#365AC0}a:hover{color:#1E367E}
   --spacing-section: 3.5rem;         /* between sections: 56 / 80 */
 
   /* ---- Measures ---- */
-  --container-article: 38rem;        /* 608, prose column: max-w-article */
+  --container-article: 52.5rem;      /* 840, prose column = title block width: max-w-article */
   --container-article-header: 52.5rem; /* 840, title block */
   --container-article-cover: 70rem;  /* 1120, cover image */
 
@@ -233,6 +233,19 @@ a{color:#365AC0}a:hover{color:#1E367E}
   input:focus-visible, textarea:focus-visible, select:focus-visible {
     outline-color: var(--focus-ring-color-input);
   }
+  /* Mobile headings: fill the line (pretty, not balance) and let long French
+     words break with a hyphen (« Mada-gascar ») instead of leaving half-empty
+     lines. Needs &lt;html lang="fr"&gt;. Only words of 8+ letters break, with at
+     least 4 letters on each side. Tablet and desktop keep balance and never
+     hyphenate. */
+  @media (max-width: 47.99rem) {
+    h1, h2 {
+      text-wrap: pretty;
+      -webkit-hyphens: auto;
+      hyphens: auto;
+      hyphenate-limit-chars: 8 4 4;
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     *, ::before, ::after {
       animation-duration: 0.01ms !important;
@@ -278,7 +291,7 @@ a{color:#365AC0}a:hover{color:#1E367E}
   /* Encadré: &lt;div class="callout-box"&gt;…&lt;/div&gt; */
   .callout-box {
     margin-block: 3rem;
-    margin-inline: -2rem;            /* breaks out of the 38rem column */
+    margin-inline: -2rem;            /* breaks out of the 52.5rem column */
     padding: 1.75rem 2rem 0.75rem;
     background: var(--color-callout-bg);
     border: var(--rule-thin) solid var(--color-callout-edge);
@@ -299,7 +312,7 @@ a{color:#365AC0}a:hover{color:#1E367E}
 <div style="flex:1 1 auto;min-height:72px"></div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3970}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":4009}}'>
 class Component extends DCLogic {
   renderVals() {
     return {};

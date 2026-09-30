@@ -105,6 +105,30 @@ class Article extends Model
     }
 
     /**
+     * Whether visitors can read the article: same rule as the `published` scope.
+     */
+    public function isPublished(): bool
+    {
+        return $this->status === ArticleStatus::Published
+            && $this->published_date !== null
+            && $this->published_date->lte(now());
+    }
+
+    /**
+     * Reading time in minutes: the stored value, or the word count at 230 words a minute when it was never computed.
+     */
+    public function readingTime(): int
+    {
+        if ($this->read_duration > 0) {
+            return $this->read_duration;
+        }
+
+        $words = (int) preg_match_all('/[\p{L}\p{N}]+/u', strip_tags($this->raw_content ?: $this->content));
+
+        return max(1, (int) ceil($words / 230));
+    }
+
+    /**
      * Publication date in French, in the display timezone: « 19 septembre 2026 », « 1er juillet 2026 ».
      *
      * @return Attribute<string|null, never>
