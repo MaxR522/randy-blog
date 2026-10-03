@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,8 +15,14 @@ Route::get('/articles/{article:slug}', ArticleController::class)->name('articles
 
 Route::get('/recherche', SearchController::class)->name('search');
 
+Route::get('/profil/{user:slug}', ProfileController::class)->name('profile.show');
+
+/*
+ * V1 profile URL, permanently moved (SEO-CRAWL-5).
+ */
+Route::get('/profile/{slug}', fn (string $slug) => redirect()->route('profile.show', $slug, 301));
+
 /*
  * Public pages linked from the home page and not built yet: they answer 404 until their own task.
  */
-Route::get('/profil/{slug}', fn () => abort(404))->name('profile.show');
 Route::get('/politique-de-confidentialite', fn () => abort(404))->name('privacy');

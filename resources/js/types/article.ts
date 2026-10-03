@@ -64,3 +64,13 @@ export type CategorySection = {
 export type ScrollProp<T> = {
     data: T[];
 };
+
+export type AuthorProfile = {
+    name: string;
+    fullName: string;
+    url: string;
+    avatar: string | null;
+    avatarCredit: string | null;
+    bioHtml: string;
+    description: string;
+};

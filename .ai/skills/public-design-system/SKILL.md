@@ -24,7 +24,7 @@ Build the public site exactly from the approved design. The admin panel is out o
 - Mobile headings (`h1`, `h2`, under 768 px): `text-pretty` + `hyphens-auto`, never `text-balance`. The base layer handles it; `<html lang="fr">` is required for French hyphenation. Use `tablet:text-balance` when a heading needs balance from tablet up.
 - No wordmark in the navbar, on any device — just the contextual link and « S'abonner ». The wordmark stays in the footer.
 - One accent (Bleu encre), used sparingly. Buttons stay monochrome. No gradients; the only shadow is the scrolled navbar.
-- Every card image uses `aspect-card w-full rounded-sm object-cover`; the article cover and video use `aspect-cover`; avatars `aspect-avatar rounded-full`.
+- Every card image uses `aspect-card w-full rounded-sm object-cover`; the article cover and video use `aspect-cover`; the author avatar is `rounded-sm` (not a circle): a 240 px square on mobile, and from laptop it stretches with its credit to the height of name + biography (`object-cover`).
 - Article body HTML (from TinyMCE) goes inside `.article-body`; the Encadré is `<div class="callout-box">`. Do not restyle prose elements individually.
 - Server-rendered: layouts must not depend on JavaScript. Use CSS grid, media queries, `aspect-ratio`, scroll-snap.
 - Accessibility (WCAG 2.2 AA): real `<button>`, `<a>`, `<input>` with labels, visible focus (do not remove the base-layer ring), tap targets 44 × 44, semantic headings, alt text, `aria-label` on icon-only buttons. Metadata text uses `text-grey-dark`, never `text-grey-medium`. Alert text uses the `-700` shades. Full SEO and accessibility rules (ARIA per component, head tags, structured data): `seo-accessibility` skill and `docs/seo-accessibility.md`.

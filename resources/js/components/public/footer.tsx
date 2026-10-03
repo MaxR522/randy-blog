@@ -1,39 +1,9 @@
 import { Link } from '@inertiajs/react';
-import type { ComponentType, SVGProps } from 'react';
-import {
-    FacebookIcon,
-    LinkedInIcon,
-    XIcon,
-    YouTubeIcon,
-} from '@/components/public/brand-icons';
 import { ExternalLink } from '@/components/public/external-link';
+import { socialLinks } from '@/components/public/social-links';
 import { labels } from '@/lib/labels.fr';
-import { socialUrls } from '@/lib/social';
 import { frenchTypography } from '@/lib/typography';
 import { home, privacy } from '@/routes';
-
-const socialLinks: {
-    label: string;
-    href: string;
-    Icon: ComponentType<SVGProps<SVGSVGElement>>;
-}[] = [
-    {
-        label: labels.share.facebook,
-        href: socialUrls.facebook,
-        Icon: FacebookIcon,
-    },
-    { label: labels.share.x, href: socialUrls.x, Icon: XIcon },
-    {
-        label: labels.share.linkedin,
-        href: socialUrls.linkedin,
-        Icon: LinkedInIcon,
-    },
-    {
-        label: labels.share.youtube,
-        href: socialUrls.youtube,
-        Icon: YouTubeIcon,
-    },
-];
 
 const columnTitleClasses =
     'mb-2 text-overline font-semibold text-grey-dark uppercase';

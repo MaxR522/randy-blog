@@ -85,6 +85,7 @@ export function LargeCard({ article }: { article: ArticleCard }) {
 /**
  * How a standard card lays out:
  * - `stack`: image above the title at every width.
+ * - `stack-wide`: same, with the wide title in the 3-column laptop grid.
  * - `compact-below-laptop`: compact row (96 px thumbnail, hairline below)
  *   under 1024 px, stacked from laptop on.
  * - `compact-below-tablet`: compact row under 768 px, stacked from tablet on,
@@ -93,6 +94,7 @@ export function LargeCard({ article }: { article: ArticleCard }) {
  */
 type StandardCardLayout =
     | 'stack'
+    | 'stack-wide'
     | 'compact-below-tablet'
     | 'compact-below-laptop'
     | 'row';
@@ -115,6 +117,13 @@ const standardLayouts: Record<
         article: 'flex flex-col',
         image: '',
         title: 'mt-3.5 text-card',
+        date: 'mt-2',
+    },
+    'stack-wide': {
+        item: '',
+        article: 'flex flex-col',
+        image: '',
+        title: 'mt-3.5 text-card laptop:text-card-wide',
         date: 'mt-2',
     },
     'compact-below-laptop': {

@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -17,6 +18,9 @@ use Illuminate\Support\Carbon;
  * @property string $email
  * @property string $slug
  * @property string|null $display_name
+ * @property string|null $avatar
+ * @property string|null $avatar_credit
+ * @property string|null $bio
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $remember_token
@@ -41,5 +45,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * @return HasMany<Article, $this>
+     */
+    public function articles(): HasMany
+    {
+        return $this->hasMany(Article::class, 'author_id');
     }
 }
