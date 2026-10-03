@@ -28,6 +28,8 @@ export const labels = {
         submit: 'Rechercher',
         resultsFor: (q: string) => `Résultats pour « ${q} »`,
         empty: 'Aucun article ne correspond à votre recherche.',
+        count: (n: number) => (n > 1 ? `${n} articles` : `${n} article`),
+        latest: 'Derniers articles',
     },
     pagination: {
         previous: 'Précédent',
@@ -123,6 +125,7 @@ export const labels = {
         shareOn: 'Partager sur',
         linkCopied: 'Lien copié dans le presse-papiers',
         articleNav: 'Articles précédent et suivant',
+        pagination: 'Pagination',
         subscription: 'Abonnement',
     },
     newsletter: {

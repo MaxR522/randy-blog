@@ -33,6 +33,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $read_duration
  * @property int $author_id
  * @property-read string|null $published_date_label
+ * @property-read string|null $excerpt only with the `search` scope
  */
 #[Fillable([
     'title',
@@ -57,6 +58,13 @@ class Article extends Model
 {
     /** @use HasFactory<ArticleFactory> */
     use HasFactory, SoftDeletes;
+
+    /**
+     * Markers around a highlighted match in a search excerpt: control characters, which article text never contains.
+     */
+    public const string HighlightStart = "\u{2}";
+
+    public const string HighlightEnd = "\u{3}";
 
     /**
      * Get the attributes that should be cast.
@@ -102,6 +110,29 @@ class Article extends Model
         $query->where('status', ArticleStatus::Published)
             ->whereNotNull('published_date')
             ->where('published_date', '<=', now());
+    }
+
+    /**
+     * Full-text search on title and text (`search_vector`), French stemming, accent-insensitive, best match first.
+     *
+     * Adds `rank` and `excerpt`: a passage of the text around the matches, each match wrapped in
+     * {@see self::HighlightStart} and {@see self::HighlightEnd}.
+     *
+     * @param  Builder<Article>  $query
+     */
+    #[Scope]
+    protected function search(Builder $query, string $terms): void
+    {
+        $tsQuery = "websearch_to_tsquery('french_unaccent', ?)";
+        $headlineOptions = 'StartSel='.self::HighlightStart.', StopSel='.self::HighlightEnd.', MaxWords=35, MinWords=20, MaxFragments=1';
+
+        $query->select('articles.*')
+            ->selectRaw("ts_rank_cd(search_vector, {$tsQuery}) as rank", [$terms])
+            ->selectRaw("ts_headline('french_unaccent', raw_content, {$tsQuery}, ?) as excerpt", [$terms, $headlineOptions])
+            ->whereRaw("search_vector @@ {$tsQuery}", [$terms])
+            ->orderByDesc('rank')
+            ->orderByDesc('published_date')
+            ->orderByDesc('id');
     }
 
     /**

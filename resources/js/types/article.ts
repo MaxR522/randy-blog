@@ -14,6 +14,25 @@ export type ArticleCard = {
     categories: ArticleCategory[];
 };
 
+export type ExcerptSegment = {
+    text: string;
+    highlighted: boolean;
+};
+
+export type SearchResult = ArticleCard & {
+    readingTime: number;
+    excerpt: ExcerptSegment[];
+};
+
+export type SearchResults = {
+    data: SearchResult[];
+    total: number;
+    currentPage: number;
+    lastPage: number;
+    previousUrl: string | null;
+    nextUrl: string | null;
+};
+
 export type ArticleAuthor = {
     name: string;
     url: string;
