@@ -22,7 +22,4 @@ Route::get('/profil/{user:slug}', ProfileController::class)->name('profile.show'
  */
 Route::get('/profile/{slug}', fn (string $slug) => redirect()->route('profile.show', $slug, 301));
 
-/*
- * Public pages linked from the home page and not built yet: they answer 404 until their own task.
- */
-Route::get('/politique-de-confidentialite', fn () => abort(404))->name('privacy');
+Route::inertia('/politique-de-confidentialite', 'privacy')->name('privacy');

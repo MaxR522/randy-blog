@@ -65,7 +65,15 @@ export function Footer() {
                 </div>
                 <div className="border-grey-light text-caption text-grey-dark tablet:flex-row tablet:items-center tablet:justify-between tablet:gap-6 mt-10 flex flex-col gap-2 border-t pt-5">
                     <p>{labels.footer.copyright}</p>
-                    <p>{labels.footer.credit}</p>
+                    <p>
+                        {labels.footer.credit}{' '}
+                        <ExternalLink
+                            href={labels.footer.developer.url}
+                            className="hover:text-primary underline underline-offset-2"
+                        >
+                            {labels.footer.developer.name}
+                        </ExternalLink>
+                    </p>
                 </div>
             </div>
         </footer>

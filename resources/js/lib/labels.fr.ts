@@ -90,15 +90,23 @@ export const labels = {
         readLatest: 'Lire les derniers articles',
     },
     notFound: {
+        overline: 'Erreur 404',
         title: 'Page introuvable',
-        text: "Je pense, donc j'essuie… et cette page-là, on dirait que quelqu'un l'a essuyée pour de bon. Essayez une recherche, ou retournez d'où vous venez.",
+        text: "Essayez une recherche, ou retournez d'où vous venez.",
+    },
+    privacy: {
+        updatedAt: (date: string) => `Dernière mise à jour : ${date}`,
     },
     footer: {
         follow: 'Suivre',
         info: 'Informations',
         privacy: 'Politique de confidentialité',
         copyright: '© 2026 Randy Donny',
-        credit: 'Site conçu et développé par [Nom du développeur]', // placeholder
+        credit: 'Site conçu et développé par',
+        developer: {
+            name: 'Mario Randrianomearisoa',
+            url: 'https://www.linkedin.com/in/mario-randrianomearisoa/',
+        },
     },
     share: {
         facebook: 'Facebook',

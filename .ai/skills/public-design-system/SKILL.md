@@ -29,7 +29,7 @@ Build the public site exactly from the approved design. The admin panel is out o
 - Server-rendered: layouts must not depend on JavaScript. Use CSS grid, media queries, `aspect-ratio`, scroll-snap.
 - Accessibility (WCAG 2.2 AA): real `<button>`, `<a>`, `<input>` with labels, visible focus (do not remove the base-layer ring), tap targets 44 × 44, semantic headings, alt text, `aria-label` on icon-only buttons. Metadata text uses `text-grey-dark`, never `text-grey-medium`. Alert text uses the `-700` shades. Full SEO and accessibility rules (ARIA per component, head tags, structured data): `seo-accessibility` skill and `docs/seo-accessibility.md`.
 - French typography: non-breaking spaces before `: ; ! ?` and inside « », typographic apostrophes and ellipses, dates like « 19 septembre 2026 ».
-- Placeholders that are still open: developer credit, brand icons (Lucide has none), text-to-speech player, tablet layouts. Ask before inventing them.
+- Placeholders that are still open: brand icons (Lucide has none), text-to-speech player, tablet layouts. Ask before inventing them.
 
 ## Definition of done
 

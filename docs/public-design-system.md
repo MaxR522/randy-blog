@@ -115,7 +115,7 @@ Mobile: same single row as desktop — `flex items-center justify-between`, cont
 « S'abonner » scrolls to `#abonnement` on the home page; elsewhere it links to `/#abonnement`. Set `scroll-padding-top` (already in the base layer).
 
 ### Footer
-`border-t-2 border-primary`. Desktop: three columns (`1.3fr 1fr 1fr`): wordmark + tagline in `font-sans italic`, « Suivre » (Facebook, X, LinkedIn, YouTube, each 44 px tall), « Informations » (« Politique de confidentialité »). Bottom row after a hairline: « © 2026 Randy Donny » left, developer credit right (`Site conçu et développé par [Nom du développeur]`, a placeholder). Mobile: stacked, socials in two columns. The wordmark stays here — it was only removed from the navbar.
+`border-t-2 border-primary`. Desktop: three columns (`1.3fr 1fr 1fr`): wordmark + tagline in `font-sans italic`, « Suivre » (Facebook, X, LinkedIn, YouTube, each 44 px tall), « Informations » (« Politique de confidentialité »). Bottom row after a hairline: « © 2026 Randy Donny » left, developer credit right (« Site conçu et développé par Mario Randrianomearisoa », the name linking to the developer's LinkedIn profile in a new tab). Mobile: stacked, socials in two columns. The wordmark stays here — it was only removed from the navbar.
 
 ### SearchBar
 Large (home banner): 64 px (56 mobile), `border border-primary rounded-md`, leading search icon, input 18 px, attached primary « Rechercher » button on desktop; on mobile the button is a 56 px square icon button with `aria-label`. Compact (results): 48 px, icon leading, no button. Placeholder « Rechercher un article… ». Input has a visually hidden `<label>`.
@@ -198,7 +198,6 @@ Drawn at 1440 and 360. Each board name is in `docs/design/boards/`.
 
 ## 8. Placeholders and open points
 
-- Developer credit line: `[Nom du développeur]`.
 - Author biography, photo credits (« Jean Dupont ») and all article content on the boards are sample text.
 - « A propos de ma pomme » is kept exactly as briefed; correct French would be « À propos ».
 - Text-to-speech is undecided; the audio slot is only a container.
