@@ -1,19 +1,29 @@
-import { Head, InfiniteScroll, usePage } from '@inertiajs/react';
+import { InfiniteScroll, usePage } from '@inertiajs/react';
+import { LoaderCircle } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { LargeCard, StandardCard } from '@/components/public/article-cards';
-import { Button } from '@/components/public/button';
+import { buttonClasses } from '@/components/public/button';
 import { ExternalLink } from '@/components/public/external-link';
 import { SearchBar } from '@/components/public/search-bar';
 import { SectionHeader } from '@/components/public/section-header';
 import { SubscriptionBlock } from '@/components/public/subscription-block';
+import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { labels } from '@/lib/labels.fr';
 import { socialUrls } from '@/lib/social';
 import { frenchTypography } from '@/lib/typography';
-import type { ArticleCard, CategorySection, ScrollProp } from '@/types';
+import { cn } from '@/lib/utils';
+import { home } from '@/routes';
+import type {
+    ArticleCard,
+    CategorySection,
+    ScrollProp,
+    SeoData,
+} from '@/types';
 
 type HomeProps = {
+    seo: SeoData;
     authorUrl: string | null;
     latest: ArticleCard[];
     categorySections: CategorySection[];
@@ -70,7 +80,8 @@ function AllArticles({ articles }: { articles: ScrollProp<ArticleCard> }) {
     const listRef = useRef<HTMLUListElement>(null);
     const countBeforeLoadRef = useRef<number | null>(null);
     const [announcement, setAnnouncement] = useState('');
-    const hasNextPage = usePage().scrollProps?.articles?.nextPage != null;
+    const nextPage = usePage().scrollProps?.articles?.nextPage;
+    const hasNextPage = nextPage != null;
     const count = articles.data.length;
 
     useEffect(() => {
@@ -112,19 +123,40 @@ function AllArticles({ articles }: { articles: ScrollProp<ArticleCard> }) {
                 onlyNext
                 preserveUrl
                 next={({ loading, fetch, hasMore }) =>
-                    hasMore && (
+                    hasMore &&
+                    nextPage != null && (
                         <div className="laptop:mt-14 mt-8 flex justify-center">
-                            <Button
-                                variant="secondary"
-                                isLoading={loading}
-                                onClick={() => {
+                            {/* A real link to `/?page=n`: crawlers and visitors without JavaScript reach every article (SEO-CRAWL-6). */}
+                            <a
+                                href={home.url({ query: { page: nextPage } })}
+                                aria-busy={loading || undefined}
+                                onClick={(event) => {
+                                    event.preventDefault();
+
+                                    if (loading) {
+                                        return;
+                                    }
+
                                     countBeforeLoadRef.current = count;
                                     fetch();
                                 }}
-                                className="h-12 px-8"
+                                className={buttonClasses(
+                                    'secondary',
+                                    cn(
+                                        'h-12 px-8',
+                                        loading && 'cursor-progress',
+                                    ),
+                                )}
                             >
+                                {loading && (
+                                    <LoaderCircle
+                                        aria-hidden="true"
+                                        className="size-4.5 animate-spin"
+                                        strokeWidth={1.75}
+                                    />
+                                )}
                                 {labels.home.seeMore}
-                            </Button>
+                            </a>
                         </div>
                     )
                 }
@@ -152,6 +184,7 @@ function AllArticles({ articles }: { articles: ScrollProp<ArticleCard> }) {
 }
 
 export default function Home({
+    seo,
     authorUrl,
     latest,
     categorySections,
@@ -161,12 +194,7 @@ export default function Home({
 
     return (
         <PublicLayout navbar="home" authorUrl={authorUrl}>
-            <Head>
-                <meta
-                    name="description"
-                    content={frenchTypography(labels.home.heroDescription)}
-                />
-            </Head>
+            <Seo seo={seo} />
 
             <section className="border-grey-light border-b">
                 <div className={`${container} laptop:py-18 pt-10 pb-12`}>

@@ -3,11 +3,11 @@
 | | |
 |---|---|
 | Status | Draft for review |
-| Last update | 2026-09-23 |
+| Last update | 2026-10-03 |
 | Applies to | Public site (all pages, newsletter email). Admin: §B11 only |
 | Related | `docs/Specification.md` (PUB-MISC-4, NFR-A11Y-1, NFR-PERF-*), `docs/public-design-system.md`, skill `seo-accessibility` |
 
-**Implementation status.** Part B (accessibility) is mandatory now: every existing and every new public page and component MUST meet it before it is considered done. Part A (SEO) is the target specification but is implemented in one dedicated pass once all public pages exist; until then, do not add SEO tags, JSON-LD, sitemap or robots routes piecemeal.
+**Implementation status.** Part B (accessibility) is mandatory: every existing and every new public page and component MUST meet it before it is considered done. Part A (SEO) is implemented (2026-10-03): head tags, JSON-LD, sitemap, robots, redirects, plus the AI additions in A9. Every new public page MUST pass a `seo` prop built by `App\Support\Seo\Seo` and render the `Seo` component (`resources/js/components/public/seo.tsx`).
 
 Conventions are the same as in the specification: **MUST** = required for launch, **SHOULD** = expected, **MAY** = optional. Requirements have IDs (`SEO-HEAD-3`, `A11Y-KB-2`, …) to reference in tickets and tests. Items marked **(added)** are new proposals to validate. UI strings are quoted in their final French form.
 
@@ -94,7 +94,7 @@ One `<script type="application/ld+json">` per page, built on the server with a `
 
 ### A5. Sitemaps
 
-- **SEO-MAP-1** `sitemap.xml`: home, author page, privacy policy, every published article with `<lastmod>` = its real `updated_at` (only content changes should bump it, not view counts). `<changefreq>` and `<priority>` are ignored by Google and SHOULD be omitted. Image entries (`image:image`) for article covers **(added)**.
+- **SEO-MAP-1** `sitemap.xml`: home, author page, privacy policy, every published article with `<lastmod>` = its real `updated_at` (only content changes should bump it, not view counts: the view and share counters MUST be updated with a query that does not touch `updated_at`, e.g. `Article::whereKey($id)->toBase()->increment('views')`). `<changefreq>` and `<priority>` are ignored by Google and SHOULD be omitted. Image entries (`image:image`) for article covers **(added)**.
 - **SEO-MAP-2** Cached and invalidated on publish, update, archive (same event as the home cache, NFR-PERF-4). Served with `Content-Type: application/xml`.
 - **SEO-MAP-3** `sitemap-news.xml` (spec PUB-MISC-4) only makes sense for sites accepted in Google News. It MAY be kept (only articles from the last 48 hours) but is not a launch requirement. See open point O3.
 - **SEO-MAP-4** After launch: verify the domain in Google Search Console and Bing Webmaster Tools (DNS TXT record), submit `sitemap.xml` to both. IndexNow ping to Bing/Yandex on publish MAY be added **(added)**.
@@ -125,6 +125,14 @@ Core Web Vitals are a ranking signal. Targets are in NFR-PERF-2 (LCP < 2.5 s, CL
 - **SEO-MON-1** Lighthouse SEO score 100 on home, article, author pages (mobile).
 - **SEO-MON-2** Weekly look at Search Console after launch: coverage errors, Core Web Vitals report, 404s (fix or 301 anything that had traffic in V1).
 - **SEO-MON-3** V1 → V2 migration: crawl the V1 site before switching (every article URL), then check each returns 200 or a single 301 on V2 (§7.8 of the spec, step 6).
+
+### A9. AI assistants and answer engines (added)
+
+- **SEO-AI-1** `robots.txt` names the AI crawlers (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, Claude-SearchBot, Claude-User, PerplexityBot, Google-Extended, Applebot-Extended, CCBot, …) in their own group with the same rules as `*`: the author wants the blog both cited by AI assistants and used to train them. The list lives in `RobotsController::AiCrawlers`.
+- **SEO-AI-2** `/llms.txt` (llmstxt.org): summary of the blog and a link to every published article in Markdown. `/llms-full.txt`: every article in Markdown in one file.
+- **SEO-AI-3** `/articles/{slug}.md`: the article in Markdown with YAML front matter (`App\Support\ArticleMarkdown`), same 404/410 rules as the page, `Link: rel="canonical"` to the HTML page and `X-Robots-Tag: noindex` so search engines keep indexing the HTML page. The page links it with `<link rel="alternate" type="text/markdown">`.
+- **SEO-AI-4** `/feed.xml`: RSS 2.0 with the full sanitized text of the 20 latest articles.
+- **SEO-AI-5** IndexNow: production pings `api.indexnow.org` (Bing, which feeds ChatGPT search and Copilot, Yandex, …) when a published article is saved or changes status, and every 15 minutes for scheduled articles that went live (`seo:ping-scheduled-articles`). Needs `INDEXNOW_KEY`; the key is served at `/{key}.txt`.
 
 ---
 
@@ -283,7 +291,7 @@ Already in place for the home page (commit after `fd62b63`); reuse them on every
 - `SubscriptionBlock`: focus on the input after an error, on the message after success; the consent notice is part of the input's description.
 - Screen-reader-only strings live in `labels.a11y` in `resources/js/lib/labels.fr.ts`.
 
-Still missing, deferred with Part A: `<title>`, canonical, Open Graph and JSON-LD on the home page.
+SEO building blocks (Part A): `App\Support\Seo\Seo` builds the `seo` prop of every page (titles, descriptions, canonical, robots, Open Graph, JSON-LD), the `Seo` React component renders it in `<Head>`, and `SeoCache` holds the crawl files (cleared by `ArticleObserver`).
 
 ---
 

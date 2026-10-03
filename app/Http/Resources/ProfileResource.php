@@ -34,7 +34,6 @@ class ProfileResource extends JsonResource
     public function toArray(Request $request): array
     {
         $bioHtml = trim((string) preg_replace(self::EmptyParagraph, '', ArticleHtml::sanitize($this->bio)));
-        $bioText = Str::squish(html_entity_decode(strip_tags($bioHtml), ENT_QUOTES | ENT_HTML5));
 
         return [
             'name' => Str::squish($this->display_name ?? '') ?: $this->name,
@@ -43,7 +42,7 @@ class ProfileResource extends JsonResource
             'avatar' => $this->avatar ?: null,
             'avatarCredit' => Str::squish($this->avatar_credit ?? '') ?: null,
             'bioHtml' => $bioHtml,
-            'description' => Str::limit($bioText, 157, preserveWords: true),
+            'description' => $this->metaDescription(),
         ];
     }
 }

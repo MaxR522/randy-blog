@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ArticleCardResource;
 use App\Http\Resources\SearchResultResource;
 use App\Models\Article;
+use App\Support\Seo\Seo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -46,6 +47,7 @@ class SearchController extends Controller
             ->withQueryString();
 
         return Inertia::render('search', [
+            'seo' => Seo::search($query)->toArray(),
             'query' => $query,
             'results' => [
                 'data' => SearchResultResource::collection($results->items())->resolve(),

@@ -14,6 +14,13 @@ return [
     |
     */
 
+    /*
+     * IndexNow (SEO-MAP-4): any 8 to 128 letters, digits or dashes. Pings are sent from production only.
+     */
+    'indexnow' => [
+        'key' => env('INDEXNOW_KEY'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

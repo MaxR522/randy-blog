@@ -7,7 +7,7 @@ description: Use when building or changing any public page or component of randy
 
 Target: every public page crawlable and fully described to search engines, and fully usable with a screen reader or keyboard alone (WCAG 2.2 AA).
 
-**Status:** the accessibility rules and the definition of done apply to every public change now. The SEO rules are the target spec only: they are implemented in one dedicated pass once all public pages exist. Until then, do not add the `Seo` component, JSON-LD, sitemap or robots routes piecemeal unless the user asks for the SEO pass.
+**Status:** the accessibility rules, the SEO rules and the definition of done apply to every public change. SEO is implemented: a new public page adds its factory to `App\Support\Seo\Seo`, passes `seo` from its controller and renders `<Seo seo={seo} />`; a new indexable page also goes in `SitemapController` (and `LlmsController` if it is a content page).
 
 ## Before writing code
 
@@ -23,7 +23,7 @@ Target: every public page crawlable and fully described to search engines, and f
 - Load-more lists: copy the `AllArticles` pattern in `resources/js/pages/home.tsx` (status announcement + focus on the first new item).
 - Screen-reader-only copy: `labels.a11y` in `resources/js/lib/labels.fr.ts`.
 
-## SEO rules (deferred pass)
+## SEO rules
 
 - Server-rendered: content, head tags and JSON-LD are in the SSR HTML. Nothing search-relevant is added only on the client.
 - Every public page renders the shared `Seo` component inside Inertia `<Head>`, fed by a `seo` prop built on the server in one place. Every tag has a `head-key`.

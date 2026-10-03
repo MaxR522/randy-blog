@@ -6,6 +6,7 @@ use App\ArticleStatus;
 use App\Http\Resources\ArticleCardResource;
 use App\Http\Resources\ArticleResource;
 use App\Models\Article;
+use App\Support\Seo\Seo;
 use Illuminate\Database\Eloquent\Builder;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,6 +27,7 @@ class ArticleController extends Controller
         $article->load(['categories', 'author']);
 
         return Inertia::render('article', [
+            'seo' => Seo::article($article)->toArray(),
             'article' => ArticleResource::make($article)->resolve(),
             'previous' => $this->neighbour($article, older: true),
             'next' => $this->neighbour($article, older: false),

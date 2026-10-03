@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\ArticleStatus;
+use App\Observers\ArticleObserver;
 use Carbon\CarbonImmutable;
 use Database\Factories\ArticleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -14,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -32,6 +35,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $views
  * @property int $read_duration
  * @property int $author_id
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read string|null $published_date_label
  * @property-read string|null $excerpt only with the `search` scope
  */
@@ -54,6 +59,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'origin',
     'author_id',
 ])]
+#[ObservedBy(ArticleObserver::class)]
 class Article extends Model
 {
     /** @use HasFactory<ArticleFactory> */
@@ -154,9 +160,25 @@ class Article extends Model
             return $this->read_duration;
         }
 
-        $words = (int) preg_match_all('/[\p{L}\p{N}]+/u', strip_tags($this->raw_content ?: $this->content));
+        return max(1, (int) ceil($this->wordCount() / 230));
+    }
 
-        return max(1, (int) ceil($words / 230));
+    /**
+     * Meta description (SEO-HEAD-3): the `description` field, or the chapô cut on a word boundary with « … ».
+     */
+    public function metaDescription(): string
+    {
+        $chapo = Str::squish(html_entity_decode(strip_tags($this->lead_paragraph ?? ''), ENT_QUOTES | ENT_HTML5));
+
+        return Str::squish($this->description ?? '') ?: Str::limit($chapo, 157, '…', preserveWords: true);
+    }
+
+    /**
+     * Number of words in the chapô and the text, for `wordCount` in the structured data.
+     */
+    public function wordCount(): int
+    {
+        return (int) preg_match_all('/[\p{L}\p{N}]+/u', strip_tags($this->raw_content ?: $this->content));
     }
 
     /**

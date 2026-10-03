@@ -1,16 +1,17 @@
-import { Head } from '@inertiajs/react';
 import { Search as SearchIcon } from 'lucide-react';
 import { StandardCard } from '@/components/public/article-cards';
 import { Pagination } from '@/components/public/pagination';
 import { SearchBar } from '@/components/public/search-bar';
 import { SearchResult } from '@/components/public/search-result';
 import { SectionHeader } from '@/components/public/section-header';
+import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/lib/typography';
-import type { ArticleCard, SearchResults } from '@/types';
+import type { ArticleCard, SearchResults, SeoData } from '@/types';
 
 type SearchProps = {
+    seo: SeoData;
     query: string;
     results: SearchResults;
     latest: ArticleCard[];
@@ -20,16 +21,13 @@ const container = 'mx-auto w-full max-w-7xl px-gutter';
 
 const column = 'mx-auto max-w-220';
 
-export default function Search({ query, results, latest }: SearchProps) {
+export default function Search({ seo, query, results, latest }: SearchProps) {
     const title = frenchTypography(labels.search.resultsFor(query));
     const hasResults = results.total > 0;
 
     return (
         <PublicLayout navbar="back">
-            <Head>
-                <title>{title}</title>
-                <meta name="robots" content="noindex, follow" />
-            </Head>
+            <Seo seo={seo} />
 
             <div className={`${container} tablet:pt-16 pt-8`}>
                 <div className={column}>

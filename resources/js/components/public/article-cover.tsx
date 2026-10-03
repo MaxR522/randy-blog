@@ -1,7 +1,22 @@
 import { cloudinarySrcSet, cloudinaryUrl } from '@/lib/cloudinary';
 import { frenchTypography } from '@/lib/typography';
+import type { PreloadImage } from '@/types';
 
 const WIDTHS = [640, 960, 1280, 1680, 2240] as const;
+
+const SIZES =
+    '(min-width: 1184px) 1120px, (min-width: 1024px) calc(100vw - 64px), (min-width: 768px) calc(100vw - 48px), 100vw';
+
+/**
+ * The cover as the article page preloads it from the head: same URL, srcset and sizes as the `<img>`.
+ */
+export function coverPreload(src: string): PreloadImage {
+    return {
+        href: cloudinaryUrl(src, 1280),
+        srcSet: cloudinarySrcSet(src, WIDTHS),
+        sizes: SIZES,
+    };
+}
 
 type ArticleCoverProps = {
     src: string;
@@ -20,7 +35,7 @@ export function ArticleCover({ src, alt, credit }: ArticleCoverProps) {
                 <img
                     src={cloudinaryUrl(src, 1280)}
                     srcSet={cloudinarySrcSet(src, WIDTHS)}
-                    sizes="(min-width: 1184px) 1120px, (min-width: 1024px) calc(100vw - 64px), (min-width: 768px) calc(100vw - 48px), 100vw"
+                    sizes={SIZES}
                     alt={alt}
                     width={1280}
                     height={720}

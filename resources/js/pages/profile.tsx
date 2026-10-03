@@ -1,16 +1,17 @@
-import { Head } from '@inertiajs/react';
 import { StandardCard } from '@/components/public/article-cards';
 import { buttonClasses } from '@/components/public/button';
 import { ExternalLink } from '@/components/public/external-link';
 import { SectionHeader } from '@/components/public/section-header';
 import { socialLinks } from '@/components/public/social-links';
+import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { cloudinarySrcSet, cloudinaryUrl } from '@/lib/cloudinary';
 import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/lib/typography';
-import type { ArticleCard, AuthorProfile } from '@/types';
+import type { ArticleCard, AuthorProfile, SeoData } from '@/types';
 
 type ProfileProps = {
+    seo: SeoData;
     author: AuthorProfile;
     latest: ArticleCard[];
 };
@@ -58,18 +59,12 @@ function Avatar({ author }: { author: AuthorProfile }) {
     );
 }
 
-export default function Profile({ author, latest }: ProfileProps) {
+export default function Profile({ seo, author, latest }: ProfileProps) {
     const name = frenchTypography(author.name);
 
     return (
         <PublicLayout navbar="back">
-            <Head>
-                <title>{name}</title>
-                <meta
-                    name="description"
-                    content={frenchTypography(author.description)}
-                />
-            </Head>
+            <Seo seo={seo} />
 
             <div
                 className={`${container} laptop:grid laptop:grid-cols-[26rem_1fr] laptop:gap-x-16 laptop:pt-20 pt-10`}

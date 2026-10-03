@@ -37,13 +37,12 @@ class ArticleResource extends JsonResource
     public function toArray(Request $request): array
     {
         $title = Str::squish($this->title);
-        $chapo = Str::squish(html_entity_decode(strip_tags($this->lead_paragraph ?? ''), ENT_QUOTES | ENT_HTML5));
 
         return [
             'id' => $this->id,
             'title' => $title,
             'url' => route('articles.show', $this->slug),
-            'description' => Str::squish($this->description ?? '') ?: Str::limit($chapo, 157, preserveWords: true),
+            'description' => $this->metaDescription(),
             'cover' => $this->cover_photo,
             'coverAlt' => $title,
             'coverCredit' => Str::squish($this->cover_photo_credit ?? '') ?: null,

@@ -1,22 +1,21 @@
-import { Head, Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { SearchBar } from '@/components/public/search-bar';
+import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/lib/typography';
 import { home } from '@/routes';
+import type { SeoData } from '@/types';
 
 /**
  * Public 404 page, rendered by the exception handler for every missing page with a real 404 status.
  * Left-aligned on mobile, centred from tablet.
  */
-export default function NotFound() {
+export default function NotFound({ seo }: { seo: SeoData }) {
     return (
         <PublicLayout navbar="back">
-            <Head>
-                <title>{labels.notFound.title}</title>
-                <meta name="robots" content="noindex" />
-            </Head>
+            <Seo seo={seo} />
 
             <div className="px-gutter laptop:py-24 mx-auto w-full max-w-7xl py-14">
                 <div className="tablet:mx-auto tablet:items-center tablet:text-center flex max-w-180 flex-col items-start">

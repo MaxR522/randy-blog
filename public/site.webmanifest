@@ -1,0 +1,18 @@
+{
+    "name": "Randy Donny",
+    "short_name": "Randy Donny",
+    "description": "Je pense, donc j’essuie…",
+    "lang": "fr",
+    "start_url": "/",
+    "display": "browser",
+    "background_color": "#FFFFFF",
+    "theme_color": "#FFFFFF",
+    "icons": [
+        {
+            "src": "/apple-touch-icon.png",
+            "sizes": "166x166",
+            "type": "image/png"
+        },
+        { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+    ]
+}

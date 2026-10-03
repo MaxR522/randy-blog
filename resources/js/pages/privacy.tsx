@@ -1,11 +1,12 @@
-import { Head } from '@inertiajs/react';
 import { Fragment } from 'react';
 import { ExternalLink } from '@/components/public/external-link';
+import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { labels } from '@/lib/labels.fr';
 import type { PolicyBlock, PolicyInline } from '@/lib/privacy-policy.fr';
 import { privacyPolicy } from '@/lib/privacy-policy.fr';
 import { frenchTypography } from '@/lib/typography';
+import type { SeoData } from '@/types';
 
 /**
  * Text with its links: `mailto:` stays in the tab, other sites open in a new one.
@@ -50,16 +51,10 @@ function Block({ block }: { block: PolicyBlock }) {
     );
 }
 
-export default function Privacy() {
+export default function Privacy({ seo }: { seo: SeoData }) {
     return (
         <PublicLayout navbar="back">
-            <Head>
-                <title>{labels.footer.privacy}</title>
-                <meta
-                    name="description"
-                    content={frenchTypography(privacyPolicy.description)}
-                />
-            </Head>
+            <Seo seo={seo} />
 
             <article className="px-gutter laptop:pt-20 laptop:pb-24 mx-auto w-full max-w-7xl pt-10 pb-14">
                 <header className="max-w-article-header mx-auto">

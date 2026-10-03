@@ -6,9 +6,11 @@ use App\Http\Resources\ArticleCardResource;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\User;
+use App\Support\Seo\Seo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -40,10 +42,12 @@ class HomeController extends Controller
      * Show the public home page.
      *
      * Every prop but `articles` is lazy so the « Voir plus » partial reload only queries the next page.
+     * `?page=n` renders that page of « Tous les articles » server-side, so crawlers reach every article (SEO-CRAWL-6).
      */
-    public function __invoke(): Response
+    public function __invoke(Request $request): Response
     {
         return Inertia::render('home', [
+            'seo' => fn (): array => Seo::home(max(1, $request->integer('page', 1)))->toArray(),
             'authorUrl' => fn (): ?string => $this->authorUrl(),
             'latest' => fn (): array => ArticleCardResource::collection($this->latestArticles())->resolve(),
             'categorySections' => fn (): array => $this->categorySections(),

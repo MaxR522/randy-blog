@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Support\Seo\Seo;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Inertia\ExceptionResponse;
@@ -40,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
                 return null;
             }
 
-            return $response->render('not-found')->withSharedData();
+            return $response->render('not-found', ['seo' => Seo::notFound()->toArray()])->withSharedData();
         });
     }
 
@@ -50,6 +52,15 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        /*
+         * Absolute URLs (canonical, sitemap, feeds, structured data) always use APP_URL, whatever host the request came through.
+         */
+        URL::forceRootUrl(config()->string('app.url'));
+
+        if (str_starts_with(config()->string('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),

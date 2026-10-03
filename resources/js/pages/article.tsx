@@ -1,15 +1,16 @@
-import { Head } from '@inertiajs/react';
-import { ArticleCover } from '@/components/public/article-cover';
+import { ArticleCover, coverPreload } from '@/components/public/article-cover';
 import { AudioSlot } from '@/components/public/audio-slot';
 import { ArticleEndCta } from '@/components/public/article-end-cta';
 import { ArticleHeader } from '@/components/public/article-header';
 import { ArticlePagination } from '@/components/public/article-pagination';
 import { ShareButtons } from '@/components/public/share-buttons';
+import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { frenchTypography } from '@/lib/typography';
-import type { ArticleCard, ArticleDetail } from '@/types';
+import type { ArticleCard, ArticleDetail, SeoData } from '@/types';
 
 type ArticleProps = {
+    seo: SeoData;
     article: ArticleDetail;
     previous: ArticleCard | null;
     next: ArticleCard | null;
@@ -17,18 +18,22 @@ type ArticleProps = {
 
 const container = 'mx-auto w-full max-w-7xl px-gutter';
 
-export default function Article({ article, previous, next }: ArticleProps) {
+export default function Article({
+    seo,
+    article,
+    previous,
+    next,
+}: ArticleProps) {
     const title = frenchTypography(article.title);
 
     return (
         <PublicLayout navbar="back">
-            <Head>
-                <title>{title}</title>
-                <meta
-                    name="description"
-                    content={frenchTypography(article.description)}
-                />
-            </Head>
+            <Seo
+                seo={seo}
+                preloadImage={
+                    article.cover ? coverPreload(article.cover) : undefined
+                }
+            />
 
             <article>
                 <ArticleHeader article={article} />
