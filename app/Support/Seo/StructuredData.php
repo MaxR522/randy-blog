@@ -153,7 +153,7 @@ class StructuredData
      */
     public static function authorName(): string
     {
-        return config()->string('blog.name');
+        return config()->string('blog.author');
     }
 
     /**

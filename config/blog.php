@@ -8,6 +8,12 @@ return [
 
     'name' => 'Randy Donny',
 
+    /*
+     * The author everywhere: bylines, head tags, structured data, feeds. Fixed on purpose, not read from the account,
+     * whose display name is an editable headline.
+     */
+    'author' => 'Randy Donny',
+
     'tagline' => 'Je pense, donc j’essuie…',
 
     /*

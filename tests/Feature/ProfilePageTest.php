@@ -28,11 +28,22 @@ test('the profile page shows the author with a sanitized biography', function ()
             ->where('author.description', 'Historien de formation.'));
 });
 
-test('the profile name falls back to the account name without a display name', function () {
-    $this->author->forceFill(['display_name' => null])->save();
+test('the profile name falls back to the fixed author name without a display name', function () {
+    $this->author->forceFill(['name' => 'Randy donny', 'display_name' => null])->save();
 
     $this->get('/profil/randy-donny')
         ->assertInertia(fn (Assert $page) => $page->where('author.name', 'Randy Donny'));
+});
+
+test('the author name does not depend on the account', function () {
+    $this->author->forceFill(['name' => 'Randy donny', 'display_name' => 'Un autre titre'])->save();
+
+    $this->get('/profil/randy-donny')
+        ->assertSee('"name":"Randy Donny"', false)
+        ->assertDontSee('Randy donny')
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('author.name', 'Un autre titre')
+            ->where('author.fullName', 'Randy Donny'));
 });
 
 test('the profile lists the three latest published articles of the author', function () {

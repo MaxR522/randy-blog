@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\User;
 use App\Support\ArticleHtml;
+use App\Support\Seo\StructuredData;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
@@ -36,8 +37,8 @@ class ProfileResource extends JsonResource
         $bioHtml = trim((string) preg_replace(self::EmptyParagraph, '', ArticleHtml::sanitize($this->bio)));
 
         return [
-            'name' => Str::squish($this->display_name ?? '') ?: $this->name,
-            'fullName' => $this->name,
+            'name' => Str::squish($this->display_name ?? '') ?: StructuredData::authorName(),
+            'fullName' => StructuredData::authorName(),
             'url' => route('profile.show', $this->slug),
             'avatar' => $this->avatar ?: null,
             'avatarCredit' => Str::squish($this->avatar_credit ?? '') ?: null,

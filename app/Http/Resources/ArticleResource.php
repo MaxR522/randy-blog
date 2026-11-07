@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Models\Article;
 use App\Models\Category;
 use App\Support\ArticleHtml;
+use App\Support\Seo\StructuredData;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
@@ -56,7 +57,7 @@ class ArticleResource extends JsonResource
                 ->values()
                 ->all(), []),
             'author' => $this->author ? [
-                'name' => $this->author->display_name ?: $this->author->name,
+                'name' => StructuredData::authorName(),
                 'url' => route('profile.show', $this->author->slug),
             ] : null,
         ];

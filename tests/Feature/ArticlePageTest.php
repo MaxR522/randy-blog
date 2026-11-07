@@ -53,6 +53,16 @@ test('a published article renders at its V1 URL', function () {
             ->where('next', null));
 });
 
+test('the byline shows the blog author name, not the headline in display_name', function () {
+    $this->author->update(['display_name' => 'The man I used to be…']);
+    $article = publishedArticleDaysAgo(1);
+
+    $this->get(route('articles.show', $article->slug))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('article.author', ['name' => 'Randy Donny', 'url' => route('profile.show', 'randy-donny')]));
+});
+
 test('the reading time falls back to the word count when it was never computed', function () {
     $article = publishedArticleDaysAgo(1, [
         'read_duration' => 0,
