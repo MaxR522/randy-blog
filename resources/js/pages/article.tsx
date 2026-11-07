@@ -3,11 +3,15 @@ import { AudioSlot } from '@/components/public/audio-slot';
 import { ArticleEndCta } from '@/components/public/article-end-cta';
 import { ArticleHeader } from '@/components/public/article-header';
 import { ArticlePagination } from '@/components/public/article-pagination';
+import type { LightboxImage } from '@/components/public/image-lightbox';
+import { ImageLightbox } from '@/components/public/image-lightbox';
 import { ShareButtons } from '@/components/public/share-buttons';
 import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { frenchTypography } from '@/lib/typography';
 import type { ArticleCard, ArticleDetail, SeoData } from '@/types';
+import type { MouseEvent } from 'react';
+import { useState } from 'react';
 
 type ArticleProps = {
     seo: SeoData;
@@ -18,6 +22,41 @@ type ArticleProps = {
 
 const container = 'mx-auto w-full max-w-7xl px-gutter';
 
+/**
+ * Image behind an `a.image-zoom` link of the article body (added by the server), or `null` for any other click.
+ * Modified and middle clicks keep the link's own behaviour, such as opening the image in a new tab.
+ */
+function zoomableImageFrom(
+    event: MouseEvent<HTMLElement>,
+): LightboxImage | null {
+    if (
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey ||
+        !(event.target instanceof Element)
+    ) {
+        return null;
+    }
+
+    const image = event.target.closest('a.image-zoom')?.querySelector('img');
+
+    if (!image) {
+        return null;
+    }
+
+    return {
+        src: image.currentSrc || image.src,
+        alt: image.alt,
+        caption:
+            image
+                .closest('figure')
+                ?.querySelector('figcaption')
+                ?.textContent?.trim() || null,
+    };
+}
+
 export default function Article({
     seo,
     article,
@@ -25,6 +64,16 @@ export default function Article({
     next,
 }: ArticleProps) {
     const title = frenchTypography(article.title);
+    const [zoomedImage, setZoomedImage] = useState<LightboxImage | null>(null);
+
+    function handleBodyClick(event: MouseEvent<HTMLDivElement>): void {
+        const image = zoomableImageFrom(event);
+
+        if (image) {
+            event.preventDefault();
+            setZoomedImage(image);
+        }
+    }
 
     return (
         <PublicLayout navbar="back">
@@ -56,6 +105,7 @@ export default function Article({
                 <div className={`${container} laptop:pt-14 pt-8`}>
                     <div
                         className="article-body"
+                        onClick={handleBodyClick}
                         dangerouslySetInnerHTML={{
                             __html: article.contentHtml,
                         }}
@@ -66,6 +116,11 @@ export default function Article({
                     <ArticleEndCta />
                 </div>
             </article>
+
+            <ImageLightbox
+                image={zoomedImage}
+                onClose={() => setZoomedImage(null)}
+            />
 
             <div
                 className={`${container} laptop:mt-14 laptop:pb-18 mt-6 pb-10`}

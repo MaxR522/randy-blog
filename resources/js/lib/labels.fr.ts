@@ -58,6 +58,13 @@ export const labels = {
         ctaText:
             'Ce texte vous a plu ? Recevez les prochains directement par email.',
         preview: "Aperçu — cet article n'est pas publié",
+        image: {
+            dialog: 'Image en plein écran',
+            zoomIn: 'Zoomer',
+            zoomOut: 'Dézoomer',
+            close: 'Fermer',
+            zoomLevel: (percent: number) => `Zoom ${percent}\u00A0%`,
+        },
     },
     author: { latest: 'Derniers articles' },
     subscription: {

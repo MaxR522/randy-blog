@@ -70,6 +70,14 @@ export function cloudinarySrcSet(
 }
 
 /**
+ * Full-screen image: the whole picture, at most `width` wide, never upscaled. Replaces any stored resize,
+ * so a body image saved small is fetched again at full resolution. Other URLs are returned untouched.
+ */
+export function cloudinaryFullUrl(url: string, width: number): string {
+    return withTransformation(url, `c_limit,w_${width}/${DELIVERY}`);
+}
+
+/**
  * Card image: 3:2, cropped around the subject, never upscaled. The crop comes first, on its own,
  * because `c_lfill` leaves a source smaller than the requested size uncropped.
  */

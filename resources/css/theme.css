@@ -356,6 +356,11 @@
         margin-inline: auto;
         border-radius: var(--radius-sm);
     }
+    .article-body .image-zoom {
+        display: block;
+        cursor: zoom-in;
+        border-radius: var(--radius-sm);
+    }
     .article-body .table-scroll {
         margin-block: 2.25rem;
         overflow-x: auto;

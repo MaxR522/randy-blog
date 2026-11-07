@@ -36,6 +36,8 @@ class ArticleHtml
 
     private const string TableLabel = 'Tableau';
 
+    private const string ZoomLabel = 'Agrandir l’image';
+
     /**
      * Elements removed with their content: not article content, or unsafe.
      */
@@ -48,8 +50,11 @@ class ArticleHtml
 
     /**
      * Sanitize rich text and normalize it for the public article page.
+     *
+     * With `$zoomableImages`, images not already in a link are wrapped in an `a.image-zoom` link to the image
+     * itself, which the article page opens in its lightbox (only the article body asks for it, not feeds or bios).
      */
-    public static function sanitize(?string $html): string
+    public static function sanitize(?string $html, bool $zoomableImages = false): string
     {
         if ($html === null || trim($html) === '') {
             return '';
@@ -67,6 +72,11 @@ class ArticleHtml
         self::normalizeClasses($body);
         self::normalizeLinks($body);
         self::normalizeImages($body);
+
+        if ($zoomableImages) {
+            self::wrapZoomableImages($document, $body);
+        }
+
         self::normalizeIframes($document, $body);
         self::normalizeVideos($body);
         self::wrapTables($document, $body);
@@ -214,6 +224,31 @@ class ArticleHtml
             if (! $image->hasAttribute('alt')) {
                 $image->setAttribute('alt', '');
             }
+        }
+    }
+
+    /**
+     * Wrap each image that is not already a link in a link to the image itself: it opens the full-screen viewer,
+     * or the image file without JavaScript. The label names the action, so decorative images get a name too.
+     */
+    private static function wrapZoomableImages(HTMLDocument $document, Element $body): void
+    {
+        foreach (iterator_to_array($body->getElementsByTagName('img')) as $image) {
+            $source = trim($image->getAttribute('src') ?? '');
+
+            if ($source === '' || $image->closest('a') !== null) {
+                continue;
+            }
+
+            $alt = trim($image->getAttribute('alt') ?? '');
+
+            $link = $document->createElement('a');
+            $link->setAttribute('href', $source);
+            $link->setAttribute('class', 'image-zoom');
+            $link->setAttribute('aria-label', $alt === '' ? self::ZoomLabel : self::ZoomLabel."\u{00A0}: ".$alt);
+
+            $image->replaceWith($link);
+            $link->append($image);
         }
     }
 

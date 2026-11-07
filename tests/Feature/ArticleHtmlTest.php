@@ -48,6 +48,25 @@ test('images without alt text are marked decorative', function () {
         ->toBe('<img src="https://example.com/a.jpg" loading="lazy" decoding="async" alt="">');
 });
 
+test('article body images open the full-screen viewer through a labelled link', function () {
+    $html = '<figure><img src="https://res.cloudinary.com/x/image/upload/a.jpg" alt="Un marché"><figcaption>Légende</figcaption></figure>'
+        .'<p><img src="https://example.com/b.jpg"></p>';
+
+    expect(ArticleHtml::sanitize($html, zoomableImages: true))->toBe(
+        '<figure><a href="https://res.cloudinary.com/x/image/upload/a.jpg" class="image-zoom" aria-label="Agrandir l’image&nbsp;: Un marché">'
+        .'<img src="https://res.cloudinary.com/x/image/upload/a.jpg" alt="Un marché" loading="lazy" decoding="async"></a><figcaption>Légende</figcaption></figure>'
+        .'<p><a href="https://example.com/b.jpg" class="image-zoom" aria-label="Agrandir l’image">'
+        .'<img src="https://example.com/b.jpg" loading="lazy" decoding="async" alt=""></a></p>'
+    );
+});
+
+test('images already in a link, and images outside the article body, are not made zoomable', function () {
+    $linked = '<a href="https://example.com"><img src="https://example.com/a.jpg" alt="A"></a>';
+
+    expect(ArticleHtml::sanitize($linked, zoomableImages: true))->not->toContain('image-zoom')
+        ->and(ArticleHtml::sanitize('<img src="https://example.com/a.jpg" alt="A">'))->not->toContain('image-zoom');
+});
+
 test('tables keep their headers and scroll in a labelled box', function () {
     expect(ArticleHtml::sanitize('<table><caption>Délais</caption><tr><th scope="row">A</th><td colspan="2">B</td></tr></table>'))
         ->toBe('<div class="table-scroll" role="region" tabindex="0" aria-label="Délais"><table><caption>Délais</caption><tbody><tr><th scope="row">A</th><td colspan="2">B</td></tr></tbody></table></div>');

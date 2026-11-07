@@ -48,7 +48,7 @@ class ArticleResource extends JsonResource
             'coverAlt' => $title,
             'coverCredit' => Str::squish($this->cover_photo_credit ?? '') ?: null,
             'chapoHtml' => ArticleHtml::sanitize($this->lead_paragraph),
-            'contentHtml' => ArticleHtml::sanitize($this->content),
+            'contentHtml' => ArticleHtml::sanitize($this->content, zoomableImages: true),
             'date' => $this->published_date?->toIso8601String(),
             'dateLabel' => $this->published_date_label,
             'readingTime' => $this->readingTime(),
