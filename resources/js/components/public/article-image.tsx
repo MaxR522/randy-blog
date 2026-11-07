@@ -1,4 +1,4 @@
-import { cloudinarySrcSet, cloudinaryUrl } from '@/lib/cloudinary';
+import { cloudinaryCardSrcSet, cloudinaryCardUrl } from '@/lib/cloudinary';
 import { cn } from '@/lib/utils';
 
 const WIDTHS = [240, 360, 480, 640, 960, 1280] as const;
@@ -11,7 +11,7 @@ type ArticleImageProps = {
 };
 
 /**
- * Card image: always 3:2, cropped to fill. Decorative (the title is the link text).
+ * Card image: always 3:2, cropped around the subject. Decorative (the title is the link text).
  */
 export function ArticleImage({
     src,
@@ -30,8 +30,8 @@ export function ArticleImage({
 
     return (
         <img
-            src={cloudinaryUrl(src, 960)}
-            srcSet={cloudinarySrcSet(src, WIDTHS)}
+            src={cloudinaryCardUrl(src, 960)}
+            srcSet={cloudinaryCardSrcSet(src, WIDTHS)}
             sizes={sizes}
             alt=""
             width={960}
