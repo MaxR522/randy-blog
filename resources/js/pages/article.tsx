@@ -23,7 +23,8 @@ type ArticleProps = {
 const container = 'mx-auto w-full max-w-7xl px-gutter';
 
 /**
- * Image behind an `a.image-zoom` link of the article body (added by the server), or `null` for any other click.
+ * Image behind an `a.image-zoom` link (the cover, or a body image wrapped by the server), or `null` for any other
+ * click. The link points at the original image, so the cover opens whole rather than as its 16:9 crop.
  * Modified and middle clicks keep the link's own behaviour, such as opening the image in a new tab.
  */
 function zoomableImageFrom(
@@ -40,14 +41,16 @@ function zoomableImageFrom(
         return null;
     }
 
-    const image = event.target.closest('a.image-zoom')?.querySelector('img');
+    const link = event.target.closest<HTMLAnchorElement>('a.image-zoom');
+    const image = link?.querySelector('img');
 
-    if (!image) {
+    if (!link || !image) {
         return null;
     }
 
     return {
-        src: image.currentSrc || image.src,
+        src: link.href,
+        previewSrc: image.currentSrc || image.src,
         alt: image.alt,
         caption:
             image
@@ -66,7 +69,7 @@ export default function Article({
     const title = frenchTypography(article.title);
     const [zoomedImage, setZoomedImage] = useState<LightboxImage | null>(null);
 
-    function handleBodyClick(event: MouseEvent<HTMLDivElement>): void {
+    function handleImageClick(event: MouseEvent<HTMLElement>): void {
         const image = zoomableImageFrom(event);
 
         if (image) {
@@ -84,7 +87,7 @@ export default function Article({
                 }
             />
 
-            <article>
+            <article onClick={handleImageClick}>
                 <ArticleHeader article={article} />
 
                 <div className={`${container} tablet:pt-10 pt-6`}>
@@ -105,7 +108,6 @@ export default function Article({
                 <div className={`${container} laptop:pt-14 pt-8`}>
                     <div
                         className="article-body"
-                        onClick={handleBodyClick}
                         dangerouslySetInnerHTML={{
                             __html: article.contentHtml,
                         }}

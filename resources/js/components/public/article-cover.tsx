@@ -1,4 +1,5 @@
 import { cloudinaryCoverSrcSet, cloudinaryCoverUrl } from '@/lib/cloudinary';
+import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/lib/typography';
 import type { PreloadImage } from '@/types';
 
@@ -27,24 +28,31 @@ type ArticleCoverProps = {
 /**
  * 16:9 cover, edge to edge on phones, 1120 px wide at most. Cloudinary crops it around the subject, or frames it
  * when cropping would lose the subject or stretch a small source (see `cloudinaryCoverUrl`). It is the page's LCP
- * image: loaded eagerly with a high fetch priority.
+ * image: loaded eagerly with a high fetch priority. It links to the original image, which the article page opens
+ * in the full-screen viewer (`a.image-zoom`, like body images).
  */
 export function ArticleCover({ src, alt, credit }: ArticleCoverProps) {
     return (
         <figure className="tablet:px-gutter tablet:mt-10 mx-auto mt-6 w-full max-w-7xl">
             <div className="max-w-article-cover mx-auto">
-                <img
-                    src={cloudinaryCoverUrl(src, 1280)}
-                    srcSet={cloudinaryCoverSrcSet(src, WIDTHS)}
-                    sizes={SIZES}
-                    alt={alt}
-                    width={1280}
-                    height={720}
-                    loading="eager"
-                    fetchPriority="high"
-                    decoding="async"
-                    className="aspect-cover bg-grey-subtle tablet:rounded-sm w-full object-cover"
-                />
+                <a
+                    href={src}
+                    aria-label={labels.article.image.open(alt)}
+                    className="image-zoom tablet:rounded-sm block cursor-zoom-in"
+                >
+                    <img
+                        src={cloudinaryCoverUrl(src, 1280)}
+                        srcSet={cloudinaryCoverSrcSet(src, WIDTHS)}
+                        sizes={SIZES}
+                        alt={alt}
+                        width={1280}
+                        height={720}
+                        loading="eager"
+                        fetchPriority="high"
+                        decoding="async"
+                        className="aspect-cover bg-grey-subtle tablet:rounded-sm w-full object-cover"
+                    />
+                </a>
                 {credit && (
                     <figcaption className="text-caption text-grey-dark px-gutter tablet:mt-3 tablet:max-w-lg tablet:px-0 tablet:text-balance mx-auto mt-2.5 text-center text-pretty">
                         {frenchTypography(credit)}

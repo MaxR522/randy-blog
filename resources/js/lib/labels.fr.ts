@@ -60,6 +60,8 @@ export const labels = {
         preview: "Aperçu — cet article n'est pas publié",
         image: {
             dialog: 'Image en plein écran',
+            open: (alt: string) =>
+                alt ? `Agrandir l’image\u00A0: ${alt}` : 'Agrandir l’image',
             zoomIn: 'Zoomer',
             zoomOut: 'Dézoomer',
             close: 'Fermer',

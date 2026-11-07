@@ -6,7 +6,10 @@ import { labels } from '@/lib/labels.fr';
 import { cn } from '@/lib/utils';
 
 export type LightboxImage = {
+    /** Original image, fetched at full resolution. */
     src: string;
+    /** Version already on the page, shown while the full one loads. */
+    previewSrc: string;
     alt: string;
     caption: string | null;
 };
@@ -378,7 +381,9 @@ export function ImageLightbox({ image, onClose }: ImageLightboxProps) {
     const isMinScale = view.scale <= MIN_SCALE;
     const isMaxScale = view.scale >= MAX_SCALE;
     const displayedSrc =
-        image && loadedFullSrc === fullSrc && fullSrc ? fullSrc : image?.src;
+        image && loadedFullSrc === fullSrc && fullSrc
+            ? fullSrc
+            : image?.previewSrc;
 
     return (
         <dialog
