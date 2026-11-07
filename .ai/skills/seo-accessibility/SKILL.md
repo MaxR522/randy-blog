@@ -1,6 +1,6 @@
 ---
 name: seo-accessibility
-description: Use when building or changing any public page or component of randy-donny.com, or anything that affects search engines or assistive technology: <head> tags (title, description, canonical, robots, Open Graph), JSON-LD structured data, sitemap and robots.txt, redirects and status codes, image alt text and loading, forms and error messages, ARIA attributes, landmarks, headings, keyboard and focus management, live regions, screen reader support, the article HTML sanitizer and TinyMCE content rules. Not for the admin panel's visual design.
+description: "Use when building or changing any public page or component of randy-donny.com, or anything that affects search engines or assistive technology: <head> tags (title, description, canonical, robots, Open Graph), JSON-LD structured data, sitemap and robots.txt, redirects and status codes, image alt text and loading, forms and error messages, ARIA attributes, landmarks, headings, keyboard and focus management, live regions, screen reader support, the article HTML sanitizer and TinyMCE content rules. Not for the admin panel's visual design."
 ---
 
 # SEO and accessibility

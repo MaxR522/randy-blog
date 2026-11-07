@@ -97,7 +97,7 @@ To check that SSR works, view the page source: the `#app` div has `data-server-r
 
 ### 3.5 Octane file watching
 
-`--watch` uses Octane's `file-watcher.cjs`, which needs `chokidar` in `node_modules`. It is a dev dependency pinned to `^4`: chokidar 5 is ESM-only and cannot be loaded by Octane's CommonJS watcher.
+With the FrankenPHP driver, `--watch` uses FrankenPHP's native watcher on the paths in `config/octane.php` (`watch`), so no Node process runs. The project does not install `chokidar`: only Octane's `file-watcher.cjs`, used by the Swoole and RoadRunner drivers, needs it, so add it back if the driver changes.
 
 ### 3.6 Port overrides
 
