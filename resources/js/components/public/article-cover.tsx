@@ -46,7 +46,7 @@ export function ArticleCover({ src, alt, credit }: ArticleCoverProps) {
                     className="aspect-cover bg-grey-subtle tablet:rounded-sm w-full object-cover"
                 />
                 {credit && (
-                    <figcaption className="text-caption text-grey-dark px-gutter tablet:mt-3 tablet:max-w-lg tablet:px-0 mx-auto mt-2.5 text-center text-balance">
+                    <figcaption className="text-caption text-grey-dark px-gutter tablet:mt-3 tablet:max-w-lg tablet:px-0 tablet:text-balance mx-auto mt-2.5 text-center text-pretty">
                         {frenchTypography(credit)}
                     </figcaption>
                 )}
