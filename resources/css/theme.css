@@ -121,9 +121,9 @@
     --spacing-section: 3.5rem; /* between sections: 56 / 80 */
 
     /* ---- Measures ---- */
-    --container-article: 52.5rem; /* 840, prose column = title block width: max-w-article */
-    --container-article-header: 52.5rem; /* 840, title block */
-    --container-article-cover: 70rem; /* 1120, cover image */
+    --container-article: 52.5rem; /* 840, prose column: max-w-article */
+    --container-article-header: 52.5rem; /* 840, title block, privacy page header */
+    --container-article-cover: 70rem; /* 1120, cover image, article tools bar from laptop */
 
     /* ---- Radii: small, editorial ---- */
     --radius-sm: 2px; /* images, chips */

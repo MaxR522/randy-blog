@@ -39,7 +39,7 @@ export default function Article({
                 <ArticleHeader article={article} />
 
                 <div className={`${container} tablet:pt-10 pt-6`}>
-                    <div className="max-w-article-header border-grey-light tablet:flex-row tablet:items-center tablet:justify-between tablet:gap-6 tablet:py-3 mx-auto flex flex-col gap-3.5 border-y py-3.5">
+                    <div className="max-w-article-header laptop:max-w-article-cover border-grey-light tablet:flex-row tablet:items-center tablet:justify-between tablet:gap-6 tablet:py-3 mx-auto flex flex-col gap-3.5 border-y py-3.5">
                         <AudioSlot minutes={article.readingTime} />
                         <ShareButtons url={article.url} title={title} />
                     </div>

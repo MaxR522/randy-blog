@@ -26,12 +26,12 @@ export function ArticleHeader({ article }: { article: ArticleDetail }) {
                     )}
                     {labels.article.readingTime(article.readingTime)}
                 </p>
-                <h1 className="text-h1 tablet:mt-4.5 tablet:text-balance mt-3.5 font-sans">
+                <h1 className="text-h1 tablet:mt-4.5 tablet:text-pretty mt-3.5 font-sans">
                     {frenchTypography(article.title)}
                 </h1>
                 {article.chapoHtml && (
                     <div
-                        className="text-chapo text-grey-dark tablet:mt-5.5 mt-4 max-w-180 font-sans text-pretty [&_p+p]:mt-3"
+                        className="text-chapo text-grey-dark tablet:mt-5.5 mt-4 font-sans text-pretty [&_p+p]:mt-3"
                         dangerouslySetInnerHTML={{ __html: article.chapoHtml }}
                     />
                 )}
