@@ -58,6 +58,7 @@ export const labels = {
         ctaText:
             'Ce texte vous a plu ? Recevez les prochains directement par email.',
         preview: "Aperçu — cet article n'est pas publié",
+        previewPublished: 'Aperçu — cet article est publié',
         image: {
             dialog: 'Image en plein écran',
             open: (alt: string) =>

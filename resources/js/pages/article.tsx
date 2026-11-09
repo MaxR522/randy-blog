@@ -5,6 +5,7 @@ import { ArticleHeader } from '@/components/public/article-header';
 import { ArticlePagination } from '@/components/public/article-pagination';
 import type { LightboxImage } from '@/components/public/image-lightbox';
 import { ImageLightbox } from '@/components/public/image-lightbox';
+import { PreviewBanner } from '@/components/public/preview-banner';
 import { ShareButtons } from '@/components/public/share-buttons';
 import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
@@ -18,6 +19,11 @@ type ArticleProps = {
     article: ArticleDetail;
     previous: ArticleCard | null;
     next: ArticleCard | null;
+    /** Admin preview, of any article. */
+    isPreview?: boolean;
+    isPublished?: boolean;
+    /** Inside the admin viewer panel: no site chrome, and links leave the frame. */
+    isEmbedded?: boolean;
 };
 
 const container = 'mx-auto w-full max-w-7xl px-gutter';
@@ -65,9 +71,29 @@ export default function Article({
     article,
     previous,
     next,
+    isPreview = false,
+    isPublished = false,
+    isEmbedded = false,
 }: ArticleProps) {
     const title = frenchTypography(article.title);
     const [zoomedImage, setZoomedImage] = useState<LightboxImage | null>(null);
+
+    /**
+     * In the viewer panel, a link (author, category…) opens a new tab instead of navigating inside the frame.
+     */
+    function openLinksOutsideFrame(event: MouseEvent<HTMLElement>): void {
+        if (!isEmbedded || !(event.target instanceof Element)) {
+            return;
+        }
+
+        const link = event.target.closest<HTMLAnchorElement>('a[href]');
+
+        if (link && !link.classList.contains('image-zoom')) {
+            event.preventDefault();
+            event.stopPropagation();
+            window.open(link.href, '_blank', 'noopener');
+        }
+    }
 
     function handleImageClick(event: MouseEvent<HTMLElement>): void {
         const image = zoomableImageFrom(event);
@@ -79,7 +105,15 @@ export default function Article({
     }
 
     return (
-        <PublicLayout navbar="back">
+        <PublicLayout
+            navbar="back"
+            isEmbedded={isEmbedded}
+            banner={
+                isPreview && !isEmbedded ? (
+                    <PreviewBanner isPublished={isPublished} />
+                ) : undefined
+            }
+        >
             <Seo
                 seo={seo}
                 preloadImage={
@@ -87,7 +121,10 @@ export default function Article({
                 }
             />
 
-            <article onClick={handleImageClick}>
+            <article
+                onClickCapture={openLinksOutsideFrame}
+                onClick={handleImageClick}
+            >
                 <ArticleHeader article={article} />
 
                 <div className={`${container} tablet:pt-10 pt-6`}>

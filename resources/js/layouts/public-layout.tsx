@@ -9,6 +9,10 @@ import { labels } from '@/lib/labels.fr';
 type PublicLayoutProps = {
     navbar: NavbarVariant;
     authorUrl?: string | null;
+    /** Shown above the navbar, such as the preview banner. */
+    banner?: ReactNode;
+    /** Inside the admin viewer panel: the page alone, without skip link, navbar or footer. */
+    isEmbedded?: boolean;
     children: ReactNode;
 };
 
@@ -17,8 +21,18 @@ const MAIN_ID = 'contenu';
 export default function PublicLayout({
     navbar,
     authorUrl,
+    banner,
+    isEmbedded = false,
     children,
 }: PublicLayoutProps) {
+    if (isEmbedded) {
+        return (
+            <div className="text-primary min-h-screen bg-white">
+                <main id={MAIN_ID}>{children}</main>
+            </div>
+        );
+    }
+
     return (
         <div className="text-primary flex min-h-screen flex-col bg-white">
             <a
@@ -30,6 +44,7 @@ export default function PublicLayout({
             >
                 {labels.a11y.skipToContent}
             </a>
+            {banner}
             <Navbar variant={navbar} authorUrl={authorUrl} />
             <main
                 id={MAIN_ID}
