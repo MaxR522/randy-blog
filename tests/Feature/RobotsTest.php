@@ -41,6 +41,22 @@ test('SEO-CRAWL-2 production responses carry no X-Robots-Tag', function () {
     $this->get(route('privacy'))->assertHeaderMissing('X-Robots-Tag');
 });
 
+test('SEO-CRAWL-2 a blank SEO_INDEXABLE counts as unset, so production stays indexable', function () {
+    $this->app['env'] = 'production';
+    config(['blog.indexable' => '']);
+
+    expect($this->get('/robots.txt')->getContent())->not->toContain("Disallow: /\n");
+    $this->get(route('privacy'))->assertHeaderMissing('X-Robots-Tag');
+});
+
+test('SEO-CRAWL-2 SEO_INDEXABLE=false closes production to crawlers', function () {
+    $this->app['env'] = 'production';
+    config(['blog.indexable' => 'false']);
+
+    expect($this->get('/robots.txt')->getContent())->toContain("Disallow: /\n");
+    $this->get(route('privacy'))->assertHeader('X-Robots-Tag', 'noindex, nofollow');
+});
+
 test('SEO-CRAWL-3 admin responses carry X-Robots-Tag noindex in production', function () {
     $this->app['env'] = 'production';
     Route::middleware('web')->get('/admin/articles', fn () => 'admin');
