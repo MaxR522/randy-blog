@@ -13,5 +13,9 @@ declare module '@inertiajs/core' {
             auth: Auth;
             [key: string]: unknown;
         };
+        flashDataType: {
+            success?: string;
+            error?: string;
+        };
     }
 }

@@ -47,4 +47,44 @@ export const adminLabels = {
         logout: 'Se déconnecter',
     },
     placeholder: 'Cette section arrive bientôt.',
+    modal: {
+        close: 'Fermer',
+        cancel: 'Annuler',
+        save: 'Enregistrer',
+    },
+    categories: {
+        title: 'Catégories',
+        create: 'Créer une catégorie',
+        editTitle: 'Modifier la catégorie',
+        nameField: 'Nom de la catégorie',
+        edit: 'Modifier',
+        delete: 'Supprimer',
+        editNamed: (name: string) => `Modifier ${name}`,
+        deleteNamed: (name: string) => `Supprimer ${name}`,
+        deleteTitle: (name: string) => `Supprimer « ${name} » ?`,
+        deleteUsage: (count: number) =>
+            `Cette catégorie est utilisée par ${count} article(s). Elle sera retirée de ces articles.`,
+        search: 'Rechercher par nom',
+        searchPlaceholder: 'Rechercher par nom…',
+        count: (count: number) =>
+            `${count} ${count > 1 ? 'catégories' : 'catégorie'}`,
+        sortBy: 'Trier par',
+        sortName: 'Nom',
+        sortDate: 'Date',
+        columns: {
+            name: 'Nom',
+            date: 'Date de création',
+            articles: 'Articles',
+            actions: 'Actions',
+        },
+        mobileMeta: (articles: number, date: string | null) =>
+            [
+                `${articles} ${articles > 1 ? 'articles' : 'article'}`,
+                date && `créée le ${date}`,
+            ]
+                .filter(Boolean)
+                .join(' · '),
+        empty: 'Aucune catégorie pour le moment.',
+        noMatch: 'Aucune catégorie ne correspond à votre recherche.',
+    },
 };

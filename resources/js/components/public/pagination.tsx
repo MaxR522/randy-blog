@@ -18,7 +18,7 @@ type PageLinkProps = {
 /**
  * A link cannot be disabled: the unavailable one is a span styled as a disabled secondary button.
  */
-function PageLink({ href, children }: PageLinkProps) {
+export function PageLink({ href, children }: PageLinkProps) {
     if (href === null) {
         return (
             <span

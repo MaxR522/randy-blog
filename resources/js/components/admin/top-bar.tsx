@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import { Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { StatusBadge } from '@/components/admin/status-badge';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { labels } from '@/lib/labels.fr';
 import { cn } from '@/lib/utils';
@@ -76,9 +77,12 @@ export function TopBar({
                 <span className="laptop:flex-none laptop:text-left laptop:text-lg flex-1 truncate text-center text-[1.0625rem] font-semibold tracking-[-0.01em]">
                     {labels.brand.name}
                 </span>
-                <span className="border-grey-light bg-grey-subtle text-grey-dark laptop:inline-flex ml-1 hidden h-6 items-center rounded-sm border px-2 text-xs font-semibold">
+                <StatusBadge
+                    variant="muted"
+                    className="laptop:inline-flex ml-1 hidden"
+                >
                     {adminLabels.badge}
-                </span>
+                </StatusBadge>
             </div>
             <div className="laptop:pr-2 flex flex-none items-center gap-2.5 pr-1.5">
                 <span className="text-body-small laptop:inline hidden font-medium">

@@ -29,12 +29,12 @@ Dependency: `laravel/fortify`, because its `two_factor_*` columns match spec §7
 
 Spec §5.1, §5.4. Boards: `Admin-Categories`, `Admin-Categories-360`, sections 2–9 of `Admin-Composants`.
 
-- [ ] Handle the 419 of an expired form with a flash message, instead of Laravel's default page
-- [ ] Primitives: status badge (input done in session 1: `components/admin/text-field.tsx`), data table with mobile cards, search bound to `?q=`, pagination bound to `?page=`, empty state
-- [ ] Primitives: modal (full screen on phone), confirm modal, flash toasts
-- [ ] Categories CRUD, sort, usage count, delete with the count message
-- [ ] Migration: partial unique indexes `WHERE deleted_at IS NULL`, unique `article_categories`
-- [ ] `Category::articles()` keys fix, if still swapped
+- [x] Handle the 419 of an expired form with a flash message, instead of Laravel's default page
+- [x] Primitives: status badge (input done in session 1: `components/admin/text-field.tsx`), data table with mobile cards, search bound to `?q=`, pagination bound to `?page=`, empty state
+- [x] Primitives: modal (full screen on phone), confirm modal, flash toasts
+- [x] Categories CRUD, sort, usage count, delete with the count message
+- [x] Migration: partial unique indexes `WHERE deleted_at IS NULL`, unique `article_categories`
+- [x] `Category::articles()` keys fix, if still swapped
 
 ## Articles
 

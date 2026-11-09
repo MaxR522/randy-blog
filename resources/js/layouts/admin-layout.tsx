@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
+import { FlashToasts } from '@/components/admin/flash-toasts';
 import { SidebarDrawer } from '@/components/admin/sidebar-drawer';
 import { SidebarNav } from '@/components/admin/sidebar-nav';
 import { TopBar } from '@/components/admin/top-bar';
@@ -85,6 +86,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 </main>
             </div>
             <SidebarDrawer isOpen={isDrawerOpen} onClose={closeDrawer} />
+            <FlashToasts />
             {/* Keyed by path: the layout persists, so this remounts to announce each new page, but not a `?q=` change. */}
             <PageAnnouncer key={url.split('?')[0]} mainId={MAIN_ID} />
         </div>
