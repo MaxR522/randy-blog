@@ -16,20 +16,21 @@ The admin design is on the canvas, page « Administration »: https://claude.ai/
 
 Spec §5.1, §5.6.3, §7.7. Boards: `Admin-Connexion`, `Admin-Connexion-360`, section 1 of `Admin-Composants`.
 
-Dependency: `laravel/fortify` recommended, because its `two_factor_*` columns match spec §7.3.2 and it also serves session 9. Decision: Q10, recommended redirect to login.
+Dependency: `laravel/fortify`, because its `two_factor_*` columns match spec §7.3.2 and it also serves session 9. Decided (Q10): guests get the public 404 on `/admin/*`, and `/admin` is not listed in `robots.txt`. Fortify's routes are ignored and redefined in `routes/admin.php`.
 
-- [ ] Login, logout, « Se souvenir de moi », rate limit, session lifetimes (`/admin/connexion`)
-- [ ] Forgotten password and reset (`/admin/mot-de-passe-oublie`)
-- [ ] `/admin` route group and guard; `/admin` redirects to `/admin/articles` until session 13; `NoIndexHeader` already covers noindex
-- [ ] Admin pages excluded from SSR (NFR-PERF-1)
-- [ ] Admin layout: sidebar expanded, collapsed and remembered, sticky top bar, mobile drawer with focus trap, placeholder page
-- [ ] `User` fixes from spec §7.3.2 (`articles()` relation, `SoftDeletes`)
+- [x] Login, logout, « Se souvenir de moi », rate limit, session lifetimes (`/admin/connexion`)
+- [x] Forgotten password and reset (`/admin/mot-de-passe-oublie`, `/admin/reinitialisation/{token}`, card added to the canvas)
+- [x] `/admin` route group and guard; `/admin` redirects to `/admin/articles` until session 13; `NoIndexHeader` already covers noindex
+- [x] Admin pages excluded from SSR (NFR-PERF-1)
+- [x] Admin layout: sidebar expanded, collapsed and remembered, sticky top bar, mobile drawer with focus trap, placeholder page
+- [x] `User` fixes from spec §7.3.2 (`articles()` relation, `SoftDeletes`)
 
 ### 2. Categories and list primitives
 
 Spec §5.1, §5.4. Boards: `Admin-Categories`, `Admin-Categories-360`, sections 2–9 of `Admin-Composants`.
 
-- [ ] Primitives: input, status badge, data table with mobile cards, search bound to `?q=`, pagination bound to `?page=`, empty state
+- [ ] Handle the 419 of an expired form with a flash message, instead of Laravel's default page
+- [ ] Primitives: status badge (input done in session 1: `components/admin/text-field.tsx`), data table with mobile cards, search bound to `?q=`, pagination bound to `?page=`, empty state
 - [ ] Primitives: modal (full screen on phone), confirm modal, flash toasts
 - [ ] Categories CRUD, sort, usage count, delete with the count message
 - [ ] Migration: partial unique indexes `WHERE deleted_at IS NULL`, unique `article_categories`
@@ -97,7 +98,8 @@ Spec §5.6.2 (ADM-SEC-1, 2, 3, 5, 6, 7). Boards: `Admin-Compte-Securite`, `Admin
 Decision: Q6, recommended storing the recovery phone only.
 
 - [ ] Password change with rules and logout of other sessions
-- [ ] Recovery email with verification link, recovery phone
+- [ ] Recovery email, a second address that must differ from the login email, with verification link; recovery phone
+- [ ] Send the reset link to the recovery email too, and restore the board wording on the forgotten password page (ADM-AUTH-2)
 - [ ] Connected devices from `sessions`, per-device and global logout
 - [ ] `login_events` migration and login history
 - [ ] Security alert emails
@@ -106,8 +108,9 @@ Decision: Q6, recommended storing the recovery phone only.
 
 Spec ADM-SEC-4, ADM-AUTH-2. Boards: 2FA parts of `Admin-Compte-Securite` and `Admin-Connexion`.
 
-- [ ] Users migration, QR enable and confirm, 8 recovery codes, regenerate, disable (password required)
-- [ ] Challenge page `/admin/deux-facteurs`, recovery code login, `two_factor_used` in the history
+- [ ] Users migration (`vendor:publish --tag=fortify-migrations`, keep only the 2FA one), enable the Fortify feature, `TwoFactorAuthenticatable` on `User`, hide its columns
+- [ ] QR enable and confirm, 8 recovery codes, regenerate, disable (password required)
+- [ ] Challenge page `/admin/deux-facteurs` with its routes in `routes/admin.php` (Fortify's are ignored), recovery code login, `two_factor_used` in the history
 
 ## Subscribers and newsletter
 
@@ -152,5 +155,5 @@ Dependency: GA4 Data client. Needs the service account and property ID from the 
 - [ ] Blog figures from the database
 - [ ] GA4 Data API with service account, 1 hour cache, period selector and comparison, unavailable message
 - [ ] KPI tiles, page views line chart (accessible SVG, hover tooltip, table view; load the `dataviz` skill), top 10, sources, devices, countries
-- [ ] `/admin` becomes this page; remove the session 1 redirect
+- [ ] `/admin` becomes this page; remove the session 1 redirect; add « Analytique » back at the top of `sidebar-nav.tsx`
 - [ ] Verify the GA4 tag is actually loaded after consent, otherwise there is no data to show

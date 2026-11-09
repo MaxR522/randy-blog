@@ -15,9 +15,10 @@ test('SEO-CRAWL-2 robots.txt in production keeps crawlers out of private paths a
     $robots = $this->get('/robots.txt')->assertOk()->getContent();
 
     expect($robots)
-        ->toContain("User-agent: *\nDisallow: /admin\nDisallow: /abonnement/\nDisallow: /recherche\n")
+        ->toContain("User-agent: *\nDisallow: /abonnement/\nDisallow: /recherche\n")
         ->toContain('Sitemap: '.route('sitemap'))
-        ->not->toContain("Disallow: /\n");
+        ->not->toContain("Disallow: /\n")
+        ->not->toContain('admin');
 });
 
 test('SEO-CRAWL-2 robots.txt in production names AI crawlers with the same rules', function () {
@@ -26,7 +27,7 @@ test('SEO-CRAWL-2 robots.txt in production names AI crawlers with the same rules
     $robots = $this->get('/robots.txt')->getContent();
 
     expect($robots)->toContain("User-agent: GPTBot\n", "User-agent: ClaudeBot\n", "User-agent: PerplexityBot\n", "User-agent: Google-Extended\n")
-        ->and(substr_count($robots, 'Disallow: /admin'))->toBe(2)
+        ->and(substr_count($robots, 'Disallow: /recherche'))->toBe(2)
         ->and($robots)->not->toContain('Allow:');
 });
 
@@ -50,7 +51,7 @@ test('SEO-CRAWL-3 admin responses carry X-Robots-Tag noindex in production', fun
 test('SEO-CRAWL-2 a local copy can be opened to crawlers for an audit', function () {
     config(['blog.indexable' => 'true']);
 
-    expect($this->get('/robots.txt')->getContent())->toContain("Disallow: /admin\n")->not->toContain("Disallow: /\n");
+    expect($this->get('/robots.txt')->getContent())->toContain("Disallow: /recherche\n")->not->toContain("Disallow: /\n");
     $this->get(route('privacy'))->assertHeaderMissing('X-Robots-Tag');
 });
 

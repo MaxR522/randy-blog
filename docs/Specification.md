@@ -196,7 +196,7 @@ Subscription block placed at the bottom of the home page, anchor `#abonnement`.
   - Per-page `<title>`, meta description (article `description`, fallback: chapô), canonical URL.
   - Open Graph + Twitter cards (`@randydonny`), with the article cover as image and a default image for other pages.
   - JSON-LD `BlogPosting` (article pages; `NewsArticle` in the first draft, see `docs/seo-accessibility.md` SEO-LD-4) with the **real** `datePublished` / `dateModified` (V1 bug: always `now()`), `Person` (profile page).
-  - `sitemap.xml` and `sitemap-news.xml`, `robots.txt` disallowing `/admin`.
+  - `sitemap.xml` and `sitemap-news.xml`, `robots.txt` (which does not list `/admin`, see ADM-COM-8).
   - Meta keywords from the article `keywords` field.
 - **PUB-MISC-5** `ads.txt` is removed.
 
@@ -217,7 +217,7 @@ Subscription block placed at the bottom of the home page, anchor `#abonnement`.
   - Empty state with a message and the primary action.
 - **ADM-COM-6** Feedback: success/error toast after every action (the flash messages that `personal-blog-2` never displayed). Destructive actions require a confirmation modal.
 - **ADM-COM-7** Forms: inline French validation errors, submit button disabled while submitting, a warning before leaving a form with unsaved changes.
-- **ADM-COM-8** Unauthenticated access to `/admin/*` redirects to the login page (V1 returned 404: to confirm if the "hide admin" behaviour should be kept).
+- **ADM-COM-8** Unauthenticated access to `/admin/*` returns the public 404 page, as in V1 (Q10). Only `/admin/connexion` and the password reset pages answer guests, with `noindex`; nothing links to them and `robots.txt` does not list `/admin`. An expired session therefore lands on the 404: open `/admin/connexion` to log in again.
 
 ### 5.2 Analytics (« Analytique »)
 
@@ -381,7 +381,7 @@ Each field is displayed read-only with a « Modifier » button. Clicking it repl
 
 #### 5.6.2 Security tab
 
-- **ADM-SEC-1** « Email de récupération »: add/edit. Verified by a link sent to that address before it becomes active. Used for password reset and security alerts.
+- **ADM-SEC-1** « Email de récupération »: add/edit. It must differ from the login email. Verified by a link sent to that address before it becomes active. Used for password reset and security alerts.
 - **ADM-SEC-2** « Téléphone de récupération »: add/edit, international format. **Verification by SMS requires an SMS provider — see open question Q6.** Until decided, the number is stored and displayed only.
 - **ADM-SEC-3** « Modifier le mot de passe »: current password, new password, confirmation. Rules: min 12 characters, mixed case, number, symbol, not found in known data breaches. On success, other sessions are logged out.
 - **ADM-SEC-4** « Authentification à deux facteurs (2FA) »:
@@ -595,7 +595,7 @@ Emails sent by the application (all in French, one shared template): subscriptio
 
 Public: `/`, `/recherche`, `/articles/{slug}`, `/profil/{slug}`, `/politique-de-confidentialite`, `/abonnement` (POST), `/abonnement/confirmer/{token}`, `/abonnement/desabonner/{token}`, `/sitemap.xml`, `/sitemap-news.xml`, `/robots.txt`, `/up`.
 
-Admin (`/admin`, authenticated): `/admin` (analytique), `/admin/articles`, `/admin/articles/nouveau`, `/admin/articles/{id}/modifier`, `/admin/categories`, `/admin/abonnements`, `/admin/newsletters/nouvelle`, `/admin/newsletters/{id}`, `/admin/compte`, `/admin/connexion`, `/admin/mot-de-passe-oublie`, `/admin/deux-facteurs`.
+Admin (`/admin`, authenticated): `/admin` (analytique), `/admin/articles`, `/admin/articles/nouveau`, `/admin/articles/{id}/modifier`, `/admin/categories`, `/admin/abonnements`, `/admin/newsletters/nouvelle`, `/admin/newsletters/{id}`, `/admin/compte`, `/admin/connexion`, `/admin/deconnexion` (POST), `/admin/mot-de-passe-oublie`, `/admin/reinitialisation/{token}`, `/admin/deux-facteurs`.
 
 Redirects: `/profile/{slug}` → `/profil/{slug}` (if Q5 confirms the rename), old article slugs → current slug.
 
@@ -660,7 +660,7 @@ A rehearsal on a copy of production data MUST be done before the real migration.
 | Q7 | Hosting and backups: where is V2 deployed (same host as V1?), and where are daily database backups stored? | |
 | Q8 | Drafts: may a draft be saved with only a title (ADM-ART-29)? | Recommended: yes. |
 | Q9 | Re-publishing an archived article: keep the original publication date (ADM-ART-61)? | Recommended: yes. |
-| Q10 | Unauthenticated `/admin` access: redirect to login or keep V1's 404? | |
+| Q10 | Unauthenticated `/admin` access: redirect to login or keep V1's 404? | **Decided:** keep the 404, and leave `/admin` out of `robots.txt` (ADM-COM-8). |
 | Q11 | Newsletter cadence: will there be a regular rhythm (weekly digest…) that would justify automation later? | Affects §9. |
 
 ---

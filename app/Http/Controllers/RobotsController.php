@@ -8,10 +8,11 @@ use Illuminate\Http\Response;
 class RobotsController extends Controller
 {
     /**
-     * Paths no crawler needs: the admin panel (`/admin` also covers everything under `/admin/`), the subscription
-     * links and search results (SEO-CRAWL-2). Everything else is open: no `Allow` line is needed.
+     * Paths no crawler needs: the subscription links and search results (SEO-CRAWL-2). Everything else is open: no `Allow`
+     * line is needed. The admin panel is left out on purpose: a `Disallow` would advertise its path. Nothing links to it,
+     * guests get a 404, and the pages that answer carry `noindex`, which a crawler can only read if it may fetch them.
      */
-    private const array DisallowedPaths = ['/admin', '/abonnement/', '/recherche'];
+    private const array DisallowedPaths = ['/abonnement/', '/recherche'];
 
     /**
      * AI crawlers, welcome both to answer with the blog's articles and to learn from them.
