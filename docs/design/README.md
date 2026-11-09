@@ -10,5 +10,10 @@ These 21 `.dc.html` files are the artboards exported from the Claude Design canv
 | Pages 360 | `Accueil-360`, `Article-360`, `Auteur-360`, `Recherche-360`, `Page-404-360` |
 | Email | `Newsletter` (600), `Newsletter-360` |
 
-The live, visual version is on the Claude canvas (open it from your Claude account; it is private to you). If you edit the design there later, re-export the boards and replace this folder.
+## Design source of truth
+
+The design for the whole product now lives on one Claude Design canvas, « Randy Donny — design system »: https://claude.ai/artifact/QJJkKbFxwYVEUXE2g3ZGYZ (private to the owner's Claude account). It has two pages: « Site public » (these 21 boards, synced on 2026-11-07 with `docs/public-design-system.md`, plus `Composants-Lightbox`) and « Administration » (admin components and every admin screen from `docs/Specification.md` §5, at 1440 and 360). Change the design there first, then implement it.
+
+This folder is a snapshot of the public boards from before that sync. The older canvas « Randy Donny — design system public » is superseded.
+
 Image slots are flat placeholders; the icons for Facebook, X, LinkedIn and YouTube are stand-ins.
