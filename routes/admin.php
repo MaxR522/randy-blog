@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Middleware\EnsureAdminIsAuthenticated;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
@@ -31,7 +32,7 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureAdminIsAuthenticated::
     Route::redirect('/', '/admin/articles')->name('index');
 
     Route::inertia('/articles', 'admin/placeholder', ['title' => 'Articles'])->name('articles.index');
-    Route::inertia('/categories', 'admin/placeholder', ['title' => 'Catégories'])->name('categories.index');
+    Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::inertia('/abonnements', 'admin/placeholder', ['title' => 'Abonnements'])->name('subscriptions.index');
     Route::inertia('/compte', 'admin/placeholder', ['title' => 'Compte'])->name('account');
 });

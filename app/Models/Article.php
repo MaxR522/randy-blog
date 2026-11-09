@@ -196,7 +196,7 @@ class Article extends Model
     /**
      * Format a date in French, in the display timezone, with « 1er » for the first day of the month.
      */
-    private static function frenchDate(CarbonImmutable $date): string
+    public static function frenchDate(CarbonImmutable $date): string
     {
         /** @var CarbonImmutable $date */
         $date = $date->setTimezone(config()->string('app.display_timezone'))->locale('fr');

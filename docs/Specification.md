@@ -331,7 +331,7 @@ Keep TinyMCE as in V1, same tools (V1 config reproduced in Appendix B). Improvem
 - **ADM-CAT-4** « Modifier » opens the same modal, pre-filled, titled « Modifier la catégorie ».
 - **ADM-CAT-5** « Supprimer » asks for confirmation. If articles use the category, the modal says « Cette catégorie est utilisée par {n} article(s). Elle sera retirée de ces articles. » Deletion is a soft delete that detaches it from its articles. **Articles left without a category stay published** (to confirm).
 - **ADM-CAT-6** A deleted name can be reused (V1 bug: unique constraint included deleted rows).
-- **ADM-CAT-7** Search by name, sort by name (default) or date, pagination per ADM-COM-5.
+- **ADM-CAT-7** Search by name, sort by name (default) or date, pagination per ADM-COM-5 but with 10 rows per page.
 
 ### 5.5 Subscriptions and newsletter (« Abonnements »)
 
