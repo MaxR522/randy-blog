@@ -52,9 +52,15 @@ class Category extends Model
      */
     protected function createdAtShortLabel(): Attribute
     {
-        return Attribute::get(fn (): ?string => $this->created_at
-            ?->setTimezone(config()->string('app.display_timezone'))
-            ->locale('fr')
-            ->isoFormat('Do MMM YYYY'));
+        return Attribute::get(function (): ?string {
+            if ($this->created_at === null) {
+                return null;
+            }
+
+            /** @var CarbonImmutable $date */
+            $date = $this->created_at->setTimezone(config()->string('app.display_timezone'))->locale('fr');
+
+            return $date->isoFormat('Do MMM YYYY');
+        });
     }
 }

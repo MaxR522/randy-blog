@@ -41,12 +41,13 @@ class CategoryRequest extends FormRequest
     {
         $editedCategory = $this->route('category');
 
-        $isUsed = Category::query()
-            ->whereRaw('lower(value) = lower(?)', [$value])
-            ->when($editedCategory instanceof Category, fn ($query) => $query->whereKeyNot($editedCategory->getKey()))
-            ->exists();
+        $sameName = Category::query()->whereRaw('lower(value) = lower(?)', [$value]);
 
-        if ($isUsed) {
+        if ($editedCategory instanceof Category) {
+            $sameName->whereKeyNot($editedCategory->getKey());
+        }
+
+        if ($sameName->exists()) {
             $fail('Cette catégorie existe déjà.');
         }
     }
