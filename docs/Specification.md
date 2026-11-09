@@ -55,7 +55,6 @@ V1 works but is hard to maintain: accumulated dead code, Livewire/Volt/WireUI mi
 | Article | A blog post. Has a status (below), a slug, a cover image, a lead paragraph, content, categories and SEO fields. |
 | Chapô | Lead paragraph shown under the title (`articles.lead_paragraph`). Minimal rich text. |
 | Encadré | Highlighted callout block inside article content, a `div.callout-box` created from the TinyMCE "Formats" menu. |
-| Article à la une | The featured article, shown in the home hero. |
 | Statut | `DRAFT` (« Brouillon »), `PUBLISHED` (« Publié »), `ARCHIVED` (« Archivé »). |
 | Abonné | A subscriber: an email address that subscribed to the newsletter. Pending until confirmed. |
 | Newsletter | An email composed in the admin and sent to confirmed subscribers. |
@@ -90,9 +89,7 @@ V1 works but is hard to maintain: accumulated dead code, Livewire/Volt/WireUI mi
 
 ### 4.2 Home page — hero banner
 
-Two columns on desktop, stacked on mobile (text first, then the featured card).
-
-**Left column:**
+Single text column. The featured card of the first draft was removed from the design (V2.1).
 
 - **PUB-HERO-1** Main title: « Je pense, donc j'essuie... »
 - **PUB-HERO-2** Description, with inline links (URLs from V1):
@@ -102,10 +99,8 @@ Two columns on desktop, stacked on mobile (text first, then the featured card).
   External links open in a new tab (`rel="noopener"`).
 - **PUB-HERO-3** Call to action: a search bar (placeholder « Rechercher un article… »). Submitting a non-empty query redirects to the search results page `/recherche?q={query}` (§4.4). Empty submit does nothing.
 
-**Right column:**
-
-- **PUB-HERO-4** A card for the featured article: cover image, categories, title, chapô (truncated), publication date. The whole card links to the article.
-- **PUB-HERO-5** Featured article selection: the published article with `is_featured = true`. If none, the most recently published article. At most one article is featured at a time (§5.3.5).
+- **PUB-HERO-4** Removed: the home page has no featured card (V2.1).
+- **PUB-HERO-5** Removed with PUB-HERO-4: there is no featured article.
 
 ### 4.3 Home page — article sections (Wired-inspired)
 
@@ -115,7 +110,7 @@ Sections, top to bottom:
 
 | ID | Section title | Content | Count |
 |---|---|---|---|
-| PUB-HOME-1 | « Dernières publications » | Latest published articles, excluding the featured one. One large card + smaller cards. | 5 |
+| PUB-HOME-1 | « Dernières publications » | Latest published articles. One large card + smaller cards. | 5 |
 | PUB-HOME-2 | « Les plus lus » **(added)** | Most viewed published articles over the last 30 days (fallback: all time), numbered list style. | 5 |
 | PUB-HOME-3 | One row per category, titled with the category name | Latest published articles in that category. Only categories with ≥ 3 published articles are shown, ordered by most recent publication. | 4 per row, max 4 rows |
 | PUB-HOME-4 | « Tous les articles » | Paginated list of all published articles, newest first, with « Voir plus » button (loads the next page in place). | 9 per page |
@@ -159,7 +154,7 @@ Differences from V1:
 
 - **PUB-ART-11** No advertising anywhere.
 - **PUB-ART-12** No « À lire aussi » sidebar on desktop. The article column is centered with a comfortable reading width.
-- **PUB-ART-13** Only `PUBLISHED` articles are publicly accessible. Draft and archived articles return 404 to visitors (V1 bug). The logged-in author can preview any article (with a banner « Aperçu — cet article n'est pas publié »).
+- **PUB-ART-13** Only `PUBLISHED` articles are publicly accessible. Draft and archived articles return 404 to visitors (V1 bug). The logged-in author can preview any article, with a banner « Aperçu — cet article n'est pas publié » (« Aperçu — cet article est publié » for a published one).
 
 Text-to-speech:
 
@@ -212,7 +207,7 @@ Subscription block placed at the bottom of the home page, anchor `#abonnement`.
 - **ADM-COM-4** Standard page header: page title on the left, primary action button on the right (stacks under the title on phone).
 - **ADM-COM-5** Standard list ("grid") behaviour for all management screens:
   - Search field above the table (debounced, reflected in the URL `?q=`).
-  - Pagination « Précédent » / « Suivant » with « Page x sur y », 15 rows per page, reflected in the URL `?page=`.
+  - Pagination « Précédent » / « Suivant » with « Page x sur y », 10 rows per page, reflected in the URL `?page=`.
   - Default sort is given per screen; column sorting is **(added)** optional.
   - Empty state with a message and the primary action.
 - **ADM-COM-6** Feedback: success/error toast after every action (the flash messages that `personal-blog-2` never displayed). Destructive actions require a confirmation modal.
@@ -241,7 +236,7 @@ Default admin page (`/admin`).
 
 - **ADM-ART-1** Header: « Articles » on the left, button « Créer un article » on the right.
 - **ADM-ART-2** Table columns: « Titre », « Date de publication », « Catégories », « Statut » (colored badge), « Actions ».
-- **ADM-ART-3** Actions per row: « Modifier », « Voir » (opens the public page or the preview), « Archiver » (only if published) / « Publier » (if draft or archived). **(added)** « Supprimer » for drafts only, with confirmation (soft delete).
+- **ADM-ART-3** Actions per row: « Modifier », « Aperçu » (every article, opens a viewer panel over the list: a drawer on the right from 768 px, a bottom sheet below, showing the article as visitors see it, with the status, « Modifier », « Publier » / « Archiver » and a link to the full-page preview with its banner), « Archiver » (only if published) / « Publier » (if draft or archived). **(added)** « Supprimer » for drafts only, with confirmation (soft delete).
 - **ADM-ART-4** Default sort: most recent first (by publication date, drafts sorted by creation date at the top).
 - **ADM-ART-5** Search by title. **(added)** Filter by status (« Tous », « Brouillons », « Publiés », « Archivés »).
 - **ADM-ART-6** Paginated per ADM-COM-5.
@@ -277,7 +272,6 @@ Fields, in order:
 | ADM-ART-25 | « Catégories » | Multi-select with search | At least one. **(added)** Allows creating a category inline, as in V1. |
 | ADM-ART-26 | « Description SEO » | Textarea with a live counter | Required, max 160. Helper text: « Ce champ n'apparaît pas dans l'article mais améliore le référencement. {n}/160 caractères ». |
 | ADM-ART-27 | « Mots-clés » | Text input | Required. Helper text: « Séparez les mots-clés par des virgules ». Stored trimmed, deduplicated, comma separated. **(added)** « Générer les mots-clés » button (V1 feature) that suggests keywords from the content. |
-| ADM-ART-28 | « Mettre à la une » **(added)** | Toggle | Makes this article the featured one (§5.3.5). Only effective when published. |
 
 - **ADM-ART-29** **All fields are required.** "Required" is enforced when **publishing**. **(added, to confirm)** Saving a draft only requires the title, so the author can save work in progress, especially on mobile.
 - **ADM-ART-30** The editor MUST be fully usable on phone (TinyMCE mobile mode, sticky action bar at the bottom of the screen).
@@ -318,7 +312,7 @@ Keep TinyMCE as in V1, same tools (V1 config reproduced in Appendix B). Improvem
 - **ADM-ART-60** New articles start as `DRAFT`.
 - **ADM-ART-61** Publishing sets `published_date` to now on the **first** publication only. Re-publishing an archived article keeps its original date. **(Change from V1, which reset the date; to confirm.)**
 - **ADM-ART-62** Archiving hides the article from the public site but keeps `published_date`.
-- **ADM-ART-63** Publishing no longer automatically makes the article featured (V1 behaviour). The featured article is set explicitly with « Mettre à la une ». Setting it removes the flag from the previous one. Archiving the featured article removes its flag (the home page then falls back to the latest article, PUB-HERO-5).
+- **ADM-ART-63** There is no featured article any more: nothing on the public site reads `is_featured`, so the admin neither shows nor sets it, and publishing no longer sets it (V1 behaviour). ADM-ART-28 « Mettre à la une » was removed for the same reason.
 - **ADM-ART-64** Slug: generated from the title, unique. It is **frozen after first publication** (changing the title no longer changes the URL, V1 bug). **(added)** An optional « Modifier l'URL » field; when the slug changes, the old slug is kept and redirects (301) to the new one.
 - **ADM-ART-65** Editing an article never changes its author (V1 bug).
 - **ADM-ART-66** Scheduled publication is out of scope for V2 (see §9).
@@ -331,7 +325,7 @@ Keep TinyMCE as in V1, same tools (V1 config reproduced in Appendix B). Improvem
 - **ADM-CAT-4** « Modifier » opens the same modal, pre-filled, titled « Modifier la catégorie ».
 - **ADM-CAT-5** « Supprimer » asks for confirmation. If articles use the category, the modal says « Cette catégorie est utilisée par {n} article(s). Elle sera retirée de ces articles. » Deletion is a soft delete that detaches it from its articles. **Articles left without a category stay published** (to confirm).
 - **ADM-CAT-6** A deleted name can be reused (V1 bug: unique constraint included deleted rows).
-- **ADM-CAT-7** Search by name, sort by name (default) or date, pagination per ADM-COM-5 but with 10 rows per page.
+- **ADM-CAT-7** Search by name, sort by name (default) or date, pagination per ADM-COM-5.
 
 ### 5.5 Subscriptions and newsletter (« Abonnements »)
 
@@ -522,7 +516,7 @@ The project is a **new, from-scratch** Laravel 13 application. From `personal-bl
 | keywords | text, null | Comma separated |
 | status | enum `DRAFT`/`PUBLISHED`/`ARCHIVED` | |
 | published_date | timestamp, null | |
-| is_featured | boolean, default false | |
+| is_featured | boolean, default false | Unused since V2.1 (ADM-ART-63), kept from V1. |
 | views | int, default 0 | **Now used** (§7.4) |
 | shares | int, default 0 | Unused |
 | read_duration | int, default 0 | **Now used**: minutes, computed on save |
@@ -560,7 +554,6 @@ Code-level fixes (no schema change): `Category::articles()` relation keys (swapp
 - **View counting**: one view per article per visitor per 24 hours (keyed by a hashed IP + user agent, cookie-free so it works without consent), bots excluded by user agent, author sessions excluded. Increments `articles.views` and the daily `article_views` row, through a queued job.
 - **Reading time**: `ceil(word_count / 200)` minutes, stored in `read_duration` on save.
 - **Previous/next**: by `published_date` among `PUBLISHED` articles.
-- **Featured**: single `is_featured = true` enforced in a transaction.
 - **Search**: `plainto_tsquery('french', unaccent(q))` on `search_vector`, `ts_rank` ordering, `ts_headline` excerpts (V1 approach).
 - **Sanitization**: one server-side HTML allowlist shared by articles, bio and newsletters (allows the `callout-box` class, tables, figures, iframes from YouTube only).
 
@@ -613,7 +606,7 @@ A rehearsal on a copy of production data MUST be done before the real migration.
 
 ### 7.9 Testing and definition of done
 
-- Feature tests (Pest) for every requirement with business rules: status workflow, featured logic, slug freezing and redirects, subscription flow (validation, disposable emails, confirmation, unsubscribe), newsletter sending, auth (login, reset, 2FA), public visibility rules.
+- Feature tests (Pest) for every requirement with business rules: status workflow, slug freezing and redirects, subscription flow (validation, disposable emails, confirmation, unsubscribe), newsletter sending, auth (login, reset, 2FA), public visibility rules.
 - Component tests (Vitest) for the editor form, inline profile editors and the newsletter composer.
 - A feature is done when: requirements implemented, tests pass in CI, usable at 360 px wide, French labels only, no console errors.
 
@@ -675,7 +668,7 @@ A rehearsal on a copy of production data MUST be done before the real migration.
 | JSON-LD dates always `now()` (typo in variable name) | V1 `layouts/app.blade.php` | PUB-MISC-4 |
 | Public, unauthenticated image upload endpoint | V1 `routes/api.php` | NFR-SEC-1 |
 | Author overwritten on article edit | V1 `ArticleForm` | ADM-ART-65 |
-| Archiving the featured article could re-feature it | V1 `ArticleActions` | ADM-ART-63 |
+| Archiving the featured article could re-feature it | V1 `ArticleActions` | ADM-ART-63 (featured article removed) |
 | Category unique constraint blocks re-creating a deleted category | V1 + `personal-blog-2` | ADM-CAT-6 |
 | `Category::articles()` pivot keys swapped | V1 `app/Models/Category.php` | §7.3.2 |
 | No password reset, no 2FA | V1 + `personal-blog-2` | ADM-AUTH-2, ADM-SEC-4 |

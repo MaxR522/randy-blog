@@ -28,6 +28,8 @@ type DataTableProps<Row> = {
     rowKey: (row: Row) => string | number;
     /** The same row under 768 px, as a card or a hairline row. */
     renderMobileItem: (row: Row) => ReactNode;
+    /** Replaces the top rule of the phone list, for items that are cards with their own border. */
+    mobileListClassName?: string;
 };
 
 const ariaSort = { asc: 'ascending', desc: 'descending' } as const;
@@ -41,6 +43,7 @@ export function DataTable<Row>({
     rows,
     rowKey,
     renderMobileItem,
+    mobileListClassName = 'border-primary border-t',
 }: DataTableProps<Row>) {
     return (
         <>
@@ -73,7 +76,7 @@ export function DataTable<Row>({
                     ))}
                 </tbody>
             </table>
-            <ul className="border-primary tablet:hidden border-t">
+            <ul className={cn('tablet:hidden', mobileListClassName)}>
                 {rows.map((row) => (
                     <li key={rowKey(row)}>{renderMobileItem(row)}</li>
                 ))}

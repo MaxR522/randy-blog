@@ -40,9 +40,19 @@ class ArticleFactory extends Factory
             'keywords' => implode(',', $keywords),
             'status' => ArticleStatus::Draft,
             'published_date' => null,
-            'is_featured' => false,
             'author_id' => User::factory(),
         ];
+    }
+
+    /**
+     * Indicate that the article is a draft, the default state, named for readability.
+     */
+    public function draft(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => ArticleStatus::Draft,
+            'published_date' => null,
+        ]);
     }
 
     /**
@@ -64,16 +74,6 @@ class ArticleFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'status' => ArticleStatus::Archived,
             'published_date' => fake()->dateTimeBetween('-1 year', '-1 hour'),
-        ]);
-    }
-
-    /**
-     * Indicate that the article is the featured one.
-     */
-    public function featured(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'is_featured' => true,
         ]);
     }
 }

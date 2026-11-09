@@ -31,13 +31,15 @@ use Illuminate\Support\Str;
  * @property string|null $keywords
  * @property ArticleStatus $status
  * @property CarbonImmutable|null $published_date
- * @property bool $is_featured
  * @property int $views
  * @property int $read_duration
  * @property int $author_id
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read string|null $published_date_label
+ * @property-read string|null $published_date_short_label « 19 sept. 2026 »
+ * @property-read string|null $created_at_label « 5 novembre 2026 »
+ * @property-read string|null $created_at_short_label « 5 nov. 2026 »
  * @property-read string|null $excerpt only with the `search` scope
  */
 #[Fillable([
@@ -52,7 +54,6 @@ use Illuminate\Support\Str;
     'keywords',
     'status',
     'published_date',
-    'is_featured',
     'views',
     'shares',
     'read_duration',
@@ -82,7 +83,6 @@ class Article extends Model
         return [
             'status' => ArticleStatus::class,
             'published_date' => 'datetime',
-            'is_featured' => 'boolean',
             'views' => 'integer',
             'shares' => 'integer',
             'read_duration' => 'integer',
@@ -152,6 +152,48 @@ class Article extends Model
     }
 
     /**
+     * Whether « Publier » applies: drafts and archived articles (ADM-ART-3).
+     */
+    public function canBePublished(): bool
+    {
+        return $this->status !== ArticleStatus::Published;
+    }
+
+    /**
+     * Whether « Archiver » applies: published articles only.
+     */
+    public function canBeArchived(): bool
+    {
+        return $this->status === ArticleStatus::Published;
+    }
+
+    /**
+     * Whether « Supprimer » applies: drafts only, never an article visitors may have read.
+     */
+    public function canBeDeleted(): bool
+    {
+        return $this->status === ArticleStatus::Draft;
+    }
+
+    /**
+     * Publish. The date is set on the first publication only, so re-publishing an archived article keeps it (ADM-ART-61).
+     */
+    public function publish(): void
+    {
+        $this->status = ArticleStatus::Published;
+        $this->published_date ??= now();
+        $this->save();
+    }
+
+    /**
+     * Archive: hidden from the site, publication date kept (ADM-ART-62).
+     */
+    public function archive(): void
+    {
+        $this->update(['status' => ArticleStatus::Archived]);
+    }
+
+    /**
      * Reading time in minutes: the stored value, or the word count at 230 words a minute when it was never computed.
      */
     public function readingTime(): int
@@ -194,6 +236,38 @@ class Article extends Model
     }
 
     /**
+     * Publication date in short French form, for the admin cards: « 19 sept. 2026 ».
+     *
+     * @return Attribute<string|null, never>
+     */
+    protected function publishedDateShortLabel(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->published_date === null
+            ? null
+            : self::shortFrenchDate($this->published_date));
+    }
+
+    /**
+     * @return Attribute<string|null, never>
+     */
+    protected function createdAtLabel(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->created_at === null
+            ? null
+            : self::frenchDate($this->created_at));
+    }
+
+    /**
+     * @return Attribute<string|null, never>
+     */
+    protected function createdAtShortLabel(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->created_at === null
+            ? null
+            : self::shortFrenchDate($this->created_at));
+    }
+
+    /**
      * Format a date in French, in the display timezone, with « 1er » for the first day of the month.
      */
     public static function frenchDate(CarbonImmutable $date): string
@@ -202,5 +276,16 @@ class Article extends Model
         $date = $date->setTimezone(config()->string('app.display_timezone'))->locale('fr');
 
         return ($date->day === 1 ? '1er' : $date->day).' '.$date->translatedFormat('F Y');
+    }
+
+    /**
+     * Format a date in short French form, in the display timezone: « 19 sept. 2026 », « 1er juil. 2026 ».
+     */
+    public static function shortFrenchDate(CarbonImmutable $date): string
+    {
+        /** @var CarbonImmutable $date */
+        $date = $date->setTimezone(config()->string('app.display_timezone'))->locale('fr');
+
+        return $date->isoFormat('Do MMM YYYY');
     }
 }

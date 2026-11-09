@@ -42,12 +42,12 @@ Spec §5.1, §5.4. Boards: `Admin-Categories`, `Admin-Categories-360`, sections 
 
 Spec §5.3.1, §5.3.5. Boards: `Admin-Articles`, `Admin-Articles-360`.
 
-Decision: is « À la une » still used? The home hero card was removed from the design, so check whether anything public reads `is_featured`. If nothing does, drop the badge and the toggle from the canvas and the spec.
+Decided: « À la une » dropped, since nothing public reads `is_featured` (column kept, unused). Preview at `/admin/articles/{id}/apercu`.
 
-- [ ] List: sort, status filter, row actions menu (bottom sheet on phone), « Aperçu »
-- [ ] Actions: publish, archive, soft delete drafts, first-publication date only (Q9), single featured article in a transaction
-- [ ] Preview route and `PreviewBanner` for the logged-in author (`Seo` already has the noindex case)
-- [ ] Check that `ArticleObserver` covers these status changes
+- [x] List: sort, status filter, row actions menu (bottom sheet on phone), « Aperçu »
+- [x] Actions: publish, archive, soft delete drafts, first-publication date only (Q9); featured article dropped
+- [x] Preview route and `PreviewBanner` for the logged-in author (`Seo` already has the noindex case)
+- [x] Check that `ArticleObserver` covers these status changes
 
 ### 4. Media and TinyMCE
 
@@ -63,7 +63,7 @@ Dependencies: `tinymce` and `@tinymce/tinymce-react` (Q2, recommended self-hoste
 
 Spec §5.3.2, §5.3.5, rules B5/B6 of `docs/seo-accessibility.md`. Boards: `Admin-Article-Editeur`, `Admin-Article-Editeur-360`.
 
-- [ ] Create and edit, fields ADM-ART-20…28, state-dependent header actions, sticky mobile bar
+- [ ] Create and edit (replace the `admin.articles.create` / `edit` placeholder routes), fields ADM-ART-20…27, state-dependent header actions, sticky mobile bar
 - [ ] Validation: a draft needs only the title (Q8), publishing needs every field
 - [ ] Save through `ArticleHtml::sanitize`, compute `raw_content` and `read_duration`, keep the author on edit
 - [ ] Category multi-select with inline create
