@@ -28,13 +28,12 @@ Good accessibility and good SEO overlap: semantic HTML, one clear `h1`, descript
 - **SEO-CRAWL-2** `robots.txt` (served by a route, not a static file, so the sitemap URL uses `APP_URL`):
   ```
   User-agent: *
-  Disallow: /admin
   Disallow: /abonnement/
   Disallow: /recherche
 
   Sitemap: https://randy-donny.com/sitemap.xml
   ```
-  In any non-production environment, `robots.txt` MUST return `Disallow: /` and every response MUST carry `X-Robots-Tag: noindex, nofollow`.
+  `/admin` is deliberately not listed: a `Disallow` line would advertise the path and stop crawlers from reading its `noindex`. Nothing links to the admin, guests get a 404, and the pages that answer carry `noindex` (SEO-CRAWL-3). In any non-production environment, `robots.txt` MUST return `Disallow: /` and every response MUST carry `X-Robots-Tag: noindex, nofollow`.
 - **SEO-CRAWL-3** Indexing per page type:
 
   | Page | `<meta name="robots">` | In sitemap |

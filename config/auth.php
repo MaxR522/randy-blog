@@ -41,6 +41,8 @@ return [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+            // « Se souvenir de moi » lasts 30 days, in minutes (ADM-AUTH-4).
+            'remember' => 43200,
         ],
     ],
 

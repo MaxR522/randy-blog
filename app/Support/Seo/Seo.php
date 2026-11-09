@@ -163,12 +163,13 @@ class Seo
 
     /**
      * Whether search engines may index this copy of the site: production, unless `blog.indexable` says otherwise.
+     * A blank value counts as unset: `.env.example` ships `SEO_INDEXABLE=`, which must not close production to crawlers.
      */
     public static function isIndexable(): bool
     {
         $indexable = config('blog.indexable');
 
-        return $indexable === null ? app()->isProduction() : filter_var($indexable, FILTER_VALIDATE_BOOLEAN);
+        return blank($indexable) ? app()->isProduction() : filter_var($indexable, FILTER_VALIDATE_BOOLEAN);
     }
 
     /**

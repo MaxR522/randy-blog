@@ -17,6 +17,13 @@ class HandleInertiaRequests extends Middleware
     protected $rootView = 'app';
 
     /**
+     * Admin pages are client-rendered (NFR-PERF-1).
+     *
+     * @var array<int, string>
+     */
+    protected $withoutSsr = ['admin', 'admin/*'];
+
+    /**
      * Determines the current asset version.
      *
      * @see https://inertiajs.com/asset-versioning
@@ -39,7 +46,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user()?->only(['id', 'avatar']),
             ],
         ];
     }
