@@ -1,7 +1,7 @@
 import { Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, Eye } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { AdminHead } from '@/components/admin/admin-head';
 import {
     ArticlePreviewPanel,
@@ -25,6 +25,7 @@ import {
     useArticleAutosave,
 } from '@/lib/article-autosave';
 import { adminLabels } from '@/lib/labels.admin.fr';
+import { useUnsavedChangesGuard } from '@/lib/unsaved-changes';
 import { cn } from '@/lib/utils';
 import { archive, index, store, update } from '@/routes/admin/articles';
 import type { CategoryOption, EditorArticle } from '@/types/admin';
@@ -652,42 +653,4 @@ function DescriptionField({
             {error && <FieldError id={errorId}>{error}</FieldError>}
         </div>
     );
-}
-
-/**
- * Warn before leaving with unsaved changes (ADM-COM-7): the browser's own prompt for a reload or a closed tab,
- * the confirm modal for a visit inside the admin.
- */
-function useUnsavedChangesGuard(
-    isDirty: boolean,
-    isLeavingRef: { current: boolean },
-    onBlockedVisit: (url: string) => void,
-): void {
-    useEffect(() => {
-        if (!isDirty) {
-            return;
-        }
-
-        function onBeforeUnload(event: BeforeUnloadEvent): void {
-            event.preventDefault();
-        }
-
-        window.addEventListener('beforeunload', onBeforeUnload);
-
-        const removeBeforeListener = router.on('before', (event) => {
-            const { visit } = event.detail;
-
-            if (visit.method !== 'get' || isLeavingRef.current) {
-                return;
-            }
-
-            event.preventDefault();
-            onBlockedVisit(visit.url.href);
-        });
-
-        return () => {
-            window.removeEventListener('beforeunload', onBeforeUnload);
-            removeBeforeListener();
-        };
-    }, [isDirty, isLeavingRef, onBlockedVisit]);
 }

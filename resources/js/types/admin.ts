@@ -37,3 +37,17 @@ export type EditorArticle = {
     previewUrl: string;
     updatedAt: string | null;
 };
+
+/**
+ * The author's own fields on the account Profile tab.
+ */
+export type AccountProfile = {
+    avatar: string | null;
+    avatarCredit: string | null;
+    displayName: string | null;
+    /** Stored HTML, for the editor. */
+    bio: string;
+    /** HTML as the author page renders it. */
+    bioHtml: string;
+    email: string;
+};

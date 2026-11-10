@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 const text = adminLabels.imageUploader;
 
-const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+export const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -30,7 +30,7 @@ type ImageUploaderProps = {
 
 type Dimensions = { width: number; height: number };
 
-function formatSize(bytes: number): string {
+export function formatSize(bytes: number): string {
     return bytes >= 1024 * 1024
         ? `${sizeFormatter.format(bytes / (1024 * 1024))} Mo`
         : `${Math.max(1, Math.round(bytes / 1024))} Ko`;

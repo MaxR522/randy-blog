@@ -12,6 +12,8 @@ export type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & {
     labelAction?: ReactNode;
     /** Shown over the end of the input, such as an icon button. */
     trailing?: ReactNode;
+    /** For a field whose label is already shown next to it, such as an inline editor. */
+    isLabelHidden?: boolean;
 };
 
 /**
@@ -23,6 +25,7 @@ export function TextField({
     help,
     labelAction,
     trailing,
+    isLabelHidden = false,
     className,
     'aria-describedby': describedBy,
     'aria-invalid': isInvalid,
@@ -42,10 +45,18 @@ export function TextField({
 
     return (
         <div className="flex flex-col gap-2">
-            <div className="flex items-baseline justify-between gap-4">
+            <div
+                className={cn(
+                    'flex items-baseline justify-between gap-4',
+                    isLabelHidden && !labelAction && 'sr-only',
+                )}
+            >
                 <label
                     htmlFor={id}
-                    className="text-body-small text-primary font-semibold"
+                    className={cn(
+                        'text-body-small text-primary font-semibold',
+                        isLabelHidden && 'sr-only',
+                    )}
                 >
                     {label}
                 </label>
