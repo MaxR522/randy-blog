@@ -15,6 +15,7 @@
         "@inertiajs/react": "^3.0.0",
         "@inertiajs/vite": "^3.0.0",
         "@tailwindcss/vite": "^4.1.11",
+        "@tinymce/tinymce-react": "^6.3.1",
         "@types/react": "^19.2.0",
         "@types/react-dom": "^19.2.0",
         "@vitejs/plugin-react": "^6.1.1",
@@ -26,6 +27,8 @@
         "react-dom": "^19.2.0",
         "tailwind-merge": "^3.0.1",
         "tailwindcss": "^4.0.0",
+        "tinymce": "^8.10.1",
+        "tinymce-i18n": "^26.11.2",
         "typescript": "^7.0.2",
         "vite": "npm:@voidzero-dev/vite-plus-core@1.5.0"
     },

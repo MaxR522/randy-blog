@@ -54,10 +54,24 @@ test('article body images open the full-screen viewer through a labelled link', 
 
     expect(ArticleHtml::sanitize($html, zoomableImages: true))->toBe(
         '<figure><a href="https://res.cloudinary.com/x/image/upload/a.jpg" class="image-zoom" aria-label="Agrandir l’image&nbsp;: Un marché">'
-        .'<img src="https://res.cloudinary.com/x/image/upload/a.jpg" alt="Un marché" loading="lazy" decoding="async"></a><figcaption>Légende</figcaption></figure>'
+        .'<img src="https://res.cloudinary.com/x/image/upload/c_limit,w_1680/f_auto,q_auto/a.jpg" alt="Un marché" loading="lazy" decoding="async"'
+        .' srcset="https://res.cloudinary.com/x/image/upload/c_limit,w_480/f_auto,q_auto/a.jpg 480w, https://res.cloudinary.com/x/image/upload/c_limit,w_840/f_auto,q_auto/a.jpg 840w,'
+        .' https://res.cloudinary.com/x/image/upload/c_limit,w_1260/f_auto,q_auto/a.jpg 1260w, https://res.cloudinary.com/x/image/upload/c_limit,w_1680/f_auto,q_auto/a.jpg 1680w"'
+        .' sizes="(min-width: 1024px) 840px, 100vw"></a><figcaption>Légende</figcaption></figure>'
         .'<p><a href="https://example.com/b.jpg" class="image-zoom" aria-label="Agrandir l’image">'
         .'<img src="https://example.com/b.jpg" loading="lazy" decoding="async" alt=""></a></p>'
     );
+});
+
+test('article body Cloudinary images replace their stored transformations, other images and other contexts stay as they are', function () {
+    $v1 = '<img src="https://res.cloudinary.com/x/image/upload/f_auto,q_70/v1712/articles/a.png" alt="A">';
+
+    expect(ArticleHtml::sanitize($v1, zoomableImages: true))
+        ->toContain('href="https://res.cloudinary.com/x/image/upload/f_auto,q_70/v1712/articles/a.png"')
+        ->toContain('src="https://res.cloudinary.com/x/image/upload/c_limit,w_1680/f_auto,q_auto/v1712/articles/a.png"')
+        ->not->toContain('q_70/v1712/articles/a.png" alt')
+        ->and(ArticleHtml::sanitize($v1))->not->toContain('srcset')
+        ->and(ArticleHtml::sanitize('<img src="https://example.com/a.jpg" alt="A">', zoomableImages: true))->not->toContain('srcset');
 });
 
 test('images already in a link, and images outside the article body, are not made zoomable', function () {

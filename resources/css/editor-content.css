@@ -1,0 +1,37 @@
+/*
+ * Inside the TinyMCE iframe: the article page's body styles, so the editor shows the text as it will be
+ * published, Encadré included (ADM-ART-52). Imported as a string (`?inline`) by the rich text editor.
+ */
+@import 'tailwindcss/theme' layer(theme);
+@import 'tailwindcss/preflight' layer(base);
+@import './theme.css';
+
+html {
+    background: var(--color-white, #fff);
+}
+
+/* Unlayered, so these win over TinyMCE's own content styles. */
+body.article-body {
+    max-width: none;
+    font-family: var(--font-sans);
+    margin: 0;
+    padding: 1.5rem var(--spacing-gutter);
+    color: var(--color-primary);
+}
+
+/* TinyMCE's placeholder sits on the empty body. */
+body.article-body[data-mce-placeholder]::before {
+    color: var(--color-grey-dark);
+}
+
+/* The chapô editor: the article page's chapô size, no column. */
+body.article-body.is-minimal {
+    font-family: var(--font-sans);
+    font-size: var(--text-chapo);
+    line-height: var(--text-chapo--line-height);
+    padding-block: 0.875rem;
+}
+
+body.article-body.is-minimal p {
+    margin-bottom: 0.75rem;
+}

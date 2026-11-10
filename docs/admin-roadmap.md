@@ -55,9 +55,10 @@ Spec §5.3.4, §7.5, Appendix B. Reference: `personal-blog-2/resources/js/compon
 
 Dependencies: `tinymce` and `@tinymce/tinymce-react` (Q2, recommended self-hosted GPL), Cloudinary SDK or signed HTTP.
 
-- [ ] Authenticated Cloudinary upload service and endpoint, folders, delete on replace, with feature tests on the endpoint
-- [ ] `ImageUploader` component
-- [ ] TinyMCE component with `full`, `minimal` and `newsletter` configs, French UI, block formats, « Encadré » style, `content_css` from the theme, mobile mode
+- [x] Authenticated Cloudinary upload service and endpoint, folders, delete on replace, with feature tests on the endpoint (signed HTTP, no SDK; uploads capped at 2400 px with `q_auto:good`, body images served with `f_auto,q_auto` and `srcset`)
+- [x] `ImageUploader` component (covers and avatar upload on save, through `Cloudinary::replace`)
+- [x] TinyMCE component with `full`, `minimal` and `newsletter` configs, French UI, block formats, « Encadré » style, `content_css` from the theme, mobile mode
+- [x] Editor page shell at `/admin/articles/nouveau` (title, chapô, cover, credit, content; no saving yet), completed in session 5
 
 ### 5. Article editor
 

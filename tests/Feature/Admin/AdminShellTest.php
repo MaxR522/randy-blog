@@ -45,6 +45,13 @@ test('each section opens for a logged-in author', function (string $path, string
     ['/admin/compte', 'Compte'],
 ]);
 
+test('the new article page opens the editor for a logged-in author', function () {
+    $this->actingAs(User::factory()->create())
+        ->get('/admin/articles/nouveau')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('admin/article-editor'));
+});
+
 test('a session opened before a password change is logged out', function () {
     $user = User::factory()->create();
 

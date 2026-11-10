@@ -3,3 +3,25 @@
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+/* ---- Admin rich text editor: TinyMCE's oxide skin in the admin input frame.
+   Unlayered, like the skin TinyMCE injects, which would otherwise win. ---- */
+.rich-text-editor .tox.tox-tinymce {
+    border: var(--rule-thin) solid var(--color-grey-medium);
+    border-radius: var(--radius-md);
+}
+.rich-text-editor .tox.tox-tinymce:focus-within {
+    border-color: var(--color-primary);
+}
+.rich-text-editor.is-invalid .tox.tox-tinymce {
+    border-color: var(--color-red-600);
+    box-shadow: 0 0 0 1px var(--color-red-600);
+}
+.rich-text-editor .tox .tox-editor-header {
+    border-bottom: var(--rule-thin) solid var(--color-grey-light);
+    box-shadow: none;
+}
+.rich-text-editor .tox .tox-statusbar {
+    border-top-color: var(--color-grey-light);
+    color: var(--color-grey-dark);
+}

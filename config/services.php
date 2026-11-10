@@ -25,6 +25,10 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    'cloudinary' => [
+        'url' => env('CLOUDINARY_URL'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],
