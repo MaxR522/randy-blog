@@ -1,5 +1,5 @@
 import { LoaderCircle } from 'lucide-react';
-import type { ButtonHTMLAttributes } from 'react';
+import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -28,7 +28,7 @@ export function buttonClasses(
     );
 }
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+type ButtonProps = ComponentProps<'button'> & {
     variant?: ButtonVariant;
     isLoading?: boolean;
 };

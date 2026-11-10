@@ -16,7 +16,7 @@ The admin design is on the canvas, page « Administration »: https://claude.ai/
 
 Spec §5.1, §5.6.3, §7.7. Boards: `Admin-Connexion`, `Admin-Connexion-360`, section 1 of `Admin-Composants`.
 
-Dependency: `laravel/fortify`, because its `two_factor_*` columns match spec §7.3.2 and it also serves session 9. Decided (Q10): guests get the public 404 on `/admin/*`, and `/admin` is not listed in `robots.txt`. Fortify's routes are ignored and redefined in `routes/admin.php`.
+Dependency: `laravel/fortify`, because its `two_factor_*` columns match spec §7.3.2 and it also serves session 8. Decided (Q10): guests get the public 404 on `/admin/*`, and `/admin` is not listed in `robots.txt`. Fortify's routes are ignored and redefined in `routes/admin.php`.
 
 - [x] Login, logout, « Se souvenir de moi », rate limit, session lifetimes (`/admin/connexion`)
 - [x] Forgotten password and reset (`/admin/mot-de-passe-oublie`, `/admin/reinitialisation/{token}`, card added to the canvas)
@@ -71,28 +71,18 @@ Spec §5.3.2, §5.3.5, rules B5/B6 of `docs/seo-accessibility.md`. Boards: `Admi
 - [x] Slug frozen after publication, `article_slug_redirects` migration, 301 from the public route (ADM-ART-64)
 - [x] Unsaved-changes warning, 30 s browser autosave with restore (the picked cover file is not kept by the autosave)
 
-### 6. Word import and editor helpers
-
-Spec §5.3.3, ADM-ART-27. Board: state section of `Admin-Article-Editeur`.
-
-Dependency: `mammoth` recommended (spec §7.6).
-
-- [ ] `.docx` modal, conversion and pre-fill, embedded images to Cloudinary, replace confirmation, French errors
-- [ ] « Générer les mots-clés »
-- [ ] Warnings on save for missing alt text, heading levels and table headers (A11Y-BODY-5)
-
 ## Account
 
-### 7. Profile tab
+### 6. Profile tab
 
 Spec §5.6.1. Boards: `Admin-Compte-Profil`, `Admin-Compte-Profil-360`.
 
-- [ ] One-field-at-a-time inline editing
-- [ ] Avatar with square crop and credit
-- [ ] Display name, biography (TinyMCE `minimal`)
-- [ ] Login email change with password and confirmation link
+- [x] One-field-at-a-time inline editing (unsaved-changes guard moved to `lib/unsaved-changes.ts`; « Sécurité » tab is a placeholder until session 7)
+- [x] Avatar with square crop and credit (custom cropper, no dependency, 800 px JPEG upload)
+- [x] Display name, biography (TinyMCE `minimal`)
+- [x] Login email change with password and confirmation link (signed 60 min URL, no column; the old address is notified)
 
-### 8. Security tab, without 2FA
+### 7. Security tab, without 2FA
 
 Spec §5.6.2 (ADM-SEC-1, 2, 3, 5, 6, 7). Boards: `Admin-Compte-Securite`, `Admin-Compte-Securite-360`.
 
@@ -105,13 +95,27 @@ Decision: Q6, recommended storing the recovery phone only.
 - [ ] `login_events` migration and login history
 - [ ] Security alert emails
 
-### 9. Two-factor authentication
+### 8. Two-factor authentication
 
 Spec ADM-SEC-4, ADM-AUTH-2. Boards: 2FA parts of `Admin-Compte-Securite` and `Admin-Connexion`.
 
 - [ ] Users migration (`vendor:publish --tag=fortify-migrations`, keep only the 2FA one), enable the Fortify feature, `TwoFactorAuthenticatable` on `User`, hide its columns
 - [ ] QR enable and confirm, 8 recovery codes, regenerate, disable (password required)
 - [ ] Challenge page `/admin/deux-facteurs` with its routes in `routes/admin.php` (Fortify's are ignored), recovery code login, `two_factor_used` in the history
+
+## Article editor helpers
+
+### 9. Word import and editor helpers
+
+Spec §5.3.3, ADM-ART-27. Board: state section of `Admin-Article-Editeur`.
+
+Deferred after the account sessions (decided 2026-11-10).
+
+Dependency: `mammoth` recommended (spec §7.6).
+
+- [ ] `.docx` modal, conversion and pre-fill, embedded images to Cloudinary, replace confirmation, French errors
+- [ ] « Générer les mots-clés »
+- [ ] Warnings on save for missing alt text, heading levels and table headers (A11Y-BODY-5)
 
 ## Subscribers and newsletter
 

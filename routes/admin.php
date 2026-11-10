@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MediaController;
@@ -42,8 +43,22 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureAdminIsAuthenticated::
     Route::post('/medias', [MediaController::class, 'store'])->middleware('throttle:60,1')->name('media.store');
     Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::inertia('/abonnements', 'admin/placeholder', ['title' => 'Abonnements'])->name('subscriptions.index');
-    Route::inertia('/compte', 'admin/placeholder', ['title' => 'Compte'])->name('account');
+
+    Route::get('/compte', [AccountController::class, 'profile'])->name('account');
+    Route::inertia('/compte/securite', 'admin/placeholder', ['title' => 'Sécurité'])->name('account.security');
+    Route::post('/compte/avatar', [AccountController::class, 'updateAvatar'])->middleware('throttle:20,1')->name('account.avatar');
+    Route::patch('/compte/nom-affichage', [AccountController::class, 'updateDisplayName'])->name('account.display-name');
+    Route::patch('/compte/biographie', [AccountController::class, 'updateBiography'])->name('account.biography');
+    Route::post('/compte/email', [AccountController::class, 'requestEmailChange'])->middleware('throttle:6,1')->name('account.email');
 });
+
+/*
+ * The link sent to a new login address (ADM-ACC-4) answers without a session: it may be opened on another device.
+ * The controller checks the signature itself, so that a bad link gets the 404 rather than a 403.
+ */
+Route::get('/admin/compte/email/confirmer/{user}', [AccountController::class, 'confirmEmailChange'])
+    ->middleware('throttle:10,1')
+    ->name('admin.account.email.confirm');
 
 Route::post('/admin/deconnexion', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware(EnsureAdminIsAuthenticated::class)

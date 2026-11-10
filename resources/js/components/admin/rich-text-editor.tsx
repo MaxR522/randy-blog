@@ -16,6 +16,8 @@ type RichTextEditorProps = {
     help?: string;
     uploadFolder?: UploadFolder;
     placeholder?: string;
+    /** For a field whose label is already shown next to it, such as an inline editor. */
+    isLabelHidden?: boolean;
 };
 
 /**
@@ -30,6 +32,7 @@ export function RichTextEditor({
     help,
     uploadFolder,
     placeholder,
+    isLabelHidden = false,
 }: RichTextEditorProps) {
     const id = useId();
     const labelId = `${id}-libelle`;
@@ -41,7 +44,10 @@ export function RichTextEditor({
         <div className="flex flex-col gap-2">
             <span
                 id={labelId}
-                className="text-body-small text-primary font-semibold"
+                className={cn(
+                    'text-body-small text-primary font-semibold',
+                    isLabelHidden && 'sr-only',
+                )}
             >
                 {label}
             </span>
