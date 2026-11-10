@@ -4,6 +4,7 @@ namespace App\Support;
 
 use Dom\Element;
 use Dom\HTMLDocument;
+use Illuminate\Support\Str;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerAction;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
@@ -91,6 +92,46 @@ class ArticleHtml
         self::wrapTables($document, $body);
 
         return trim($body->innerHTML);
+    }
+
+    /**
+     * Sanitize rich text from the editor before it is stored (articles, chapô).
+     *
+     * Same allowlist and structure fixes as {@see self::sanitize()}, without the delivery-only changes (lazy loading,
+     * resized Cloudinary URLs, table scroll boxes, zoom links): the stored HTML goes back into TinyMCE on the next
+     * edit, and the page adds those when it renders.
+     */
+    public static function clean(?string $html): string
+    {
+        if ($html === null || trim($html) === '') {
+            return '';
+        }
+
+        $sanitized = self::sanitizer()->sanitize(self::withoutDroppedElements($html));
+
+        if (trim($sanitized) === '') {
+            return '';
+        }
+
+        [$document, $body] = self::parse($sanitized);
+
+        self::normalizeHeadings($document, $body);
+        self::normalizeClasses($body);
+        self::normalizeLinks($body);
+        self::normalizeIframes($document, $body);
+        self::normalizeVideos($body);
+
+        return trim($body->innerHTML);
+    }
+
+    /**
+     * Plain text of rich text, blocks separated by a space, for `raw_content` (search, word count).
+     */
+    public static function plainText(?string $html): string
+    {
+        $spaced = (string) preg_replace('/<(br\b|\/(p|h[1-6]|li|div|blockquote|figcaption|td|th|caption)\b)/i', ' <$1', $html ?? '');
+
+        return Str::squish(html_entity_decode(strip_tags($spaced), ENT_QUOTES | ENT_HTML5));
     }
 
     /**

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -74,6 +75,11 @@ class Article extends Model
     public const string HighlightEnd = "\u{3}";
 
     /**
+     * Reading speed behind `read_duration` (spec §7.4).
+     */
+    public const int WordsPerMinute = 200;
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -103,6 +109,16 @@ class Article extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    /**
+     * Old slugs that redirect to this article (ADM-ART-64).
+     *
+     * @return HasMany<ArticleSlugRedirect, $this>
+     */
+    public function slugRedirects(): HasMany
+    {
+        return $this->hasMany(ArticleSlugRedirect::class);
     }
 
     /**
@@ -194,7 +210,7 @@ class Article extends Model
     }
 
     /**
-     * Reading time in minutes: the stored value, or the word count at 230 words a minute when it was never computed.
+     * Reading time in minutes: the stored value, or the word count at {@see self::WordsPerMinute} when it was never computed.
      */
     public function readingTime(): int
     {
@@ -202,7 +218,15 @@ class Article extends Model
             return $this->read_duration;
         }
 
-        return max(1, (int) ceil($this->wordCount() / 230));
+        return self::minutesToRead($this->wordCount());
+    }
+
+    /**
+     * Minutes to read this many words, one at least.
+     */
+    public static function minutesToRead(int $wordCount): int
+    {
+        return max(1, (int) ceil($wordCount / self::WordsPerMinute));
     }
 
     /**

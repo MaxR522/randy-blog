@@ -55,12 +55,49 @@ export const adminLabels = {
     editor: {
         createTitle: 'Nouvel article',
         editTitle: 'Modifier l’article',
+        back: 'Retour aux articles',
         save: 'Enregistrer',
+        publish: 'Publier',
+        archive: 'Archiver',
+        preview: 'Aperçu',
+        moreActions: 'Plus d’actions',
+        actionsMenu: 'Actions de l’article',
         title: 'Titre',
         chapo: 'Chapô',
         cover: 'Image de couverture',
         coverCredit: 'Crédit photo',
         content: 'Contenu',
+        contentHelp:
+            'Formats : Paragraphe, Titre 1 (h2), Titre 2 (h3), Titre 3 (h4). « Encadré » dans Styles, affiché comme sur le site. Images : texte alternatif obligatoire (ou décorative), légende possible.',
+        wordCount: (words: number, minutes: number) =>
+            `${words} ${words > 1 ? 'mots' : 'mot'} · ${minutes} min de lecture`,
+        classification: 'Classement',
+        categories: 'Catégories',
+        categoriesPlaceholder: 'Rechercher ou créer…',
+        createCategory: (name: string) => `Créer « ${name} »`,
+        removeCategory: (name: string) => `Retirer ${name}`,
+        noCategoryMatch: 'Aucune catégorie ne correspond.',
+        seo: 'Référencement',
+        description: 'Description SEO',
+        descriptionHelp: (count: number) =>
+            `Ce champ n’apparaît pas dans l’article mais améliore le référencement. ${count}/160 caractères`,
+        keywords: 'Mots-clés',
+        keywordsHelp: 'Séparez les mots-clés par des virgules',
+        slug: 'URL de l’article',
+        slugHelp:
+            'Figée après la première publication. Un changement ensuite redirige l’ancienne adresse (301).',
+        autosavedAt: (time: string) =>
+            `Brouillon enregistré automatiquement dans le navigateur à ${time}.`,
+        restoreTitle: (time: string) =>
+            `Une version plus récente, enregistrée dans ce navigateur à ${time}, n’a pas été envoyée.`,
+        restoreCoverNote:
+            'L’image de couverture choisie n’y est pas conservée.',
+        restore: 'Restaurer',
+        discard: 'Ignorer',
+        leaveTitle: 'Quitter sans enregistrer ?',
+        leaveDescription:
+            'Les modifications non enregistrées seront perdues. Une copie reste dans ce navigateur.',
+        leaveConfirm: 'Quitter la page',
     },
     imageUploader: {
         drop: 'Glissez une image ici ou cliquez pour en choisir une',

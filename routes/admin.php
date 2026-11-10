@@ -4,9 +4,7 @@ use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Middleware\EnsureAdminIsAuthenticated;
-use App\Models\Article;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use Laravel\Fortify\Http\Controllers\NewPasswordController;
 use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
@@ -35,10 +33,9 @@ Route::prefix('admin')->middleware('guest')->group(function () {
 Route::prefix('admin')->name('admin.')->middleware([EnsureAdminIsAuthenticated::class, 'auth.session'])->group(function () {
     Route::redirect('/', '/admin/articles')->name('index');
 
-    Route::resource('articles', ArticleController::class)->only(['index', 'destroy']);
+    Route::resource('articles', ArticleController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/articles/nouveau', [ArticleController::class, 'create'])->name('articles.create');
-    // Editing comes in session 5 of the roadmap.
-    Route::get('/articles/{article}/modifier', fn (Article $article) => Inertia::render('admin/placeholder', ['title' => 'Modifier l’article']))->name('articles.edit');
+    Route::get('/articles/{article}/modifier', [ArticleController::class, 'edit'])->name('articles.edit');
     Route::patch('/articles/{article}/publier', [ArticleController::class, 'publish'])->name('articles.publish');
     Route::patch('/articles/{article}/archiver', [ArticleController::class, 'archive'])->name('articles.archive');
     Route::get('/articles/{article}/apercu', [ArticleController::class, 'preview'])->name('articles.preview');

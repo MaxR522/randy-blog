@@ -64,12 +64,12 @@ Dependencies: `tinymce` and `@tinymce/tinymce-react` (Q2, recommended self-hoste
 
 Spec §5.3.2, §5.3.5, rules B5/B6 of `docs/seo-accessibility.md`. Boards: `Admin-Article-Editeur`, `Admin-Article-Editeur-360`.
 
-- [ ] Create and edit (replace the `admin.articles.create` / `edit` placeholder routes), fields ADM-ART-20…27, state-dependent header actions, sticky mobile bar
-- [ ] Validation: a draft needs only the title (Q8), publishing needs every field
-- [ ] Save through `ArticleHtml::sanitize`, compute `raw_content` and `read_duration`, keep the author on edit
-- [ ] Category multi-select with inline create
-- [ ] Slug frozen after publication, `article_slug_redirects` migration, 301 from the public route (ADM-ART-64)
-- [ ] Unsaved-changes warning, 30 s browser autosave with restore
+- [x] Create and edit (replace the `admin.articles.create` / `edit` placeholder routes), fields ADM-ART-20…27, state-dependent header actions, sticky mobile bar
+- [x] Validation: a draft needs only the title (Q8), publishing needs every field
+- [x] Save through `ArticleHtml::sanitize`, compute `raw_content` and `read_duration`, keep the author on edit
+- [x] Category multi-select with inline create
+- [x] Slug frozen after publication, `article_slug_redirects` migration, 301 from the public route (ADM-ART-64)
+- [x] Unsaved-changes warning, 30 s browser autosave with restore (the picked cover file is not kept by the autosave)
 
 ### 6. Word import and editor helpers
 
