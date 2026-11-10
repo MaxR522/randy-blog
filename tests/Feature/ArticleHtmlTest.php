@@ -113,3 +113,18 @@ test('Cloudinary videos keep their controls, other sources and empty videos are 
         .'<source src="https://res.cloudinary.com/randy-blog/video/upload/a.mp4" type="video/mp4"></video>'
     );
 });
+
+test('clean keeps the safe structure but none of the delivery-only changes, so the editor gets back what it saved', function () {
+    $html = '<h1>Titre</h1><p onclick="x()">Texte</p><img src="https://res.cloudinary.com/randy/image/upload/v1/a.jpg" alt="A"><table><tr><td>1</td></tr></table><script>alert(1)</script>';
+
+    $cleaned = ArticleHtml::clean($html);
+
+    expect($cleaned)
+        ->toBe('<h2>Titre</h2><p>Texte</p><img src="https://res.cloudinary.com/randy/image/upload/v1/a.jpg" alt="A"><table><tbody><tr><td>1</td></tr></tbody></table>')
+        ->and(ArticleHtml::sanitize($cleaned, zoomableImages: true))->toBe(ArticleHtml::sanitize($html, zoomableImages: true));
+});
+
+test('plainText separates blocks with a space and decodes entities', function () {
+    expect(ArticleHtml::plainText('<p>Un&nbsp;chapô.</p><h2>Partie</h2><ul><li>un</li><li>deux</li></ul>'))
+        ->toBe('Un chapô. Partie un deux');
+});

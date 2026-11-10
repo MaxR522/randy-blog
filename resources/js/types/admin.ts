@@ -11,3 +11,29 @@ export type AdminList<Row> = {
 };
 
 export type SortDirection = 'asc' | 'desc';
+
+/**
+ * A category as the article editor's picker lists it.
+ */
+export type CategoryOption = { id: number; name: string };
+
+/**
+ * A saved article as the editor loads it (`AdminArticleEditorResource`).
+ */
+export type EditorArticle = {
+    id: number;
+    title: string;
+    slug: string;
+    leadParagraph: string;
+    content: string;
+    coverPhoto: string | null;
+    coverPhotoCredit: string;
+    description: string;
+    keywords: string;
+    status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+    categoryIds: number[];
+    isPublished: boolean;
+    isSlugFrozen: boolean;
+    previewUrl: string;
+    updatedAt: string | null;
+};

@@ -10,7 +10,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
+use App\Support\ArticleSlug;
 use App\Support\Seo\Seo;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -18,12 +20,16 @@ Route::get('/', HomeController::class)->name('home');
 /*
  * Markdown copy of an article for AI assistants; declared first so `.md` never reaches the article route.
  */
-Route::get('/articles/{article:slug}.md', ArticleMarkdownController::class)->name('articles.markdown');
+Route::get('/articles/{article:slug}.md', ArticleMarkdownController::class)
+    ->name('articles.markdown')
+    ->missing(fn (Request $request) => ArticleSlug::redirectResponse($request, 'articles.markdown'));
 
 /*
  * Same URL as V1: article links are already indexed.
  */
-Route::get('/articles/{article:slug}', ArticleController::class)->name('articles.show');
+Route::get('/articles/{article:slug}', ArticleController::class)
+    ->name('articles.show')
+    ->missing(fn (Request $request) => ArticleSlug::redirectResponse($request, 'articles.show'));
 
 Route::get('/recherche', SearchController::class)->name('search');
 

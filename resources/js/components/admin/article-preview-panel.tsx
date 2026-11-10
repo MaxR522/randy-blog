@@ -33,6 +33,8 @@ type ArticlePreviewPanelProps = {
     /** `null` when closed. */
     article: PreviewedArticle | null;
     onClose: () => void;
+    /** Opened from the editor of this article: « Modifier » would lead back to the same page, so it is left out. */
+    isFromEditor?: boolean;
 };
 
 const iconButtonClasses =
@@ -45,6 +47,7 @@ const iconButtonClasses =
 export function ArticlePreviewPanel({
     article,
     onClose,
+    isFromEditor = false,
 }: ArticlePreviewPanelProps) {
     const { dialogRef, closeOnVeilClick } = useModalDialog(
         article !== null,
@@ -64,6 +67,7 @@ export function ArticlePreviewPanel({
                     key={article.id}
                     article={article}
                     onClose={onClose}
+                    isFromEditor={isFromEditor}
                 />
             )}
         </dialog>
@@ -73,9 +77,11 @@ export function ArticlePreviewPanel({
 function PanelContent({
     article,
     onClose,
+    isFromEditor,
 }: {
     article: PreviewedArticle;
     onClose: () => void;
+    isFromEditor: boolean;
 }) {
     const [frameVersion, setFrameVersion] = useState(0);
     const [isFrameLoaded, setIsFrameLoaded] = useState(false);
@@ -110,15 +116,17 @@ function PanelContent({
                 className="bg-grey-light tablet:hidden mx-auto mt-2 h-1 w-10 flex-none rounded-xs"
             />
             <div className="border-grey-light tablet:py-3 tablet:pr-3 tablet:pl-6 flex flex-none items-center gap-2 border-b py-2 pr-1 pl-4">
-                <Link
-                    href={edit.url(article.id)}
-                    className={buttonClasses(
-                        'secondary',
-                        'tablet:flex-none flex-1',
-                    )}
-                >
-                    {text.edit}
-                </Link>
+                {!isFromEditor && (
+                    <Link
+                        href={edit.url(article.id)}
+                        className={buttonClasses(
+                            'secondary',
+                            'tablet:flex-none flex-1',
+                        )}
+                    >
+                        {text.edit}
+                    </Link>
+                )}
                 <Button
                     variant={isPublished ? 'secondary' : 'primary'}
                     onClick={changeStatus}

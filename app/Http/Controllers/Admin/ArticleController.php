@@ -4,12 +4,24 @@ namespace App\Http\Controllers\Admin;
 
 use App\ArticleStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ArticleRequest;
+use App\Http\Resources\AdminArticleEditorResource;
 use App\Http\Resources\AdminArticleResource;
 use App\Http\Resources\ArticleResource;
+use App\MediaFolder;
 use App\Models\Article;
+use App\Models\Category;
+use App\Support\ArticleHtml;
+use App\Support\ArticleSlug;
+use App\Support\Cloudinary\Cloudinary;
+use App\Support\Cloudinary\CloudinaryException;
 use App\Support\Seo\Seo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -72,11 +84,51 @@ class ArticleController extends Controller
     }
 
     /**
-     * The article editor, empty. Saving comes with session 5 of the roadmap.
+     * The article editor, empty (ADM-ART-10).
      */
     public function create(): Response
     {
-        return Inertia::render('admin/article-editor');
+        return Inertia::render('admin/article-editor', [
+            'article' => null,
+            'categories' => $this->categoryOptions(),
+        ]);
+    }
+
+    /**
+     * Save a new article as a draft, or publish it straight away.
+     */
+    public function store(ArticleRequest $request, Cloudinary $cloudinary): RedirectResponse
+    {
+        $article = new Article(['author_id' => $request->user()?->id, 'status' => ArticleStatus::Draft]);
+
+        $this->save($request, $article, $cloudinary);
+
+        Inertia::flash('success', $request->wantsToPublish() ? 'Article publié.' : 'Article enregistré.');
+
+        return to_route('admin.articles.edit', $article);
+    }
+
+    /**
+     * The editor filled with a saved article.
+     */
+    public function edit(Article $article): Response
+    {
+        $article->load('categories');
+
+        return Inertia::render('admin/article-editor', [
+            'article' => AdminArticleEditorResource::make($article)->resolve(),
+            'categories' => $this->categoryOptions(),
+        ]);
+    }
+
+    /**
+     * Save an article. The author never changes (ADM-ART-65); « Publier » also publishes it.
+     */
+    public function update(ArticleRequest $request, Article $article, Cloudinary $cloudinary): RedirectResponse
+    {
+        $this->save($request, $article, $cloudinary);
+
+        return Inertia::flash('success', $request->wantsToPublish() ? 'Article publié.' : 'Article enregistré.')->back();
     }
 
     /**
@@ -133,5 +185,119 @@ class ArticleController extends Controller
             'isPublished' => $article->isPublished(),
             'isEmbedded' => $request->boolean('integre'),
         ]);
+    }
+
+    /**
+     * Fill, save and optionally publish the article. The new cover is uploaded first; the image it replaces is
+     * deleted only once the article points to the new one, so a failed save never leaves a broken cover.
+     */
+    private function save(ArticleRequest $request, Article $article, Cloudinary $cloudinary): void
+    {
+        $previousCover = $article->cover_photo;
+        $newCover = $request->file('cover') === null ? null : $this->uploadCover($request, $cloudinary);
+
+        DB::transaction(function () use ($request, $article, $newCover): void {
+            $leadParagraph = ArticleHtml::clean($request->input('lead_paragraph'));
+            $content = ArticleHtml::clean($request->input('content'));
+            $rawContent = trim(ArticleHtml::plainText($leadParagraph).' '.ArticleHtml::plainText($content));
+
+            $article->fill([
+                'title' => $request->string('title')->toString(),
+                'lead_paragraph' => $leadParagraph ?: null,
+                'content' => $content,
+                'raw_content' => $rawContent,
+                'cover_photo_credit' => $request->input('cover_photo_credit'),
+                'description' => $request->input('description'),
+                'keywords' => $request->input('keywords'),
+            ]);
+
+            $article->read_duration = Article::minutesToRead($article->wordCount());
+
+            if ($newCover !== null) {
+                $article->cover_photo = $newCover;
+            } elseif ($request->boolean('remove_cover')) {
+                $article->cover_photo = null;
+            }
+
+            $this->applySlug($request, $article);
+            $article->save();
+
+            $article->categories()->sync([
+                ...array_map('intval', (array) $request->input('category_ids', [])),
+                ...$this->createdCategoryIds($request),
+            ]);
+
+            if ($request->wantsToPublish()) {
+                $article->publish();
+            }
+        });
+
+        if ($previousCover !== null && $previousCover !== $article->cover_photo) {
+            $cloudinary->delete($previousCover);
+        }
+    }
+
+    /**
+     * @throws ValidationException when Cloudinary refuses the file
+     */
+    private function uploadCover(ArticleRequest $request, Cloudinary $cloudinary): string
+    {
+        try {
+            return $cloudinary->upload($request->file('cover'), MediaFolder::Articles)->url;
+        } catch (CloudinaryException $exception) {
+            Log::error($exception->getMessage());
+
+            throw ValidationException::withMessages(['cover' => CloudinaryException::UserMessage]);
+        }
+    }
+
+    /**
+     * Until the first publication the URL follows the title, unless the author typed another one. After it, only a
+     * typed change moves the URL, and the old one then redirects (ADM-ART-64).
+     */
+    private function applySlug(ArticleRequest $request, Article $article): void
+    {
+        $requestedSlug = $request->input('slug');
+        $isFrozen = $article->published_date !== null;
+
+        if ($isFrozen) {
+            if (is_string($requestedSlug)) {
+                ArticleSlug::change($article, $requestedSlug);
+            }
+
+            return;
+        }
+
+        $followsTitle = $requestedSlug === null || $requestedSlug === ArticleSlug::fromTitle($article->title);
+
+        ArticleSlug::change($article, $followsTitle ? ArticleSlug::generate($article->title, $article->id) : $requestedSlug);
+    }
+
+    /**
+     * Categories typed in the editor: an existing live one with the same name whatever the case, or a new one.
+     *
+     * @return array<int, int>
+     */
+    private function createdCategoryIds(ArticleRequest $request): array
+    {
+        return array_map(function (string $name): int {
+            $existing = Category::query()->whereRaw('lower(value) = lower(?)', [$name])->first();
+
+            return ($existing ?? Category::create(['key' => Str::upper($name), 'value' => $name]))->id;
+        }, (array) $request->input('new_categories', []));
+    }
+
+    /**
+     * Every live category, for the editor's picker.
+     *
+     * @return array<int, array{id: int, name: string}>
+     */
+    private function categoryOptions(): array
+    {
+        return Category::query()
+            ->orderByRaw('lower(unaccent(value))')
+            ->get(['id', 'value'])
+            ->map(fn (Category $category): array => ['id' => $category->id, 'name' => $category->value])
+            ->all();
     }
 }
