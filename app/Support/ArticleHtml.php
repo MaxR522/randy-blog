@@ -39,6 +39,13 @@ class ArticleHtml
     private const string ZoomLabel = 'Agrandir l’image';
 
     /**
+     * Widths offered to the browser for body images: phone, the 840 px column, and its 1.5× and 2× densities.
+     */
+    private const array BodyImageWidths = [480, 840, 1260, 1680];
+
+    private const string BodyImageSizes = '(min-width: 1024px) 840px, 100vw';
+
+    /**
      * Elements removed with their content: not article content, or unsafe.
      */
     private const array DroppedElements = [
@@ -53,6 +60,7 @@ class ArticleHtml
      *
      * With `$zoomableImages`, images not already in a link are wrapped in an `a.image-zoom` link to the image
      * itself, which the article page opens in its lightbox (only the article body asks for it, not feeds or bios).
+     * Cloudinary images of the article body are also delivered resized, in the browser's best format.
      */
     public static function sanitize(?string $html, bool $zoomableImages = false): string
     {
@@ -75,6 +83,7 @@ class ArticleHtml
 
         if ($zoomableImages) {
             self::wrapZoomableImages($document, $body);
+            self::optimizeCloudinaryImages($body);
         }
 
         self::normalizeIframes($document, $body);
@@ -250,6 +259,33 @@ class ArticleHtml
             $image->replaceWith($link);
             $link->append($image);
         }
+    }
+
+    /**
+     * Serve Cloudinary body images at the width the column needs, with `f_auto,q_auto` (WebP or AVIF where supported).
+     * The zoom link keeps the stored URL: the viewer fetches its own full-size version from it.
+     */
+    private static function optimizeCloudinaryImages(Element $body): void
+    {
+        foreach ($body->getElementsByTagName('img') as $image) {
+            $source = trim($image->getAttribute('src') ?? '');
+
+            if (! CloudinaryUrl::isCloudinary($source)) {
+                continue;
+            }
+
+            $image->setAttribute('src', self::bodyImageUrl($source, self::BodyImageWidths[array_key_last(self::BodyImageWidths)]));
+            $image->setAttribute('srcset', implode(', ', array_map(
+                fn (int $width): string => self::bodyImageUrl($source, $width)." {$width}w",
+                self::BodyImageWidths,
+            )));
+            $image->setAttribute('sizes', self::BodyImageSizes);
+        }
+    }
+
+    private static function bodyImageUrl(string $url, int $width): string
+    {
+        return CloudinaryUrl::transform($url, "c_limit,w_{$width}/f_auto,q_auto");
     }
 
     /**

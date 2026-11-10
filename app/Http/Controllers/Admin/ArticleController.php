@@ -72,6 +72,14 @@ class ArticleController extends Controller
     }
 
     /**
+     * The article editor, empty. Saving comes with session 5 of the roadmap.
+     */
+    public function create(): Response
+    {
+        return Inertia::render('admin/article-editor');
+    }
+
+    /**
      * Publish a draft or an archived article.
      */
     public function publish(Article $article): RedirectResponse

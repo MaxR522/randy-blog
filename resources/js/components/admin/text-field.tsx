@@ -71,20 +71,32 @@ export function TextField({
                     {help}
                 </p>
             )}
-            {error && (
-                <p
-                    id={errorId}
-                    role="alert"
-                    className="text-body-small flex gap-1.5 font-medium text-red-700"
-                >
-                    <CircleAlert
-                        aria-hidden="true"
-                        className="mt-0.5 size-4 flex-none"
-                        strokeWidth={2}
-                    />
-                    <span>{error}</span>
-                </p>
-            )}
+            {error && <FieldError id={errorId}>{error}</FieldError>}
         </div>
+    );
+}
+
+type FieldErrorProps = {
+    id: string;
+    children: ReactNode;
+};
+
+/**
+ * Inline error under a field, announced when it appears; tie it to the field with `aria-describedby`.
+ */
+export function FieldError({ id, children }: FieldErrorProps) {
+    return (
+        <p
+            id={id}
+            role="alert"
+            className="text-body-small flex gap-1.5 font-medium text-red-700"
+        >
+            <CircleAlert
+                aria-hidden="true"
+                className="mt-0.5 size-4 flex-none"
+                strokeWidth={2}
+            />
+            <span>{children}</span>
+        </p>
     );
 }

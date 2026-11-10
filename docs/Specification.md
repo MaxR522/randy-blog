@@ -266,7 +266,7 @@ Fields, in order:
 |---|---|---|---|
 | ADM-ART-20 | « Titre » | Text input | Required, max 255. |
 | ADM-ART-21 | « Chapô » | Minimal TinyMCE: bold, italic, link | Required. |
-| ADM-ART-22 | « Image de couverture » | File upload with preview | Required. JPG, PNG, WebP, max 5 MB. Uploaded to Cloudinary. |
+| ADM-ART-22 | « Image de couverture » | File upload with preview | Required. JPG, PNG, WebP, max 10 MB. Uploaded to Cloudinary, capped at 2400 px with automatic quality. |
 | ADM-ART-23 | « Crédit photo » | Text input | Required, max 255. |
 | ADM-ART-24 | « Contenu » | Full TinyMCE (§5.3.4) | Required. |
 | ADM-ART-25 | « Catégories » | Multi-select with search | At least one. **(added)** Allows creating a category inline, as in V1. |
