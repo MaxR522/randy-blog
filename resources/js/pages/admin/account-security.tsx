@@ -12,6 +12,7 @@ import { PasswordEditor } from '@/components/admin/password-editor';
 import { RecoveryEmailEditor } from '@/components/admin/recovery-email-editor';
 import { RecoveryPhoneEditor } from '@/components/admin/recovery-phone-editor';
 import { StatusBadge } from '@/components/admin/status-badge';
+import { TwoFactorEditor } from '@/components/admin/two-factor-editor';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { formatPhone } from '@/lib/phone';
@@ -19,15 +20,15 @@ import type { AccountSecurity } from '@/types/admin';
 
 const text = adminLabels.security;
 
-type Field = 'recoveryEmail' | 'recoveryPhone' | 'password';
+type Field = 'recoveryEmail' | 'recoveryPhone' | 'password' | 'twoFactor';
 
 type AccountSecurityProps = {
     security: AccountSecurity;
 };
 
 /**
- * « Gestion du compte », Security tab (spec §5.6.2), without 2FA until session 8. The three fields follow the
- * Profile tab: one inline editor at a time.
+ * « Gestion du compte », Security tab (spec §5.6.2). The four fields follow the Profile tab: one inline editor at
+ * a time.
  */
 export default function AccountSecurityPage({
     security,
@@ -37,6 +38,8 @@ export default function AccountSecurityPage({
     const recoveryEmailRow = rowProps('recoveryEmail');
     const recoveryPhoneRow = rowProps('recoveryPhone');
     const passwordRow = rowProps('password');
+    const twoFactorRow = rowProps('twoFactor');
+    const { twoFactor } = security;
 
     return (
         <>
@@ -127,6 +130,35 @@ export default function AccountSecurityPage({
                             </p>
                             <p className="text-caption text-grey-dark mt-1">
                                 {text.otherDevicesLoggedOut}
+                            </p>
+                        </>
+                    )}
+                </AccountRow>
+
+                <AccountRow label={text.twoFactorTitle} {...twoFactorRow}>
+                    {twoFactorRow.isEditing ? (
+                        <TwoFactorEditor
+                            twoFactor={twoFactor}
+                            onDirtyChange={setIsDirty}
+                            onDone={close}
+                        />
+                    ) : (
+                        <>
+                            <p className="flex min-h-6 items-center">
+                                <StatusBadge
+                                    variant={twoFactor.enabled ? 'ok' : 'muted'}
+                                >
+                                    {twoFactor.enabled
+                                        ? text.twoFactorEnabled
+                                        : twoFactor.pending
+                                          ? text.twoFactorPending
+                                          : text.twoFactorDisabled}
+                                </StatusBadge>
+                            </p>
+                            <p className="text-caption text-grey-dark mt-1">
+                                {twoFactor.enabled
+                                    ? text.twoFactorEnabledHelp
+                                    : text.twoFactorHelp}
                             </p>
                         </>
                     )}

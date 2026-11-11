@@ -55,12 +55,13 @@ export function LoginHistory({ events }: { events: AccountLoginEvent[] }) {
             key: 'twoFactor',
             header: text.twoFactor,
             cellClassName: 'text-grey-dark',
+            // A failure with 2FA means the password was right and the code wrong: worth telling apart.
             render: (event) =>
-                !event.succeeded
-                    ? text.notApplicable
-                    : event.twoFactorUsed
-                      ? text.yes
-                      : text.no,
+                event.twoFactorUsed
+                    ? text.yes
+                    : event.succeeded
+                      ? text.no
+                      : text.notApplicable,
         },
     ];
 

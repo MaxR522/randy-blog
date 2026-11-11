@@ -12,6 +12,8 @@ use App\Models\User;
 use App\Notifications\ConfirmRecoveryEmail;
 use App\Notifications\PasswordChanged;
 use App\Notifications\RecoveryEmailChanged;
+use App\Notifications\TwoFactorDisabled;
+use App\Notifications\TwoFactorEnabled;
 use App\Support\UserAgent;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\SessionGuard;
@@ -24,11 +26,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
+use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
+use Laravel\Fortify\Actions\EnableTwoFactorAuthentication;
+use Laravel\Fortify\Actions\GenerateNewRecoveryCodes;
+use Laravel\Fortify\Fortify;
 
 /**
- * « Gestion du compte », Security tab (spec §5.6.2), without two-factor authentication (session 8).
+ * « Gestion du compte », Security tab (spec §5.6.2).
  */
 class AccountSecurityController extends Controller
 {
@@ -42,6 +50,7 @@ class AccountSecurityController extends Controller
                 'recoveryEmail' => $user->recovery_email,
                 'recoveryEmailVerified' => $user->hasVerifiedRecoveryEmail(),
                 'recoveryPhone' => $user->recovery_phone,
+                'twoFactor' => $this->twoFactorState($user),
                 'devices' => $this->devices($request, $user),
                 'loginEvents' => $user->loginEvents()
                     ->latest('created_at')
@@ -107,10 +116,7 @@ class AccountSecurityController extends Controller
 
     public function destroyRecoveryEmail(Request $request): RedirectResponse
     {
-        $request->validate(
-            ['password' => ['required', 'string', 'current_password']],
-            ['password.required' => 'Le mot de passe actuel est obligatoire.', 'password.current_password' => 'Le mot de passe est incorrect.'],
-        );
+        $this->validateCurrentPassword($request);
 
         /** @var User $user */
         $user = $request->user();
@@ -158,6 +164,103 @@ class AccountSecurityController extends Controller
         $user->forceFill(['recovery_phone' => $phone, 'recovery_phone_verified_at' => null])->save();
 
         return Inertia::flash('success', $phone === null ? 'Téléphone de récupération supprimé.' : 'Téléphone de récupération enregistré.')->back();
+    }
+
+    /**
+     * « Activer la 2FA » (ADM-SEC-4): after the password, a new secret and 8 recovery codes, unused until a code from
+     * the app confirms the secret.
+     */
+    public function enableTwoFactor(Request $request, EnableTwoFactorAuthentication $enable): RedirectResponse
+    {
+        $this->validateCurrentPassword($request);
+
+        /** @var User $user */
+        $user = $request->user();
+
+        if ($user->hasEnabledTwoFactorAuthentication()) {
+            return back();
+        }
+
+        $enable($user, force: true);
+
+        return back();
+    }
+
+    /**
+     * The first code from the app turns 2FA on; the recovery codes are shown once, through the flash data.
+     */
+    public function confirmTwoFactor(Request $request, ConfirmTwoFactorAuthentication $confirm): RedirectResponse
+    {
+        $request->validate(['code' => ['required', 'string']], ['code.required' => 'Saisissez le code à 6 chiffres.']);
+
+        /** @var User $user */
+        $user = $request->user();
+
+        if ($user->hasEnabledTwoFactorAuthentication()) {
+            return back();
+        }
+
+        try {
+            $confirm($user, preg_replace('/\s+/', '', $request->string('code')->toString()));
+        } catch (ValidationException) {
+            // Fortify puts the error in a named bag, which the page does not read.
+            throw ValidationException::withMessages(['code' => 'Ce code est incorrect. Vérifiez l’heure de votre téléphone et réessayez.']);
+        }
+
+        $user->notify(new TwoFactorEnabled);
+
+        return Inertia::flash(['success' => 'Authentification à deux facteurs activée.', 'recoveryCodes' => $user->recoveryCodes()])->back();
+    }
+
+    /**
+     * « Annuler » during the setup drops the unconfirmed secret. A confirmed 2FA is only removed with the password.
+     */
+    public function cancelTwoFactor(Request $request, DisableTwoFactorAuthentication $disable): RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        if (! $user->hasEnabledTwoFactorAuthentication()) {
+            $disable($user);
+        }
+
+        return back();
+    }
+
+    /**
+     * « Régénérer les codes de récupération »: the old codes stop working.
+     */
+    public function regenerateRecoveryCodes(Request $request, GenerateNewRecoveryCodes $generate): RedirectResponse
+    {
+        $this->validateCurrentPassword($request);
+
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->hasEnabledTwoFactorAuthentication(), 404);
+
+        $generate($user);
+
+        return Inertia::flash(['success' => 'Nouveaux codes de récupération générés. Les anciens ne fonctionnent plus.', 'recoveryCodes' => $user->recoveryCodes()])->back();
+    }
+
+    /**
+     * « Désactiver la 2FA ».
+     */
+    public function disableTwoFactor(Request $request, DisableTwoFactorAuthentication $disable): RedirectResponse
+    {
+        $this->validateCurrentPassword($request);
+
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->hasEnabledTwoFactorAuthentication(), 404);
+
+        $disable($user);
+
+        $user->notify(new TwoFactorDisabled);
+
+        return Inertia::flash('success', 'Authentification à deux facteurs désactivée.')->back();
     }
 
     /**
@@ -233,6 +336,33 @@ class AccountSecurityController extends Controller
             ->sortByDesc('isCurrent')
             ->values()
             ->all();
+    }
+
+    /**
+     * The 2FA row: enabled, being set up (QR code and key, until a code confirms them), or off. The secret and the
+     * codes never reach the page once 2FA is on.
+     *
+     * @return array{enabled: bool, pending: bool, qrCodeSvg: string|null, secretKey: string|null}
+     */
+    private function twoFactorState(User $user): array
+    {
+        $isEnabled = $user->hasEnabledTwoFactorAuthentication();
+        $isPending = ! $isEnabled && $user->two_factor_secret !== null;
+
+        return [
+            'enabled' => $isEnabled,
+            'pending' => $isPending,
+            'qrCodeSvg' => $isPending ? $user->twoFactorQrCodeSvg() : null,
+            'secretKey' => $isPending ? trim(chunk_split(Fortify::currentEncrypter()->decrypt($user->two_factor_secret), 4, ' ')) : null,
+        ];
+    }
+
+    private function validateCurrentPassword(Request $request): void
+    {
+        $request->validate(
+            ['password' => ['required', 'string', 'current_password']],
+            ['password.required' => 'Le mot de passe actuel est obligatoire.', 'password.current_password' => 'Le mot de passe est incorrect.'],
+        );
     }
 
     /**
