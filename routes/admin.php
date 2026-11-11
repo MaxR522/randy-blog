@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AccountController;
+use App\Http\Controllers\Admin\AccountSecurityController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MediaController;
@@ -45,11 +46,18 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureAdminIsAuthenticated::
     Route::inertia('/abonnements', 'admin/placeholder', ['title' => 'Abonnements'])->name('subscriptions.index');
 
     Route::get('/compte', [AccountController::class, 'profile'])->name('account');
-    Route::inertia('/compte/securite', 'admin/placeholder', ['title' => 'Sécurité'])->name('account.security');
     Route::post('/compte/avatar', [AccountController::class, 'updateAvatar'])->middleware('throttle:20,1')->name('account.avatar');
     Route::patch('/compte/nom-affichage', [AccountController::class, 'updateDisplayName'])->name('account.display-name');
     Route::patch('/compte/biographie', [AccountController::class, 'updateBiography'])->name('account.biography');
     Route::post('/compte/email', [AccountController::class, 'requestEmailChange'])->middleware('throttle:6,1')->name('account.email');
+
+    Route::get('/compte/securite', [AccountSecurityController::class, 'show'])->name('account.security');
+    Route::put('/compte/mot-de-passe', [AccountSecurityController::class, 'updatePassword'])->middleware('throttle:6,1')->name('account.password');
+    Route::put('/compte/email-recuperation', [AccountSecurityController::class, 'updateRecoveryEmail'])->middleware('throttle:6,1')->name('account.recovery-email');
+    Route::delete('/compte/email-recuperation', [AccountSecurityController::class, 'destroyRecoveryEmail'])->middleware('throttle:6,1')->name('account.recovery-email.destroy');
+    Route::put('/compte/telephone-recuperation', [AccountSecurityController::class, 'updateRecoveryPhone'])->name('account.recovery-phone');
+    Route::delete('/compte/appareils', [AccountSecurityController::class, 'destroyOtherSessions'])->name('account.devices.destroy-others');
+    Route::delete('/compte/appareils/{device}', [AccountSecurityController::class, 'destroySession'])->name('account.devices.destroy');
 });
 
 /*
@@ -59,6 +67,13 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureAdminIsAuthenticated::
 Route::get('/admin/compte/email/confirmer/{user}', [AccountController::class, 'confirmEmailChange'])
     ->middleware('throttle:10,1')
     ->name('admin.account.email.confirm');
+
+/*
+ * The verification link of a recovery email (ADM-SEC-1), on the same terms.
+ */
+Route::get('/admin/compte/email-recuperation/confirmer/{user}', [AccountSecurityController::class, 'confirmRecoveryEmail'])
+    ->middleware('throttle:10,1')
+    ->name('admin.account.recovery-email.confirm');
 
 Route::post('/admin/deconnexion', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware(EnsureAdminIsAuthenticated::class)

@@ -28,6 +28,8 @@ type DataTableProps<Row> = {
     rowKey: (row: Row) => string | number;
     /** The same row under 768 px, as a card or a hairline row. */
     renderMobileItem: (row: Row) => ReactNode;
+    /** The rows of the phone list, when it shows fewer than the table, such as before « Afficher plus ». */
+    mobileRows?: Row[];
     /** Replaces the top rule of the phone list, for items that are cards with their own border. */
     mobileListClassName?: string;
 };
@@ -43,6 +45,7 @@ export function DataTable<Row>({
     rows,
     rowKey,
     renderMobileItem,
+    mobileRows = rows,
     mobileListClassName = 'border-primary border-t',
 }: DataTableProps<Row>) {
     return (
@@ -77,7 +80,7 @@ export function DataTable<Row>({
                 </tbody>
             </table>
             <ul className={cn('tablet:hidden', mobileListClassName)}>
-                {rows.map((row) => (
+                {mobileRows.map((row) => (
                     <li key={rowKey(row)}>{renderMobileItem(row)}</li>
                 ))}
             </ul>

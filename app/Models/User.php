@@ -3,9 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\SecurityAlert;
 use App\Observers\UserObserver;
 use App\Support\ArticleHtml;
 use Database\Factories\UserFactory;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -14,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\Notification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -27,6 +30,10 @@ use Illuminate\Support\Str;
  * @property string|null $avatar_credit
  * @property string|null $bio
  * @property Carbon|null $email_verified_at
+ * @property string|null $recovery_email
+ * @property Carbon|null $recovery_email_verified_at
+ * @property string|null $recovery_phone
+ * @property Carbon|null $recovery_phone_verified_at
  * @property string $password
  * @property string|null $remember_token
  * @property Carbon|null $created_at
@@ -50,6 +57,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'recovery_email_verified_at' => 'datetime',
+            'recovery_phone_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -60,6 +69,47 @@ class User extends Authenticatable
     public function articles(): HasMany
     {
         return $this->hasMany(Article::class, 'author_id');
+    }
+
+    /**
+     * @return HasMany<LoginEvent, $this>
+     */
+    public function loginEvents(): HasMany
+    {
+        return $this->hasMany(LoginEvent::class);
+    }
+
+    /**
+     * A recovery email counts only once its link has been opened (ADM-SEC-1).
+     */
+    public function hasVerifiedRecoveryEmail(): bool
+    {
+        return $this->recovery_email !== null && $this->recovery_email_verified_at !== null;
+    }
+
+    /**
+     * Where password reset links and security alerts go: the login email, plus the verified recovery email
+     * (ADM-SEC-1, ADM-AUTH-2).
+     *
+     * @return list<string>
+     */
+    public function securityEmailAddresses(): array
+    {
+        return $this->hasVerifiedRecoveryEmail() ? [$this->email, (string) $this->recovery_email] : [$this->email];
+    }
+
+    /**
+     * Reset links and security alerts also reach the recovery email; everything else goes to the login email.
+     *
+     * @return string|list<string>
+     */
+    public function routeNotificationForMail(Notification $notification): string|array
+    {
+        if ($notification instanceof ResetPassword || $notification instanceof SecurityAlert) {
+            return $this->securityEmailAddresses();
+        }
+
+        return $this->email;
     }
 
     /**

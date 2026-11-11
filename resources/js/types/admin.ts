@@ -41,6 +41,40 @@ export type EditorArticle = {
 /**
  * The author's own fields on the account Profile tab.
  */
+export type AccountDevice = {
+    /** Keyed hash of the session ID: the ID itself never reaches the page. */
+    key: string;
+    /** « Firefox · Linux · ordinateur » */
+    device: string;
+    /** « Firefox · Linux » */
+    shortDevice: string;
+    ip: string | null;
+    /** « Maintenant », « Il y a 2 heures », « 3 novembre 2026 » */
+    lastActivity: string;
+    isCurrent: boolean;
+};
+
+export type AccountLoginEvent = {
+    id: number;
+    /** « 7 novembre 2026, 09 h 12 » */
+    date: string;
+    /** « 7 nov. 2026, 09 h 12 » */
+    shortDate: string;
+    device: string;
+    ip: string | null;
+    succeeded: boolean;
+    twoFactorUsed: boolean;
+};
+
+export type AccountSecurity = {
+    recoveryEmail: string | null;
+    recoveryEmailVerified: boolean;
+    /** E.164, such as « +261340000000 ». */
+    recoveryPhone: string | null;
+    devices: AccountDevice[];
+    loginEvents: AccountLoginEvent[];
+};
+
 export type AccountProfile = {
     avatar: string | null;
     avatarCredit: string | null;

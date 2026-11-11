@@ -42,7 +42,6 @@ test('each section opens for a logged-in author', function (string $path, string
         ->assertInertia(fn (Assert $page) => $page->component('admin/placeholder')->where('title', $title));
 })->with([
     ['/admin/abonnements', 'Abonnements'],
-    ['/admin/compte/securite', 'Sécurité'],
 ]);
 
 test('the new article page opens the editor for a logged-in author', function () {

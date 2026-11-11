@@ -1,27 +1,30 @@
-import { Link, router, useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import type { FormEvent, ReactNode } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { EditorProps } from '@/components/admin/account-row';
+import {
+    AccountRow,
+    AccountTabs,
+    FieldValue,
+    useFocusOnOpen,
+    useInlineEditing,
+} from '@/components/admin/account-row';
 import { AdminHead } from '@/components/admin/admin-head';
 import {
     AvatarEditor,
     AvatarPlaceholder,
     EditorActions,
 } from '@/components/admin/avatar-editor';
-import { ConfirmModal } from '@/components/admin/confirm-modal';
 import { PasswordField } from '@/components/admin/password-field';
 import { RichTextEditor } from '@/components/admin/rich-text-editor';
 import { TextField } from '@/components/admin/text-field';
 import { Button } from '@/components/public/button';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { useUnsavedChangesGuard } from '@/lib/unsaved-changes';
-import { cn } from '@/lib/utils';
-import { account } from '@/routes/admin';
 import {
     biography,
     displayName,
     email as emailRoute,
-    security,
 } from '@/routes/admin/account';
 import type { AccountProfile } from '@/types/admin';
 
@@ -38,23 +41,8 @@ type AccountProfileProps = {
  * at a time, the other « Modifier » buttons being disabled meanwhile.
  */
 export default function AccountProfilePage({ profile }: AccountProfileProps) {
-    const [editing, setEditing] = useState<Field | null>(null);
-    const [isDirty, setIsDirty] = useState(false);
-    const [leavingUrl, setLeavingUrl] = useState<string | null>(null);
-    const isLeavingRef = useRef(false);
-    const editButtons = useRef(new Map<Field, HTMLButtonElement>());
-
-    useUnsavedChangesGuard(isDirty, isLeavingRef, setLeavingUrl);
-
-    const close = useCallback(() => {
-        const field = editing;
-        setEditing(null);
-        setIsDirty(false);
-        // Back on the button that opened the editor, once it is enabled again.
-        requestAnimationFrame(
-            () => field && editButtons.current.get(field)?.focus(),
-        );
-    }, [editing]);
+    const { rowProps, close, setIsDirty, leaveModal } =
+        useInlineEditing<Field>();
 
     function row(
         field: Field,
@@ -63,23 +51,13 @@ export default function AccountProfilePage({ profile }: AccountProfileProps) {
         editor: ReactNode,
         help?: ReactNode,
     ) {
-        const isEditing = editing === field;
+        const props = rowProps(field);
 
         return (
-            <ProfileRow
-                label={label}
-                isEditing={isEditing}
-                isLocked={editing !== null && !isEditing}
-                onEdit={() => setEditing(field)}
-                editButtonRef={(button) => {
-                    if (button) {
-                        editButtons.current.set(field, button);
-                    }
-                }}
-            >
-                {isEditing ? editor : display}
-                {!isEditing && help}
-            </ProfileRow>
+            <AccountRow label={label} {...props}>
+                {props.isEditing ? editor : display}
+                {!props.isEditing && help}
+            </AccountRow>
         );
     }
 
@@ -162,20 +140,7 @@ export default function AccountProfilePage({ profile }: AccountProfileProps) {
                 )}
             </div>
 
-            <ConfirmModal
-                isOpen={leavingUrl !== null}
-                onClose={() => setLeavingUrl(null)}
-                onConfirm={() => {
-                    isLeavingRef.current = true;
-
-                    if (leavingUrl) {
-                        router.visit(leavingUrl);
-                    }
-                }}
-                title={text.leaveTitle}
-                description={text.leaveDescription}
-                confirmLabel={text.leaveConfirm}
-            />
+            {leaveModal}
         </>
     );
 }
@@ -183,124 +148,6 @@ export default function AccountProfilePage({ profile }: AccountProfileProps) {
 AccountProfilePage.layout = (page: ReactNode) => (
     <AdminLayout>{page}</AdminLayout>
 );
-
-/**
- * « Profil » and « Sécurité »: two pages, so links marked with `aria-current` rather than ARIA tabs.
- */
-export function AccountTabs({ current }: { current: 'profile' | 'security' }) {
-    const tabs = [
-        { key: 'profile', label: text.profileTab, href: account.url() },
-        { key: 'security', label: text.securityTab, href: security.url() },
-    ] as const;
-
-    return (
-        <nav
-            aria-label={text.tabs}
-            className="border-grey-light tablet:gap-7 flex border-b"
-        >
-            {tabs.map((tab) => {
-                const isCurrent = tab.key === current;
-
-                return (
-                    <Link
-                        key={tab.key}
-                        href={tab.href}
-                        aria-current={isCurrent ? 'page' : undefined}
-                        className={cn(
-                            'tablet:flex-none -mb-px flex h-11 flex-1 items-center justify-center border-b-2 text-[0.9375rem]',
-                            isCurrent
-                                ? 'border-primary text-primary font-semibold'
-                                : 'text-grey-dark hover:text-primary border-transparent font-medium',
-                        )}
-                    >
-                        {tab.label}
-                    </Link>
-                );
-            })}
-        </nav>
-    );
-}
-
-type ProfileRowProps = {
-    label: string;
-    isEditing: boolean;
-    isLocked: boolean;
-    onEdit: () => void;
-    editButtonRef: (button: HTMLButtonElement | null) => void;
-    children: ReactNode;
-};
-
-/**
- * One field: label, value or editor, « Modifier ». Label and button share a line on phone, the value goes below;
- * from tablet the three sit in columns.
- */
-function ProfileRow({
-    label,
-    isEditing,
-    isLocked,
-    onEdit,
-    editButtonRef,
-    children,
-}: ProfileRowProps) {
-    return (
-        <section
-            aria-label={label}
-            className="border-grey-light tablet:grid-cols-[13.75rem_minmax(0,1fr)_auto] tablet:gap-x-6 tablet:py-6 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-3 border-b py-5"
-        >
-            <h2 className="tablet:leading-6 tablet:min-h-0 flex min-h-11 items-center text-[0.9375rem] font-semibold">
-                {label}
-            </h2>
-            <div className="tablet:col-span-1 tablet:col-start-2 tablet:row-start-1 col-span-2 min-w-0">
-                {children}
-            </div>
-            {!isEditing && (
-                <Button
-                    ref={editButtonRef}
-                    variant="secondary"
-                    onClick={onEdit}
-                    disabled={isLocked}
-                    title={isLocked ? text.locked : undefined}
-                    className="tablet:col-start-3 tablet:row-start-1 col-start-2 row-start-1 px-4"
-                >
-                    {text.edit}
-                    <span className="sr-only"> : {label.toLowerCase()}</span>
-                </Button>
-            )}
-        </section>
-    );
-}
-
-function FieldValue({ value }: { value: string | null }) {
-    return value ? (
-        <p className="tablet:text-base text-[0.9375rem] leading-6 wrap-anywhere">
-            {value}
-        </p>
-    ) : (
-        <p className="text-grey-dark tablet:text-base text-[0.9375rem] leading-6">
-            {text.empty}
-        </p>
-    );
-}
-
-type EditorProps = {
-    onDirtyChange: (isDirty: boolean) => void;
-    onDone: () => void;
-};
-
-/**
- * Focus the first field when an inline editor opens.
- */
-function useFocusOnOpen() {
-    const containerRef = useRef<HTMLFormElement>(null);
-
-    useEffect(() => {
-        containerRef.current
-            ?.querySelector<HTMLElement>('input, [contenteditable], iframe')
-            ?.focus();
-    }, []);
-
-    return containerRef;
-}
 
 function DisplayNameEditor({
     value,
