@@ -86,14 +86,14 @@ Spec §5.6.1. Boards: `Admin-Compte-Profil`, `Admin-Compte-Profil-360`.
 
 Spec §5.6.2 (ADM-SEC-1, 2, 3, 5, 6, 7). Boards: `Admin-Compte-Securite`, `Admin-Compte-Securite-360`.
 
-Decision: Q6, recommended storing the recovery phone only.
+Decided (2026-11-11): Q6 recovery phone stored only; user agent parsed in-house (`App\Support\UserAgent`); « Lieu approximatif » dropped (no GeoIP, removed from the boards); security alerts queued, so production needs a queue worker.
 
-- [ ] Password change with rules and logout of other sessions
-- [ ] Recovery email, a second address that must differ from the login email, with verification link; recovery phone
-- [ ] Send the reset link to the recovery email too, and restore the board wording on the forgotten password page (ADM-AUTH-2)
-- [ ] Connected devices from `sessions`, per-device and global logout
-- [ ] `login_events` migration and login history
-- [ ] Security alert emails
+- [x] Password change with rules and logout of other sessions
+- [x] Recovery email, a second address that must differ from the login email, with verification link; recovery phone
+- [x] Send the reset link to the recovery email too, and restore the board wording on the forgotten password page (ADM-AUTH-2)
+- [x] Connected devices from `sessions`, per-device and global logout
+- [x] `login_events` migration and login history
+- [x] Security alert emails (new device, password change, recovery email change; 2FA changes come with session 8)
 
 ### 8. Two-factor authentication
 
@@ -101,7 +101,8 @@ Spec ADM-SEC-4, ADM-AUTH-2. Boards: 2FA parts of `Admin-Compte-Securite` and `Ad
 
 - [ ] Users migration (`vendor:publish --tag=fortify-migrations`, keep only the 2FA one), enable the Fortify feature, `TwoFactorAuthenticatable` on `User`, hide its columns
 - [ ] QR enable and confirm, 8 recovery codes, regenerate, disable (password required)
-- [ ] Challenge page `/admin/deux-facteurs` with its routes in `routes/admin.php` (Fortify's are ignored), recovery code login, `two_factor_used` in the history
+- [ ] Challenge page `/admin/deux-facteurs` with its routes in `routes/admin.php` (Fortify's are ignored), recovery code login, `two_factor_used` in the history (`RecordLoginEvent` only records on `login.store` today: add the challenge route)
+- [ ] Security alert on 2FA enable and disable (a notification implementing `SecurityAlert`)
 
 ## Article editor helpers
 

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -10,9 +11,9 @@ use Illuminate\Validation\Rule;
 class LoginEmailRequest extends FormRequest
 {
     /**
-     * A new login email, confirmed by the current password (ADM-ACC-4).
+     * A new login email, confirmed by the current password (ADM-ACC-4). It may not be the recovery email (ADM-SEC-1).
      *
-     * @return array<string, array<int, ValidationRule|string>>
+     * @return array<string, array<int, ValidationRule|Closure|string>>
      */
     public function rules(): array
     {
@@ -20,7 +21,16 @@ class LoginEmailRequest extends FormRequest
         $user = $this->user();
 
         return [
-            'email' => ['required', 'string', 'email', 'max:255', Rule::notIn([mb_strtolower($user->email)]), Rule::unique(User::class, 'email')->ignore($user->id)],
+            'email' => [
+                'required', 'string', 'email', 'max:255',
+                Rule::notIn([mb_strtolower($user->email)]),
+                function (string $attribute, mixed $value, Closure $fail) use ($user): void {
+                    if ($user->recovery_email !== null && $value === $user->recovery_email) {
+                        $fail('C’est votre email de récupération : choisissez une autre adresse de connexion.');
+                    }
+                },
+                Rule::unique(User::class, 'email')->ignore($user->id),
+            ],
             'password' => ['required', 'string', 'current_password'],
         ];
     }

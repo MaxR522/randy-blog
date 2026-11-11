@@ -18,7 +18,7 @@ export const adminLabels = {
     forgotPassword: {
         title: 'Mot de passe oublié',
         back: 'Retour à la connexion',
-        intro: 'Saisissez votre adresse de connexion. Un lien de réinitialisation, valable 60 minutes, sera envoyé à cette adresse.',
+        intro: 'Saisissez votre adresse de connexion. Un lien de réinitialisation, valable 60 minutes, sera envoyé à cette adresse et à votre email de récupération.',
         submit: 'Envoyer le lien',
     },
     resetPassword: {
@@ -234,5 +234,69 @@ export const adminLabels = {
         leaveTitle: 'Quitter sans enregistrer ?',
         leaveDescription: 'La modification en cours sera perdue.',
         leaveConfirm: 'Quitter la page',
+    },
+    security: {
+        recoveryEmail: 'Email de récupération',
+        recoveryEmailHelp:
+            'Sert à la réinitialisation du mot de passe et aux alertes de sécurité. Toute nouvelle adresse est vérifiée par un lien avant d’être active.',
+        newRecoveryEmail: 'Adresse email de récupération',
+        removeRecoveryEmail: 'Supprimer l’adresse',
+        verified: 'Vérifié',
+        unverified: 'Non vérifié',
+        recoveryPhone: 'Téléphone de récupération',
+        recoveryPhoneHelp:
+            'Enregistré et affiché seulement : la vérification par SMS attend le choix d’un fournisseur.',
+        recoveryPhoneShortHelp:
+            'Enregistré seulement : pas encore de vérification par SMS.',
+        phoneNumber: 'Numéro de téléphone',
+        phoneNumberHelp:
+            'Format international, par exemple +261 34 00 000 00. Laissez vide pour le supprimer.',
+        password: 'Mot de passe',
+        passwordMask: '••••••••••••',
+        currentPassword: 'Mot de passe actuel',
+        newPassword: 'Nouveau mot de passe',
+        confirmPassword: 'Confirmer le nouveau mot de passe',
+        passwordRules: {
+            length: '12 caractères minimum',
+            mixedCase: 'Majuscules et minuscules',
+            number: 'Au moins un chiffre',
+            symbol: 'Au moins un symbole',
+            uncompromised:
+                'Absent des fuites de données connues (vérifié à l’envoi)',
+            met: 'respecté',
+            unmet: 'non respecté',
+        },
+        otherDevicesLoggedOut: 'Les autres appareils seront déconnectés.',
+        devices: 'Appareils connectés',
+        devicesCaption: 'Sessions ouvertes sur le compte',
+        device: 'Appareil',
+        ip: 'Adresse IP',
+        lastActivity: 'Dernière activité',
+        action: 'Action',
+        thisDevice: 'Cet appareil',
+        logOutDevice: 'Déconnecter',
+        logOutDeviceLabel: (device: string) => `Déconnecter ${device}`,
+        logOutDeviceTitle: 'Déconnecter cet appareil ?',
+        logOutDeviceDescription: (device: string) =>
+            `${device} devra se reconnecter avec le mot de passe.`,
+        logOutOthers: 'Déconnecter tous les autres appareils',
+        logOutOthersTitle: 'Déconnecter tous les autres appareils ?',
+        logOutOthersDescription:
+            'Seul cet appareil restera connecté. Les autres devront se reconnecter avec le mot de passe.',
+        noOtherDevice: 'Aucun autre appareil n’est connecté.',
+        history: 'Historique des connexions',
+        historyCaption: 'Les 50 dernières connexions',
+        date: 'Date',
+        result: 'Résultat',
+        twoFactor: '2FA',
+        succeeded: 'Réussie',
+        failed: 'Échouée',
+        yes: 'Oui',
+        no: 'Non',
+        notApplicable: '—',
+        historyHelp:
+            'Les 50 dernières connexions. Une alerte email part lors d’une connexion depuis un nouvel appareil et à chaque changement de mot de passe ou de 2FA.',
+        noHistory: 'Aucune connexion enregistrée pour le moment.',
+        showMore: 'Afficher plus',
     },
 };

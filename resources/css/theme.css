@@ -214,6 +214,15 @@
     a {
         transition: color var(--duration-fast) var(--ease-standard);
     }
+    /* Tailwind v4's preflight gives buttons the default arrow: everything clickable gets the hand. A disabled
+       control keeps the arrow, and a utility (cursor-not-allowed, cursor-progress, cursor-grab) still wins. */
+    button:not(:disabled, [aria-disabled='true']),
+    [role='button']:not([aria-disabled='true']),
+    select:not(:disabled),
+    input:is([type='checkbox'], [type='radio']):not(:disabled),
+    label:has(> input:is([type='checkbox'], [type='radio']):not(:disabled)) {
+        cursor: pointer;
+    }
     :focus-visible {
         outline: var(--focus-ring-width) solid var(--focus-ring-color);
         outline-offset: var(--focus-ring-offset);

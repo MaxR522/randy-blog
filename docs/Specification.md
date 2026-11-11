@@ -376,13 +376,13 @@ Each field is displayed read-only with a « Modifier » button. Clicking it repl
 #### 5.6.2 Security tab
 
 - **ADM-SEC-1** « Email de récupération »: add/edit. It must differ from the login email. Verified by a link sent to that address before it becomes active. Used for password reset and security alerts.
-- **ADM-SEC-2** « Téléphone de récupération »: add/edit, international format. **Verification by SMS requires an SMS provider — see open question Q6.** Until decided, the number is stored and displayed only.
+- **ADM-SEC-2** « Téléphone de récupération »: add/edit, international format. No SMS verification (Q6): the number is stored in E.164 and displayed only, marked « Non vérifié ».
 - **ADM-SEC-3** « Modifier le mot de passe »: current password, new password, confirmation. Rules: min 12 characters, mixed case, number, symbol, not found in known data breaches. On success, other sessions are logged out.
 - **ADM-SEC-4** « Authentification à deux facteurs (2FA) »:
   - Enable: show a QR code (TOTP, compatible with Google Authenticator, Authy, 1Password…), confirm with a 6-digit code, then show 8 single-use recovery codes to save.
   - When enabled: login asks for the TOTP code (or a recovery code) after the password.
   - Actions: « Régénérer les codes de récupération », « Désactiver la 2FA » (both require the password).
-- **ADM-SEC-5** « Appareils connectés »: list of active sessions (browser, OS, device type, IP, approximate location **(added, optional)**, last activity), with « Cet appareil » on the current session. Actions: « Déconnecter » per session, « Déconnecter tous les autres appareils ».
+- **ADM-SEC-5** « Appareils connectés »: list of active sessions (browser, OS, device type, IP, last activity; approximate location dropped, no GeoIP), with « Cet appareil » on the current session. Actions: « Déconnecter » per session, « Déconnecter tous les autres appareils ».
 - **ADM-SEC-6 (added)** « Historique des connexions »: the last 50 login events (date, device, IP, success/failure, 2FA used).
 - **ADM-SEC-7 (added)** Security email alert on a login from a new device and on password/2FA changes.
 
@@ -649,7 +649,7 @@ A rehearsal on a copy of production data MUST be done before the real migration.
 | Q3 | Which email provider? | See §7.6. |
 | Q4 | Timezone for displayed dates: `Europe/Paris` or `Indian/Antananarivo`? | Storage stays UTC. |
 | Q5 | Author profile URL: keep `/profile/randy-donny` or move to `/profil/randy-donny` with a redirect? | |
-| Q6 | Recovery phone number: is SMS verification needed (requires an SMS provider, e.g. Twilio / Brevo SMS), or is storing the number enough? | |
+| Q6 | Recovery phone number: is SMS verification needed (requires an SMS provider, e.g. Twilio / Brevo SMS), or is storing the number enough? | **Decided (2026-11-11):** store and display it only, in E.164, always « Non vérifié » (ADM-SEC-2). |
 | Q7 | Hosting and backups: where is V2 deployed (same host as V1?), and where are daily database backups stored? | |
 | Q8 | Drafts: may a draft be saved with only a title (ADM-ART-29)? | Recommended: yes. |
 | Q9 | Re-publishing an archived article: keep the original publication date (ADM-ART-61)? | Recommended: yes. |
