@@ -16,6 +16,8 @@ declare module '@inertiajs/core' {
         flashDataType: {
             success?: string;
             error?: string;
+            /** Shown once, right after 2FA is confirmed or its codes regenerated. */
+            recoveryCodes?: string[];
         };
     }
 }

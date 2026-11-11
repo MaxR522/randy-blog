@@ -99,10 +99,23 @@ Decided (2026-11-11): Q6 recovery phone stored only; user agent parsed in-house 
 
 Spec ADM-SEC-4, ADM-AUTH-2. Boards: 2FA parts of `Admin-Compte-Securite` and `Admin-Connexion`.
 
-- [ ] Users migration (`vendor:publish --tag=fortify-migrations`, keep only the 2FA one), enable the Fortify feature, `TwoFactorAuthenticatable` on `User`, hide its columns
-- [ ] QR enable and confirm, 8 recovery codes, regenerate, disable (password required)
-- [ ] Challenge page `/admin/deux-facteurs` with its routes in `routes/admin.php` (Fortify's are ignored), recovery code login, `two_factor_used` in the history (`RecordLoginEvent` only records on `login.store` today: add the challenge route)
-- [ ] Security alert on 2FA enable and disable (a notification implementing `SecurityAlert`)
+Decided (2026-11-11): TOTP through Fortify (no email or SMS codes); the password is checked inline in the Security tab, so Fortify's confirm-password page is off (`confirmPassword => false`); the recovery codes are shown once, through Inertia flash data.
+
+- [x] Users migration (`vendor:publish --tag=fortify-migrations`, keep only the 2FA one), enable the Fortify feature, `TwoFactorAuthenticatable` on `User`, hide its columns
+- [x] QR enable and confirm, 8 recovery codes, regenerate, disable (password required)
+- [x] Challenge page `/admin/deux-facteurs` with its routes in `routes/admin.php` (Fortify's are ignored), recovery code login, `two_factor_used` in the history (`RecordLoginEvent` also records on the challenge route and on `TwoFactorAuthenticationFailed`)
+- [x] Security alert on 2FA enable and disable (`TwoFactorEnabled`, `TwoFactorDisabled`, implementing `SecurityAlert`)
+
+### 8b. Passkeys
+
+Not in the spec yet: add an ADM-SEC requirement first. Boards: draw a « Clés d'accès » row on `Admin-Compte-Securite` / `-360` and a passkey button on `Admin-Connexion` / `-360` before coding.
+
+Decided (2026-11-11): Fortify's passkeys (`laravel/passkeys`, already installed with Fortify); dependency `@laravel/passkeys` (npm, 0.4.1, pre-1.0) approved. A passkey login skips the TOTP challenge: the passkey is itself a second factor. Passkeys are kept in the password manager.
+
+- [ ] Passkeys migration (`vendor:publish --tag=fortify-migrations`, keep only the passkeys one), enable `Features::passkeys()`, `PasskeyAuthenticatable` and `PasskeyUser` on `User`, routes in `routes/admin.php` with throttles, management guarded by the password inline as in session 8
+- [ ] Security tab « Clés d'accès » row: add (name), list (name, added, last used), delete (password required)
+- [ ] Login page: « Se connecter avec une clé d'accès » button and conditional UI (autofill from the email field)
+- [ ] `RecordLoginEvent` records passkey logins (history shows « Clé d'accès »), security alert on passkey added and deleted
 
 ## Article editor helpers
 

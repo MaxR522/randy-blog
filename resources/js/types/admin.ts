@@ -66,11 +66,22 @@ export type AccountLoginEvent = {
     twoFactorUsed: boolean;
 };
 
+/**
+ * The 2FA row: QR code and key only while the setup waits for its first code.
+ */
+export type AccountTwoFactor = {
+    enabled: boolean;
+    pending: boolean;
+    qrCodeSvg: string | null;
+    secretKey: string | null;
+};
+
 export type AccountSecurity = {
     recoveryEmail: string | null;
     recoveryEmailVerified: boolean;
     /** E.164, such as « +261340000000 ». */
     recoveryPhone: string | null;
+    twoFactor: AccountTwoFactor;
     devices: AccountDevice[];
     loginEvents: AccountLoginEvent[];
 };

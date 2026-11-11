@@ -40,6 +40,7 @@ class FortifyServiceProvider extends ServiceProvider
 
         $this->configureViews();
         $this->configurePasswordReset();
+        $this->configureTwoFactorChallenge();
     }
 
     /**
@@ -54,6 +55,8 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::requestPasswordResetLinkView(fn (Request $request): Response => Inertia::render('admin/forgot-password', [
             'status' => $request->session()->get('status'),
         ]));
+
+        Fortify::twoFactorChallengeView(fn (): Response => Inertia::render('admin/two-factor-challenge'));
 
         Fortify::resetPasswordView(fn (Request $request): Response => Inertia::render('admin/reset-password', [
             'token' => $request->route('token'),
@@ -82,6 +85,18 @@ class FortifyServiceProvider extends ServiceProvider
             ->by($request->ip())
             ->response(fn (Request $request, array $headers) => back()->withErrors([
                 Fortify::email() => trans('auth.throttle', ['seconds' => $headers['Retry-After']]),
+            ])));
+    }
+
+    /**
+     * The 2FA challenge allows 5 codes a minute per pending login (NFR-SEC-4), and answers on the form.
+     */
+    protected function configureTwoFactorChallenge(): void
+    {
+        RateLimiter::for('admin-two-factor', fn (Request $request): Limit => Limit::perMinute(5)
+            ->by($request->session()->get('login.id').'|'.$request->ip())
+            ->response(fn (Request $request, array $headers) => back()->withErrors([
+                $request->filled('recovery_code') ? 'recovery_code' : 'code' => trans('auth.throttle', ['seconds' => $headers['Retry-After']]),
             ])));
     }
 }

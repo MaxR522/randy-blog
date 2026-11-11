@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use Laravel\Fortify\Http\Controllers\NewPasswordController;
 use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
+use Laravel\Fortify\Http\Controllers\TwoFactorAuthenticatedSessionController;
 
 /*
  * Authentication, on Fortify's controllers and route names, with French URLs.
@@ -17,6 +18,11 @@ use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
 Route::prefix('admin')->middleware('guest')->group(function () {
     Route::get('/connexion', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/connexion', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+
+    Route::get('/deux-facteurs', [TwoFactorAuthenticatedSessionController::class, 'create'])->name('two-factor.login');
+    Route::post('/deux-facteurs', [TwoFactorAuthenticatedSessionController::class, 'store'])
+        ->middleware('throttle:admin-two-factor')
+        ->name('two-factor.login.store');
 
     Route::get('/mot-de-passe-oublie', [PasswordResetLinkController::class, 'create'])->name('password.request');
     Route::post('/mot-de-passe-oublie', [PasswordResetLinkController::class, 'store'])
@@ -56,6 +62,11 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureAdminIsAuthenticated::
     Route::put('/compte/email-recuperation', [AccountSecurityController::class, 'updateRecoveryEmail'])->middleware('throttle:6,1')->name('account.recovery-email');
     Route::delete('/compte/email-recuperation', [AccountSecurityController::class, 'destroyRecoveryEmail'])->middleware('throttle:6,1')->name('account.recovery-email.destroy');
     Route::put('/compte/telephone-recuperation', [AccountSecurityController::class, 'updateRecoveryPhone'])->name('account.recovery-phone');
+    Route::post('/compte/2fa', [AccountSecurityController::class, 'enableTwoFactor'])->middleware('throttle:6,1')->name('account.two-factor.enable');
+    Route::put('/compte/2fa', [AccountSecurityController::class, 'confirmTwoFactor'])->middleware('throttle:6,1')->name('account.two-factor.confirm');
+    Route::delete('/compte/2fa/activation', [AccountSecurityController::class, 'cancelTwoFactor'])->name('account.two-factor.cancel');
+    Route::post('/compte/2fa/codes', [AccountSecurityController::class, 'regenerateRecoveryCodes'])->middleware('throttle:6,1')->name('account.two-factor.recovery-codes');
+    Route::delete('/compte/2fa', [AccountSecurityController::class, 'disableTwoFactor'])->middleware('throttle:6,1')->name('account.two-factor.disable');
     Route::delete('/compte/appareils', [AccountSecurityController::class, 'destroyOtherSessions'])->name('account.devices.destroy-others');
     Route::delete('/compte/appareils/{device}', [AccountSecurityController::class, 'destroySession'])->name('account.devices.destroy');
 });

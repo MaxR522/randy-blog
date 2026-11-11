@@ -15,6 +15,17 @@ export const adminLabels = {
         remember: 'Se souvenir de moi',
         submit: 'Se connecter',
     },
+    twoFactorChallenge: {
+        title: 'Vérification en deux étapes',
+        intro: 'Saisissez le code à 6 chiffres affiché par votre application d’authentification.',
+        recoveryIntro:
+            'Saisissez l’un des codes de récupération enregistrés lors de l’activation. Chaque code ne sert qu’une fois.',
+        code: 'Code de vérification',
+        recoveryCode: 'Code de récupération',
+        submit: 'Vérifier',
+        useRecoveryCode: 'Utiliser un code de récupération',
+        useAppCode: 'Utiliser le code de l’application',
+    },
     forgotPassword: {
         title: 'Mot de passe oublié',
         back: 'Retour à la connexion',
@@ -267,6 +278,35 @@ export const adminLabels = {
             unmet: 'non respecté',
         },
         otherDevicesLoggedOut: 'Les autres appareils seront déconnectés.',
+        twoFactorTitle: 'Authentification à deux facteurs (2FA)',
+        twoFactorEnabled: 'Activée',
+        twoFactorDisabled: 'Désactivée',
+        twoFactorPending: 'En cours d’activation',
+        twoFactorHelp:
+            'Chaque connexion demande, après le mot de passe, le code à 6 chiffres d’une application d’authentification.',
+        twoFactorEnabledHelp:
+            'Chaque connexion demande le code de votre application d’authentification, ou un code de récupération.',
+        twoFactorPasswordHelp:
+            'Saisissez votre mot de passe pour générer le QR code d’activation.',
+        twoFactorContinue: 'Continuer',
+        twoFactorScan:
+            'Activation : scannez le QR code avec Google Authenticator, Authy, 1Password… puis saisissez le code à 6 chiffres.',
+        twoFactorQrCode: 'QR code d’activation',
+        twoFactorKey: 'Ou saisissez la clé :',
+        twoFactorCode: 'Code de vérification',
+        twoFactorEnable: 'Activer la 2FA',
+        recoveryCodes: 'Codes de récupération',
+        recoveryCodesHelp:
+            'Gardez-les en lieu sûr. Chaque code ne sert qu’une fois. Ils ne seront plus affichés.',
+        copyCodes: 'Copier',
+        codesCopied: 'Codes copiés',
+        downloadCodes: 'Télécharger',
+        codesFileName: 'codes-recuperation-randy-donny.txt',
+        done: 'Terminé',
+        twoFactorManageHelp:
+            'Saisissez votre mot de passe pour régénérer les codes de récupération ou désactiver la 2FA.',
+        regenerateCodes: 'Régénérer les codes de récupération',
+        disableTwoFactor: 'Désactiver la 2FA',
         devices: 'Appareils connectés',
         devicesCaption: 'Sessions ouvertes sur le compte',
         device: 'Appareil',
