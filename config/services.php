@@ -48,6 +48,16 @@ return [
         'model' => env('GEMINI_MODEL', 'gemini-3.5-flash-lite'),
     ],
 
+    /*
+     * Google Analytics 4: the measurement ID is for the public tag, the property ID and the service account JSON key
+     * (a Viewer on the property) for the admin dashboard's GA4 Data API calls.
+     */
+    'google_analytics' => [
+        'measurement_id' => env('GOOGLE_ANALYTICS_MEASUREMENT_ID'),
+        'property_id' => env('GOOGLE_ANALYTICS_PROPERTY_ID'),
+        'credentials_json' => env('GOOGLE_ANALYTICS_CREDENTIALS_JSON'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],

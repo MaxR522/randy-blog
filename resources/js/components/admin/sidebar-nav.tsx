@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    BarChart3,
     ExternalLink,
     FileText,
     Folder,
@@ -11,7 +12,7 @@ import type { LucideIcon } from 'lucide-react';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { cn } from '@/lib/utils';
 import { home, logout } from '@/routes';
-import { account } from '@/routes/admin';
+import { account, index as analytics } from '@/routes/admin';
 import articles from '@/routes/admin/articles';
 import categories from '@/routes/admin/categories';
 import newsletters from '@/routes/admin/newsletters';
@@ -25,7 +26,15 @@ const items: {
     href: string;
     icon: LucideIcon;
     sections?: string[];
+    /** Matches the path itself only, since `/admin` is the start of every other admin path. */
+    isExact?: boolean;
 }[] = [
+    {
+        label: text.analytics,
+        href: analytics.url(),
+        icon: BarChart3,
+        isExact: true,
+    },
     { label: text.articles, href: articles.index.url(), icon: FileText },
     { label: text.categories, href: categories.index.url(), icon: Folder },
     {
@@ -64,13 +73,23 @@ export function SidebarNav({ label, isCollapsed = false }: SidebarNavProps) {
     return (
         <nav aria-label={label} className="flex flex-1 flex-col gap-1">
             {items.map(
-                ({ label: itemLabel, href, icon: Icon, sections = [] }) => {
+                ({
+                    label: itemLabel,
+                    href,
+                    icon: Icon,
+                    sections = [],
+                    isExact = false,
+                }) => {
                     // Wayfinder URLs are absolute (APP_URL), the page URL is a path.
-                    const isActive = [href, ...sections].some((path) =>
-                        url.startsWith(
-                            new URL(path, window.location.origin).pathname,
-                        ),
-                    );
+                    const isActive = [href, ...sections].some((path) => {
+                        const pathname = new URL(path, window.location.origin)
+                            .pathname;
+
+                        return isExact
+                            ? url.split('?')[0].replace(/\/$/, '') ===
+                                  pathname.replace(/\/$/, '')
+                            : url.startsWith(pathname);
+                    });
 
                     return (
                         <Link

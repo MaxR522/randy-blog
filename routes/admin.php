@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\AccountSecurityController;
+use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MediaController;
@@ -41,7 +42,7 @@ Route::prefix('admin')->middleware('guest')->group(function () {
  * The panel itself. `auth.session` logs out other sessions when the password changes.
  */
 Route::prefix('admin')->name('admin.')->middleware([EnsureAdminIsAuthenticated::class, 'auth.session'])->group(function () {
-    Route::redirect('/', '/admin/articles')->name('index');
+    Route::get('/', [AnalyticsController::class, 'index'])->name('index');
 
     Route::resource('articles', ArticleController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/articles/nouveau', [ArticleController::class, 'create'])->name('articles.create');

@@ -138,3 +138,33 @@ export type AdminNewsletter = {
     sentCount: number;
     failedCount: number;
 };
+
+export type AnalyticsKpi = { value: number; change: number | null };
+
+export type AnalyticsShare = { label: string; share: number };
+
+/** GA4 figures of the analytics page; `null` once loaded means GA4 is unavailable (ADM-ANA-5). */
+export type AnalyticsReport = {
+    kpis: {
+        users: AnalyticsKpi;
+        sessions: AnalyticsKpi;
+        pageViews: AnalyticsKpi;
+        engagementSeconds: AnalyticsKpi;
+    };
+    daily: { date: string; views: number }[];
+    topArticles: { id: number; title: string; views: number }[];
+    sources: AnalyticsShare[];
+    devices: AnalyticsShare[];
+    countries: AnalyticsShare[];
+};
+
+export type AnalyticsBlog = {
+    publishedArticles: number;
+    confirmedSubscribers: number;
+    newSubscribers: number;
+    lastNewsletter: {
+        subject: string;
+        sentAt: string | null;
+        recipients: number;
+    } | null;
+};

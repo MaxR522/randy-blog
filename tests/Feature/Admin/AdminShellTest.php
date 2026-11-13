@@ -23,10 +23,11 @@ test('SEO-CRAWL-3 the login page answers guests and carries the noindex header i
         ->assertInertia(fn (Assert $page) => $page->component('admin/login'));
 });
 
-test('a logged-in author is sent from /admin to the articles', function () {
+test('ADM-ANA-1 /admin opens the analytics page for a logged-in author', function () {
     $this->actingAs(User::factory()->create())
         ->get('/admin')
-        ->assertRedirect('/admin/articles');
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('admin/analytics'));
 });
 
 test('a logged-in author skips the login pages', function (string $path) {

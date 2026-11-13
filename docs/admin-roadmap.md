@@ -20,7 +20,7 @@ Dependency: `laravel/fortify`, because its `two_factor_*` columns match spec §7
 
 - [x] Login, logout, « Se souvenir de moi », rate limit, session lifetimes (`/admin/connexion`)
 - [x] Forgotten password and reset (`/admin/mot-de-passe-oublie`, `/admin/reinitialisation/{token}`, card added to the canvas)
-- [x] `/admin` route group and guard; `/admin` redirects to `/admin/articles` until session 13; `NoIndexHeader` already covers noindex
+- [x] `/admin` route group and guard; `/admin` redirected to `/admin/articles` until session 13; `NoIndexHeader` already covers noindex
 - [x] Admin pages excluded from SSR (NFR-PERF-1)
 - [x] Admin layout: sidebar expanded, collapsed and remembered, sticky top bar, mobile drawer with focus trap, placeholder page
 - [x] `User` fixes from spec §7.3.2 (`articles()` relation, `SoftDeletes`)
@@ -166,19 +166,29 @@ Decided (2026-11-13): one queued job per recipient (`SendNewsletterToRecipient`)
 
 Spec §5.2, §7.6. Boards: `Admin-Analytique`, `Admin-Analytique-360`.
 
-Dependency: GA4 Data client. Needs the service account and property ID from the user.
+Dependency: none (decided 2026-11-13): the GA4 Data API is called through Laravel's `Http` client with a service-account JWT signed by `openssl_sign`, no package. A real check needs the service account (added as a Viewer on the GA4 property) and the property ID from the user. The public cookie banner and the GA4 tag do not exist yet, so until session 14 the dashboard has no data to show and displays its « indisponibles » message. Top 10 articles are matched to articles by the slug in `pagePath`, old slugs included. Google takes 3 to 30 seconds to compute a report it has not seen lately (and answers at once to a known one), so the client waits 45 s with one retry, forces IPv4, caches each report on its own for an hour, and `analytics:refresh` (scheduled every 30 minutes) keeps all three periods warm: production needs the scheduler running.
 
-- [ ] Blog figures from the database
-- [ ] GA4 Data API with service account, 1 hour cache, period selector and comparison, unavailable message
-- [ ] KPI tiles, page views line chart (accessible SVG, hover tooltip, table view; load the `dataviz` skill), top 10, sources, devices, countries
-- [ ] `/admin` becomes this page; remove the session 1 redirect; add « Analytique » back at the top of `sidebar-nav.tsx`
-- [ ] Verify the GA4 tag is actually loaded after consent, otherwise there is no data to show
+- [x] Blog figures from the database
+- [x] GA4 Data API with service account, 1 hour cache, period selector and comparison, unavailable message
+- [x] KPI tiles, page views line chart (accessible SVG, hover tooltip, table view; load the `dataviz` skill), top 10, sources, devices, countries
+- [x] `/admin` becomes this page; remove the session 1 redirect; add « Analytique » back at the top of `sidebar-nav.tsx`
+
+## Public tracking
+
+### 14. Cookie banner and GA4 tag
+
+Spec PUB-MISC-2, NFR-PRIV-1, `docs/public-design-system.md` §5 (Toast, cookie banner), `docs/seo-accessibility.md`. Labels exist in `labels.cookies`; the privacy policy already mentions the `_ga` cookies. Moved out of session 13 (decided 2026-11-13): nothing loads the tag today.
+
+- [ ] Cookie banner (Accepter, Refuser, Personnaliser), consent kept in `localStorage`, same-weight buttons, focus and live region per the accessibility rules
+- [ ] GA4 tag loaded only after consent, from `services.google_analytics.measurement_id`; never loaded on `/admin`
+- [ ] Content-Security-Policy and privacy policy checked against the tag
+- [ ] Verify in the browser that no request to Google leaves before consent, then that data reaches the session 13 dashboard
 
 ## Nice to have
 
-Not needed for launch. Take it after session 13.
+Not needed for launch. Take it after session 14.
 
-### 14. Passkeys (nice to have)
+### 15. Passkeys (nice to have)
 
 Not in the spec yet: add an ADM-SEC requirement first. Boards: draw a « Clés d'accès » row on `Admin-Compte-Securite` / `-360` and a passkey button on `Admin-Connexion` / `-360` before coding.
 
