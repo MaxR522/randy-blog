@@ -1,7 +1,7 @@
-import { Link, router, useForm } from '@inertiajs/react';
+import { Link, router, useForm, usePoll } from '@inertiajs/react';
 import { ArrowLeft, Eye, Send } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Editor as TinyMCEInstance } from 'tinymce';
 import {
     duplicate,
@@ -25,6 +25,7 @@ import { FieldError, TextField } from '@/components/admin/text-field';
 import type { ToolbarButton } from '@/components/admin/tinymce-editor';
 import { Button } from '@/components/public/button';
 import AdminLayout from '@/layouts/admin-layout';
+import { send, sendDraft } from '@/routes/admin/newsletters';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { frenchTypography } from '@/lib/typography';
 import { useUnsavedChangesGuard } from '@/lib/unsaved-changes';
@@ -40,7 +41,10 @@ type NewsletterEditorProps = {
     content: string | null;
     selectedSubscribers: PickedSubscriber[];
     confirmedCount: number;
-    testEmail: string;
+    /** The author's login email, plus the verified recovery email. */
+    testEmails: string[];
+    /** The article of the publish toast's shortcut (ADM-SUB-30), inserted as a card in a new newsletter. */
+    initialArticle: PickedArticle | null;
     /** The sent email, for a newsletter that is no longer a draft. */
     emailHtml: string | null;
 };
@@ -55,7 +59,7 @@ type NewsletterForm = {
 
 /**
  * The newsletter composer (ADM-SUB-20…26, ADM-SUB-29), or the read-only email of a newsletter already sent.
- * Sending to the subscribers comes with session 12: « Envoyer » is shown, disabled.
+ * « Envoyer » asks for confirmation, then sends in the background (ADM-SUB-26, ADM-SUB-27).
  */
 export default function NewsletterEditor(props: NewsletterEditorProps) {
     if (props.newsletter && props.newsletter.status !== 'draft') {
@@ -111,12 +115,14 @@ function Composer({
     content,
     selectedSubscribers,
     confirmedCount,
-    testEmail,
+    testEmails,
+    initialArticle,
 }: NewsletterEditorProps) {
     const form = useForm<NewsletterForm>({
-        subject: newsletter?.subject ?? '',
+        subject: newsletter?.subject ?? initialArticle?.title ?? '',
         preheader: newsletter?.preheader ?? '',
-        content: content ?? '',
+        content:
+            content ?? (initialArticle ? articleCardHtml(initialArticle) : ''),
         audience: newsletter?.audience ?? 'all',
         subscription_ids: selectedSubscribers.map(({ id }) => id),
     });
@@ -127,6 +133,8 @@ function Composer({
     const [isSubscriberPickerOpen, setIsSubscriberPickerOpen] = useState(false);
     const [leavingUrl, setLeavingUrl] = useState<string | null>(null);
     const [isTesting, setIsTesting] = useState(false);
+    const [isConfirmingSend, setIsConfirmingSend] = useState(false);
+    const [isSending, setIsSending] = useState(false);
     const isLeavingRef = useRef(false);
     const editorRef = useRef<TinyMCEInstance | null>(null);
 
@@ -184,6 +192,20 @@ function Composer({
         });
     }
 
+    function sendToSubscribers(): void {
+        form.post(newsletter ? sendDraft.url(newsletter.id) : send.url(), {
+            preserveScroll: true,
+            onStart: () => setIsSending(true),
+            onSuccess: () => {
+                isLeavingRef.current = true;
+            },
+            onFinish: () => {
+                setIsSending(false);
+                setIsConfirmingSend(false);
+            },
+        });
+    }
+
     function chooseSubscribers(picked: PickedSubscriber[]): void {
         setIsSubscriberPickerOpen(false);
         setSelection(picked);
@@ -199,7 +221,13 @@ function Composer({
     ];
 
     const sendButton = (
-        <Button disabled title={text.sendSoon} className="w-full">
+        <Button
+            disabled={
+                processing || data.subject.trim() === '' || recipientCount === 0
+            }
+            onClick={() => setIsConfirmingSend(true)}
+            className="w-full"
+        >
             <Send aria-hidden="true" className="size-4.5" strokeWidth={1.75} />
             {text.send}
         </Button>
@@ -297,6 +325,14 @@ function Composer({
                 className="laptop:grid-cols-[minmax(0,1fr)_20rem] laptop:gap-10 grid gap-5"
             >
                 <div className="tablet:gap-7 flex min-w-0 flex-col gap-5">
+                    {errors.audience && (
+                        <p
+                            role="alert"
+                            className="text-body-small rounded-md border border-red-600 bg-red-50 px-4 py-3 font-medium text-red-700"
+                        >
+                            {errors.audience}
+                        </p>
+                    )}
                     <TextField
                         label={text.subject}
                         name="subject"
@@ -383,7 +419,7 @@ function Composer({
                             {text.test}
                         </p>
                         <p className="text-body-small text-grey-dark">
-                            {text.testHelp(testEmail)}
+                            {text.testHelp(testEmails)}
                         </p>
                     </div>
                 </div>
@@ -433,6 +469,19 @@ function Composer({
                 description={text.leaveDescription}
                 confirmLabel={text.leaveConfirm}
             />
+
+            <ConfirmModal
+                isOpen={isConfirmingSend}
+                onClose={() => setIsConfirmingSend(false)}
+                onConfirm={sendToSubscribers}
+                isConfirming={isSending}
+                title={text.sendTitle}
+                description={frenchTypography(
+                    text.sendDescription(data.subject.trim(), recipientCount),
+                )}
+                confirmLabel={text.send}
+                confirmVariant="primary"
+            />
         </>
     );
 }
@@ -477,6 +526,24 @@ function SentNewsletter({
 }) {
     const deliveryText = adminLabels.newsletters;
 
+    // The delivery counts move while the jobs run (ADM-SUB-27).
+    const isSending = newsletter.status === 'sending';
+    const { start, stop } = usePoll(
+        5000,
+        { only: ['newsletter'] },
+        { autoStart: false },
+    );
+
+    useEffect(() => {
+        if (isSending) {
+            start();
+        } else {
+            stop();
+        }
+
+        return stop;
+    }, [isSending, start, stop]);
+
     return (
         <>
             <AdminHead title={newsletter.subject} />
@@ -508,7 +575,7 @@ function SentNewsletter({
                         </span>
                     </p>
                 </div>
-                {newsletter.status !== 'sending' && (
+                {!isSending && (
                     <Button
                         variant="secondary"
                         onClick={() =>

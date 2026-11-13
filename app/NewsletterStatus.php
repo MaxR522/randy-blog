@@ -3,7 +3,8 @@
 namespace App;
 
 /**
- * Lifecycle of a newsletter (ADM-SUB-10). Only drafts can be edited; the sending states come with session 12.
+ * Lifecycle of a newsletter (ADM-SUB-10). Only drafts can be edited. « Envoyer » moves a draft to
+ * `Sending`; once no recipient is pending, it ends `Sent`, or `PartiallyFailed` when some emails failed (ADM-SUB-27).
  */
 enum NewsletterStatus: string
 {

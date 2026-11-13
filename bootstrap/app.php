@@ -29,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         /*
          * Mail clients call the one-click unsubscribe (`List-Unsubscribe-Post`) without a token; the signed URL protects it.
          */
-        $middleware->preventRequestForgery(except: ['abonnement/desabonner/*']);
+        $middleware->preventRequestForgery(except: ['abonnement/desabonner/*', 'webhooks/brevo']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

@@ -352,7 +352,7 @@ The author writes an email, includes articles, previews it, and sends it to all 
 - **ADM-SUB-21** « Insérer un article » opens a picker (search among published articles) and inserts an **article card** block: cover, title, chapô and a « Lire l'article » button linking to the article (with UTM parameters `utm_source=newsletter&utm_medium=email&utm_campaign={newsletter-slug}`).
 - **ADM-SUB-22** Design: a **single fixed, branded email template** (header with the blog name, content, footer with the social links, the reason for receiving the email and the « Se désabonner » link). No drag-and-drop builder. The template MUST render correctly in the main clients (Gmail, Outlook, Apple Mail) and on mobile.
 - **ADM-SUB-23** « Aperçu » shows the final email in a desktop/mobile preview.
-- **ADM-SUB-24** « Envoyer un test » sends the email to the author's address only.
+- **ADM-SUB-24** « Envoyer un test » sends the email to the author's own addresses only: the login email and, once verified, the recovery email (one email each).
 - **ADM-SUB-25** Recipients: « Tous les abonnés confirmés » (default) or « Sélection » (multi-select among confirmed subscribers). The recipient count is shown before sending.
 - **ADM-SUB-26** « Enregistrer le brouillon » and « Envoyer ». Sending requires a confirmation modal: « Envoyer « {objet} » à {n} abonnés ? Cette action est irréversible. »
 - **ADM-SUB-27** Sending is done in the background (queue), in batches that respect the provider's rate limit. Each recipient is tracked (sent / failed). Failures are retried 3 times.
@@ -572,6 +572,8 @@ Code-level fixes (no schema change): `Category::articles()` relation keys (swapp
 - Deliverability on `randy-donny.com`: SPF, DKIM, DMARC configured.
 - Bounce and complaint webhooks: a hard bounce or spam complaint marks the subscriber as unsubscribed.
 - Candidates: **Brevo** (EU, free 300 emails/day), **Resend** (first-party Laravel driver, free 3,000/month), **Amazon SES** (cheapest at volume, heavier setup).
+
+Newsletter sending and webhook (decided 2026-11-13, session 12): one queued job per recipient, paced by `NEWSLETTER_PER_MINUTE` (60) and `NEWSLETTER_PER_DAY` (250, leaving room for transactional emails on Brevo's 300-a-day free plan); production needs a queue worker. Each newsletter email carries `List-Unsubscribe`, `List-Unsubscribe-Post` and `X-Mailin-custom: newsletter-recipient:{id}`. Brevo's transactional webhook posts to `/webhooks/brevo` with the token `BREVO_WEBHOOK_TOKEN` (bearer, or basic authentication with any user name), for the events `hard_bounce`, `spam` and `unsubscribed`: each marks the subscriber as unsubscribed, and a hard bounce also counts that newsletter recipient as failed. Without a token the route answers 404.
 
 Emails sent by the application (all in French, one shared template): subscription confirmation, newsletter, password reset, email/recovery-email verification, security alerts, newsletter test.
 

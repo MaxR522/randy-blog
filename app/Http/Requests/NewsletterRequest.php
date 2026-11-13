@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Subscription;
 use App\NewsletterAudience;
 use App\Support\ArticleHtml;
 use Closure;
@@ -12,10 +13,11 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Rules\Exists;
+use Illuminate\Validation\Validator;
 
 /**
- * Fields of the newsletter composer (ADM-SUB-20, ADM-SUB-25), for « Enregistrer le brouillon » and « Envoyer un test ».
- * A draft needs its subject; a test also needs some content.
+ * Fields of the newsletter composer (ADM-SUB-20, ADM-SUB-25), for « Enregistrer le brouillon », « Envoyer un test » and
+ * « Envoyer ». A draft needs its subject; a test or a send also needs some content, and a send someone to go to.
  */
 class NewsletterRequest extends FormRequest
 {
@@ -32,10 +34,10 @@ class NewsletterRequest extends FormRequest
             'subject' => ['required', 'string', 'max:'.self::SubjectMaxLength],
             'preheader' => ['nullable', 'string', 'max:'.self::PreheaderMaxLength],
             'content' => [
-                $this->isTestSend() ? 'required' : 'nullable',
+                $this->needsContent() ? 'required' : 'nullable',
                 'nullable',
                 'string',
-                ...($this->isTestSend() ? [$this->hasContent(...)] : []),
+                ...($this->needsContent() ? [$this->hasContent(...)] : []),
             ],
             'audience' => ['required', Rule::enum(NewsletterAudience::class)],
             // A test goes to the author only: the recipients do not matter yet.
@@ -59,7 +61,7 @@ class NewsletterRequest extends FormRequest
             'subject.required' => 'L’objet est obligatoire.',
             'subject.max' => 'L’objet ne peut pas dépasser '.self::SubjectMaxLength.' caractères.',
             'preheader.max' => 'Le texte d’aperçu ne peut pas dépasser '.self::PreheaderMaxLength.' caractères.',
-            'content.required' => 'Le contenu est obligatoire pour envoyer un test.',
+            'content.required' => $this->contentRequiredMessage(),
             'subscription_ids.required' => 'Choisissez au moins un abonné.',
             'subscription_ids.*.exists' => 'Un des abonnés choisis n’est plus abonné.',
         ];
@@ -93,9 +95,38 @@ class NewsletterRequest extends FormRequest
         return $ids;
     }
 
+    /**
+     * « Tous les abonnés confirmés » with nobody confirmed: there is no one to send to (a selection is checked above).
+     *
+     * @return list<Closure(Validator): void>
+     */
+    public function after(): array
+    {
+        return [function (Validator $validator): void {
+            if ($this->isSend() && $this->input('audience') === NewsletterAudience::All->value && ! Subscription::query()->confirmed()->exists()) {
+                $validator->errors()->add('audience', 'Aucun abonné confirmé à qui envoyer.');
+            }
+        }];
+    }
+
     private function isTestSend(): bool
     {
         return $this->routeIs('admin.newsletters.test');
+    }
+
+    private function isSend(): bool
+    {
+        return $this->routeIs('admin.newsletters.send', 'admin.newsletters.send-draft');
+    }
+
+    private function needsContent(): bool
+    {
+        return $this->isTestSend() || $this->isSend();
+    }
+
+    private function contentRequiredMessage(): string
+    {
+        return $this->isSend() ? 'Le contenu est obligatoire pour envoyer la newsletter.' : 'Le contenu est obligatoire pour envoyer un test.';
     }
 
     /**
@@ -108,7 +139,7 @@ class NewsletterRequest extends FormRequest
         $cleaned = is_string($value) ? ArticleHtml::clean($value, allowArticleCards: true) : '';
 
         if (ArticleHtml::plainText($cleaned) === '' && ! str_contains($cleaned, ArticleHtml::ArticleCardAttribute) && ! str_contains($cleaned, '<img')) {
-            $fail('Le contenu est obligatoire pour envoyer un test.');
+            $fail($this->contentRequiredMessage());
         }
     }
 }

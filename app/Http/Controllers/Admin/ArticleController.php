@@ -175,7 +175,7 @@ class ArticleController extends Controller
 
         $article->publish();
 
-        return Inertia::flash('success', 'Article publié.')->back();
+        return Inertia::flash(['success' => 'Article publié.', 'publishedArticleId' => $article->id])->back();
     }
 
     /**
@@ -223,9 +223,10 @@ class ArticleController extends Controller
     }
 
     /**
-     * The confirmation of a save, with the accessibility problems left in the content (A11Y-BODY-5).
+     * The confirmation of a save, with the accessibility problems left in the content (A11Y-BODY-5). A publication
+     * also offers to send the article to the subscribers (ADM-SUB-30).
      *
-     * @return array{success: string, accessibilityWarnings?: list<string>}
+     * @return array{success: string, publishedArticleId?: int, accessibilityWarnings?: list<string>}
      */
     private function savedFlash(ArticleRequest $request, Article $article): array
     {
@@ -233,6 +234,7 @@ class ArticleController extends Controller
 
         return [
             'success' => $request->wantsToPublish() ? 'Article publié.' : 'Article enregistré.',
+            ...($request->wantsToPublish() ? ['publishedArticleId' => $article->id] : []),
             ...($warnings === [] ? [] : ['accessibilityWarnings' => $warnings]),
         ];
     }

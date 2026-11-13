@@ -1,15 +1,19 @@
 <?php
 
+use App\Jobs\SendNewsletterToRecipient;
 use App\Mail\NewsletterMail;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Newsletter;
+use App\Models\NewsletterRecipient;
 use App\Models\Subscription;
 use App\Models\User;
 use App\NewsletterAudience;
+use App\NewsletterRecipientStatus;
 use App\NewsletterStatus;
 use App\Support\ArticleHtml;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -40,6 +44,8 @@ test('ADM-COM-8 guests get a 404 on the newsletter routes', function (string $me
     ['post', '/admin/newsletters/test'],
     ['get', '/admin/newsletters/articles'],
     ['get', '/admin/newsletters/abonnes'],
+    ['post', '/admin/newsletters/envoyer'],
+    ['post', '/admin/newsletters/1/envoyer'],
 ]);
 
 test('ADM-SUB-10 the list shows drafts first, then the newest sent, with their counts', function () {
@@ -245,6 +251,29 @@ test('ADM-SUB-24 « Envoyer un test » sends the email to the author only', func
         && $mail->emailSubject === '[Test] Le taxi-be, parlement roulant');
 });
 
+test('ADM-SUB-24 « Envoyer un test » also goes to the verified recovery email, in its own email', function () {
+    Mail::fake();
+    $this->author->forceFill(['recovery_email' => 'secours@exemple.fr', 'recovery_email_verified_at' => now()])->save();
+
+    $this->actingAs($this->author)
+        ->post('/admin/newsletters/test', newsletterFields())
+        ->assertInertiaFlash('success', 'Email de test envoyé à randy@exemple.fr et secours@exemple.fr.');
+
+    Mail::assertSent(NewsletterMail::class, 2);
+    Mail::assertSent(NewsletterMail::class, fn (NewsletterMail $mail) => $mail->hasTo('secours@exemple.fr') && ! $mail->hasTo('randy@exemple.fr'));
+});
+
+test('ADM-SUB-24 an unverified recovery email gets no test', function () {
+    Mail::fake();
+    $this->author->forceFill(['recovery_email' => 'secours@exemple.fr', 'recovery_email_verified_at' => null])->save();
+
+    $this->actingAs($this->author)
+        ->post('/admin/newsletters/test', newsletterFields())
+        ->assertInertiaFlash('success', 'Email de test envoyé à randy@exemple.fr.');
+
+    Mail::assertNotSent(NewsletterMail::class, fn (NewsletterMail $mail) => $mail->hasTo('secours@exemple.fr'));
+});
+
 test('ADM-SUB-24 a test needs some content', function () {
     Mail::fake();
 
@@ -260,4 +289,154 @@ test('the article card placeholder is kept in newsletter content only', function
 
     expect(ArticleHtml::clean($html, allowArticleCards: true))->toBe('<div data-article-card="12"><p>Carte</p></div><div></div>')
         ->and(ArticleHtml::clean($html))->not->toContain('data-article-card');
+});
+
+test('ADM-SUB-26 « Envoyer » freezes the confirmed subscribers and the email, then queues one job each', function () {
+    Queue::fake([SendNewsletterToRecipient::class]);
+    $confirmed = Subscription::factory()->count(2)->create();
+    Subscription::factory()->pending()->create();
+    Subscription::factory()->unsubscribed()->create();
+    $draft = Newsletter::factory()->create();
+
+    $this->actingAs($this->author)
+        ->post("/admin/newsletters/{$draft->id}/envoyer", newsletterFields())
+        ->assertRedirect("/admin/newsletters/{$draft->id}")
+        ->assertInertiaFlash('success', 'Newsletter en cours d’envoi.');
+
+    $draft->refresh();
+    expect($draft->status)->toBe(NewsletterStatus::Sending)
+        ->and($draft->subject)->toBe('Le taxi-be, parlement roulant')
+        ->and($draft->sent_at)->not->toBeNull()
+        ->and($draft->recipients_count)->toBe(2)
+        ->and($draft->html)->toContain('Bonjour,')->toContain('%%UNSUBSCRIBE_URL%%')
+        ->and($draft->recipients()->pluck('subscription_id')->sort()->values()->all())->toBe($confirmed->pluck('id')->sort()->values()->all());
+    Queue::assertPushed(SendNewsletterToRecipient::class, 2);
+});
+
+test('ADM-SUB-26 an unsaved composer is created and sent to its selection only', function () {
+    Queue::fake([SendNewsletterToRecipient::class]);
+    [$kept, $leaving] = Subscription::factory()->count(2)->create();
+    Subscription::factory()->create();
+
+    $this->actingAs($this->author)
+        ->post('/admin/newsletters/envoyer', newsletterFields(['audience' => 'selection', 'subscription_ids' => [$kept->id, $leaving->id]]))
+        ->assertRedirect();
+
+    $newsletter = Newsletter::query()->sole();
+    expect($newsletter->status)->toBe(NewsletterStatus::Sending)
+        ->and($newsletter->recipients_count)->toBe(2);
+    Queue::assertPushed(SendNewsletterToRecipient::class, 2);
+});
+
+test('ADM-SUB-26 sending needs content and a confirmed subscriber', function () {
+    Queue::fake([SendNewsletterToRecipient::class]);
+    Subscription::factory()->pending()->create();
+
+    $this->actingAs($this->author)
+        ->post('/admin/newsletters/envoyer', newsletterFields(['content' => '<p></p>']))
+        ->assertSessionHasErrors([
+            'content' => 'Le contenu est obligatoire pour envoyer la newsletter.',
+            'audience' => 'Aucun abonné confirmé à qui envoyer.',
+        ]);
+
+    expect(Newsletter::query()->count())->toBe(0);
+    Queue::assertNothingPushed();
+});
+
+test('ADM-SUB-26 a newsletter already sent cannot be sent again', function () {
+    Queue::fake([SendNewsletterToRecipient::class]);
+    Subscription::factory()->create();
+    $sent = Newsletter::factory()->sent()->create();
+
+    $this->actingAs($this->author)
+        ->post("/admin/newsletters/{$sent->id}/envoyer", newsletterFields())
+        ->assertForbidden();
+
+    Queue::assertNothingPushed();
+});
+
+test('ADM-SUB-27 ADM-SUB-28 each subscriber gets the email with their own one-click unsubscribe link, then the newsletter is sent', function () {
+    Mail::fake();
+    [$first, $second] = Subscription::factory()->count(2)->create();
+
+    $this->actingAs($this->author)->post('/admin/newsletters/envoyer', newsletterFields());
+
+    $newsletter = Newsletter::query()->sole();
+    expect($newsletter->status)->toBe(NewsletterStatus::Sent)
+        ->and($newsletter->sent_count)->toBe(2)
+        ->and($newsletter->failed_count)->toBe(0)
+        ->and($newsletter->recipients()->where('status', NewsletterRecipientStatus::Sent)->whereNotNull('sent_at')->count())->toBe(2);
+
+    foreach ([$first, $second] as $subscription) {
+        $recipient = NewsletterRecipient::query()->where('subscription_id', $subscription->id)->sole();
+
+        Mail::assertSent(NewsletterMail::class, function (NewsletterMail $mail) use ($subscription, $recipient): bool {
+            $headers = $mail->headers()->text;
+
+            return $mail->hasTo($subscription->email)
+                && $mail->emailSubject === 'Le taxi-be, parlement roulant'
+                && str_contains($mail->renderedHtml, e($subscription->unsubscribeUrl()))
+                && ! str_contains($mail->renderedHtml, '%%UNSUBSCRIBE_URL%%')
+                && $headers['List-Unsubscribe'] === '<'.$subscription->unsubscribeUrl().'>'
+                && $headers['List-Unsubscribe-Post'] === 'List-Unsubscribe=One-Click'
+                && $headers['X-Mailin-custom'] === 'newsletter-recipient:'.$recipient->id;
+        });
+    }
+});
+
+test('ADM-SUB-27 a failed email counts as failed and ends the newsletter as « Échec partiel »', function () {
+    $newsletter = Newsletter::factory()->create(['status' => NewsletterStatus::Sending, 'recipients_count' => 2, 'sent_count' => 1, 'html' => '<p>x</p>']);
+    $newsletter->recipients()->create(['subscription_id' => Subscription::factory()->create()->id, 'status' => NewsletterRecipientStatus::Sent]);
+    $failing = $newsletter->recipients()->create(['subscription_id' => Subscription::factory()->create()->id]);
+
+    (new SendNewsletterToRecipient($failing->id))->failed(new RuntimeException('550 Mailbox unavailable'));
+
+    expect($failing->refresh()->status)->toBe(NewsletterRecipientStatus::Failed)
+        ->and($failing->error)->toBe('550 Mailbox unavailable')
+        ->and($newsletter->refresh()->failed_count)->toBe(1)
+        ->and($newsletter->status)->toBe(NewsletterStatus::PartiallyFailed);
+});
+
+test('PUB-SUB-7 a subscriber who left after « Envoyer » gets nothing and no longer counts', function () {
+    Mail::fake();
+    $newsletter = Newsletter::factory()->create(['status' => NewsletterStatus::Sending, 'recipients_count' => 1, 'html' => '<p>x</p>']);
+    $recipient = $newsletter->recipients()->create(['subscription_id' => Subscription::factory()->unsubscribed()->create()->id]);
+
+    SendNewsletterToRecipient::dispatchSync($recipient->id);
+
+    Mail::assertNothingSent();
+    expect(NewsletterRecipient::query()->find($recipient->id))->toBeNull()
+        ->and($newsletter->refresh()->recipients_count)->toBe(0)
+        ->and($newsletter->status)->toBe(NewsletterStatus::Sent);
+});
+
+test('ADM-SUB-10 a sent newsletter shows the email as it went out, its link leading to the home page', function () {
+    $sent = Newsletter::factory()->sent()->create(['content' => '<p>Contenu modifié depuis</p>', 'html' => '<p>Envoyé</p><a href="%%UNSUBSCRIBE_URL%%">Se désabonner</a>']);
+
+    $this->actingAs($this->author)
+        ->get("/admin/newsletters/{$sent->id}")
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('emailHtml', '<p>Envoyé</p><a href="'.url('/').'">Se désabonner</a>'));
+});
+
+test('ADM-SUB-30 publishing offers to send the article, and the composer opens with its card', function () {
+    $draft = Article::factory()->draft()->create();
+
+    $this->actingAs($this->author)
+        ->patch("/admin/articles/{$draft->id}/publier")
+        ->assertInertiaFlash('publishedArticleId', $draft->id);
+
+    $this->actingAs($this->author)
+        ->get("/admin/newsletters/nouvelle?article={$draft->id}")
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('initialArticle.id', $draft->id)
+            ->where('initialArticle.title', $draft->title));
+});
+
+test('ADM-SUB-30 the composer ignores an article that is not published', function () {
+    $draft = Article::factory()->draft()->create();
+
+    $this->actingAs($this->author)
+        ->get("/admin/newsletters/nouvelle?article={$draft->id}")
+        ->assertInertia(fn (Assert $page) => $page->where('initialArticle', null));
 });
