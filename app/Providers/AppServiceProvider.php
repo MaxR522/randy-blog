@@ -39,12 +39,18 @@ class AppServiceProvider extends ServiceProvider
     /**
      * The subscription form takes 5 attempts per IP per hour (PUB-SUB-3). Over the limit, the form shows a message
      * under the field rather than Laravel's 429 page, which Inertia would open in a modal.
+     * Newsletter emails keep within Brevo's limits (ADM-SUB-27): over them, the job waits and tries again.
      */
     protected function configureRateLimiting(): void
     {
         RateLimiter::for('subscription', fn (Request $request): Limit => Limit::perHour(5)
             ->by($request->ip())
             ->response(fn (): RedirectResponse => back()->withErrors(['email' => 'Trop de tentatives. Réessayez dans une heure.'])));
+
+        RateLimiter::for('newsletter', fn (): array => [
+            Limit::perMinute(config()->integer('services.brevo.newsletter_per_minute'))->by('newsletter-minute'),
+            Limit::perDay(config()->integer('services.brevo.newsletter_per_day'))->by('newsletter-day'),
+        ]);
     }
 
     /**

@@ -17,6 +17,17 @@ return [
     /*
      * IndexNow (SEO-MAP-4): any 8 to 128 letters, digits or dashes. Pings are sent from production only.
      */
+    /*
+     * Brevo, the email provider (spec §7.6). Mail itself goes through the `smtp` mailer; these only pace the newsletter
+     * (ADM-SUB-27: the free plan sends 300 emails a day, transactional ones included) and guard the webhook that reports
+     * hard bounces and spam complaints.
+     */
+    'brevo' => [
+        'newsletter_per_minute' => (int) env('NEWSLETTER_PER_MINUTE', 60),
+        'newsletter_per_day' => (int) env('NEWSLETTER_PER_DAY', 250),
+        'webhook_token' => env('BREVO_WEBHOOK_TOKEN'),
+    ],
+
     'indexnow' => [
         'key' => env('INDEXNOW_KEY'),
     ],

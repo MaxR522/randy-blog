@@ -60,10 +60,12 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureAdminIsAuthenticated::
     Route::post('/newsletters', [NewsletterController::class, 'store'])->name('newsletters.store');
     Route::post('/newsletters/apercu', [NewsletterController::class, 'preview'])->middleware('throttle:60,1')->name('newsletters.preview');
     Route::post('/newsletters/test', [NewsletterController::class, 'test'])->middleware('throttle:6,1')->name('newsletters.test');
+    Route::post('/newsletters/envoyer', [NewsletterController::class, 'send'])->middleware('throttle:6,1')->name('newsletters.send');
     Route::get('/newsletters/articles', [NewsletterController::class, 'articles'])->name('newsletters.articles');
     Route::get('/newsletters/abonnes', [NewsletterController::class, 'subscribers'])->name('newsletters.subscribers');
     Route::get('/newsletters/{newsletter}', [NewsletterController::class, 'show'])->whereNumber('newsletter')->name('newsletters.show');
     Route::put('/newsletters/{newsletter}', [NewsletterController::class, 'update'])->whereNumber('newsletter')->name('newsletters.update');
+    Route::post('/newsletters/{newsletter}/envoyer', [NewsletterController::class, 'send'])->whereNumber('newsletter')->middleware('throttle:6,1')->name('newsletters.send-draft');
     Route::post('/newsletters/{newsletter}/dupliquer', [NewsletterController::class, 'duplicate'])->whereNumber('newsletter')->name('newsletters.duplicate');
 
     Route::get('/compte', [AccountController::class, 'profile'])->name('account');

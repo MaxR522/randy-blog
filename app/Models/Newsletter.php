@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
  * @property string $subject
  * @property string|null $preheader
  * @property string|null $content
+ * @property string|null $html
  * @property NewsletterStatus $status
  * @property NewsletterAudience $audience
  * @property CarbonImmutable|null $scheduled_at
@@ -29,7 +30,7 @@ use Illuminate\Support\Str;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
-#[Fillable(['subject', 'preheader', 'content', 'status', 'audience', 'scheduled_at', 'sent_at', 'recipients_count', 'sent_count', 'failed_count'])]
+#[Fillable(['subject', 'preheader', 'content', 'html', 'status', 'audience', 'scheduled_at', 'sent_at', 'recipients_count', 'sent_count', 'failed_count'])]
 class Newsletter extends Model
 {
     /** @use HasFactory<NewsletterFactory> */

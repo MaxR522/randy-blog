@@ -152,10 +152,13 @@ Decided (2026-11-13): the « Insérer un article » card is stored as a `<div da
 
 Spec ADM-SUB-26…30, §7.6.
 
-- [ ] Send confirmation, queued batches within the provider rate limit
-- [ ] Per-recipient tracking, 3 retries, statuses, personalised unsubscribe link
-- [ ] Bounce and complaint webhooks
-- [ ] « Envoyer par email aux abonnés » shortcut on the publish toast
+Decided (2026-11-13): one queued job per recipient (`SendNewsletterToRecipient`) through the `newsletter` rate limiter, 60 a minute and 250 a day by default (`NEWSLETTER_PER_MINUTE`, `NEWSLETTER_PER_DAY`: Brevo's free plan sends 300 a day, transactional included), so a larger list finishes the next day; a job retries for a week and fails after 3 errors. « Envoyer » freezes the recipients and the email (`newsletters.html`, rendered once with an unsubscribe placeholder that each job replaces). The Brevo webhook (`/webhooks/brevo`, `BREVO_WEBHOOK_TOKEN`) unsubscribes on hard bounce, spam and unsubscribe; a hard bounce also moves its recipient from « remis » to « échec » through `X-Mailin-custom`. The publish toast's link stays 10 s and pauses on hover or focus.
+
+- [x] Send confirmation, queued batches within the provider rate limit
+- [x] Per-recipient tracking, 3 retries, statuses, personalised unsubscribe link
+- [x] Bounce and complaint webhooks
+- [x] « Envoyer par email aux abonnés » shortcut on the publish toast
+- [x] « Envoyer un test » also goes to the verified recovery email (ADM-SUB-24, feedback after session 11)
 
 ## Analytics
 

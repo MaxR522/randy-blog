@@ -197,6 +197,7 @@ export const adminLabels = {
     articles: {
         title: 'Articles',
         create: 'Créer un article',
+        sendToSubscribers: 'Envoyer par email aux abonnés',
         search: 'Rechercher par titre',
         searchPlaceholder: 'Rechercher par titre…',
         statusFilter: 'Filtrer par statut',
@@ -343,7 +344,6 @@ export const adminLabels = {
         sendTest: 'Envoyer un test',
         saveDraft: 'Enregistrer le brouillon',
         send: 'Envoyer',
-        sendSoon: 'L’envoi aux abonnés arrive avec la prochaine étape.',
         duplicate: 'Dupliquer',
         moreActions: 'Plus d’actions',
         actionsMenu: 'Actions de la newsletter',
@@ -370,8 +370,8 @@ export const adminLabels = {
         recipientTotal: (count: number) =>
             `${count} ${count > 1 ? 'destinataires' : 'destinataire'}`,
         test: 'Test',
-        testHelp: (email: string) =>
-            `« Envoyer un test » envoie l’email à ${email} uniquement.`,
+        testHelp: (emails: string[]) =>
+            `« Envoyer un test » envoie l’email à ${emails.join(' et ')} uniquement.`,
         sendTitle: 'Envoyer la newsletter ?',
         sendDescription: (subject: string, count: number) =>
             `Envoyer « ${subject} » à ${count} ${count > 1 ? 'abonnés' : 'abonné'} ? Cette action est irréversible.`,

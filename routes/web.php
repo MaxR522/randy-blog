@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ArticleMarkdownController;
+use App\Http\Controllers\BrevoWebhookController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LlmsController;
@@ -57,6 +58,13 @@ Route::get('/abonnement/confirmer/{subscription}', [SubscriptionController::clas
 Route::match(['get', 'post'], '/abonnement/desabonner/{subscription}', [SubscriptionController::class, 'unsubscribe'])
     ->whereNumber('subscription')
     ->name('subscriptions.unsubscribe');
+
+/*
+ * Brevo reports hard bounces, spam complaints and unsubscribes (spec §7.6). Guarded by a token, not by CSRF.
+ */
+Route::post('/webhooks/brevo', BrevoWebhookController::class)
+    ->middleware('throttle:120,1')
+    ->name('webhooks.brevo');
 
 /*
  * Files for crawlers (SEO-CRAWL-2, SEO-MAP-1) and AI assistants.
