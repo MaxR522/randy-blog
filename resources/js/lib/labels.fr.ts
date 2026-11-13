@@ -126,7 +126,7 @@ export const labels = {
         youtube: 'YouTube',
     },
     cookies: {
-        text: "Ce site utilise Google Analytics pour mesurer son audience. Aucune donnée n'est utilisée à des fins publicitaires. Vous pouvez accepter, refuser ou choisir.",
+        text: 'Ce site utilise Google Analytics pour mesurer son audience. Vous pouvez accepter, refuser ou choisir.',
         accept: 'Accepter',
         refuse: 'Refuser',
         customize: 'Personnaliser',
@@ -136,7 +136,7 @@ export const labels = {
             'Le site fonctionne de la même façon quel que soit votre choix. Vous pouvez le modifier à tout moment depuis le pied de page.',
         analyticsLabel: "Mesure d'audience (Google Analytics)",
         analyticsHint:
-            "Dépose les cookies _ga pour compter les visites de façon anonyme. Aucune donnée n'est utilisée à des fins publicitaires.",
+            'Dépose les cookies _ga pour compter les visites de façon anonyme.',
         save: 'Enregistrer',
         close: 'Fermer',
         acceptedAnnouncement: "Mesure d'audience acceptée.",
