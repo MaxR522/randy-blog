@@ -187,5 +187,5 @@ Project-specific variables. The standard Laravel ones (`APP_*`, `DB_*`, `SESSION
 ## 7. Open points
 
 - **Production** (spec INF-2, INF-4, INF-5): production image, deployment, CD on tag and database backups.
-- **Email provider** (spec Q3): production `MAIL_*` values depend on the choice (Brevo, Resend or Amazon SES).
+- **Email provider** (spec Q3, decided 2026-11-13): Brevo through its SMTP relay, with Laravel's `smtp` mailer and no package. Production sets `MAIL_HOST=smtp-relay.brevo.com`, `MAIL_PORT=587`, `MAIL_USERNAME` (Brevo SMTP login) and `MAIL_PASSWORD` (Brevo SMTP key); the domain `randy-donny.com` needs Brevo's SPF and DKIM records and a DMARC record. Emails are queued, so production needs a queue worker. The scheduler refreshes the disposable domain blocklist weekly (`subscriptions:update-disposable-domains`, written to `storage/app/disposable-domains.txt`).
 - **Hosting and backups** (spec Q7).

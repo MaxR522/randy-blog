@@ -172,11 +172,11 @@ Subscription block placed at the bottom of the home page, anchor `#abonnement`.
 
 - **PUB-SUB-1** Block content: title « Restez informé », one sentence of description, an email input, a button « S'abonner », and a short consent notice linking to the privacy policy.
 - **PUB-SUB-2** Validation (server-side, French error messages):
-  - Valid email format and a domain with MX records (Laravel `email:rfc,dns`).
-  - Disposable/temporary email domains are rejected, using a maintained blocklist package, updated by a scheduled task. Message: « Les adresses email temporaires ne sont pas acceptées. »
+  - Valid email format (`email:rfc`) and a domain that receives mail (MX, else A/AAAA record).
+  - Disposable/temporary email domains are rejected, using a maintained blocklist updated by a scheduled task (§7.6). Message: « Les adresses email temporaires ne sont pas acceptées. »
 - **PUB-SUB-3** Anti-abuse **(added)**: rate limit (5 attempts per IP per hour) and a honeypot field.
 - **PUB-SUB-4** On valid submission, the subscriber is stored as **pending** and a confirmation email is sent. The page shows: « Merci ! Un email de confirmation vient de vous être envoyé. Cliquez sur le lien qu'il contient pour valider votre abonnement. »
-- **PUB-SUB-5** The same message is shown if the email is already subscribed, so the form never reveals whether an address is known. If it is pending, the confirmation email is resent (max once per 10 minutes). If it was unsubscribed, the subscription restarts as pending.
+- **PUB-SUB-5** The same message is shown if the email is already subscribed, so the form never reveals whether an address is known; a confirmed address gets no new email (confirmed 2026-11-13). If it is pending, the confirmation email is resent (max once per 10 minutes). If it was unsubscribed, the subscription restarts as pending.
 - **PUB-SUB-6** Confirmation link: signed URL, valid 48 hours. Opening it marks the subscriber confirmed and shows the page « Votre abonnement est confirmé ». An expired or invalid link shows a page explaining that and offering to subscribe again.
 - **PUB-SUB-7** Only confirmed subscribers receive newsletters.
 - **PUB-SUB-8** Every newsletter contains a « Se désabonner » link (signed URL, one click, no login) and the `List-Unsubscribe` / `List-Unsubscribe-Post` headers (one-click unsubscribe required by Gmail/Yahoo). Unsubscribing sets `unsubscribed_at` and shows « Vous êtes désabonné ».
@@ -336,7 +336,6 @@ Keep TinyMCE as in V1, same tools (V1 config reproduced in Appendix B). Improvem
 - **ADM-SUB-2** Subscriber table columns: « Email », « Date d'abonnement », **(added)** « Statut » (« Confirmé », « En attente », « Désabonné »), « Actions » (« Supprimer »).
 - **ADM-SUB-3** Search by email, filter by status, default sort most recent first, pagination per ADM-COM-5.
 - **ADM-SUB-4** « Supprimer » permanently deletes the email (GDPR erasure), with confirmation.
-- **ADM-SUB-5 (added)** « Exporter (CSV) » of the current filtered list.
 
 #### 5.5.2 Sent newsletters
 
@@ -566,7 +565,7 @@ Code-level fixes (no schema change): `Category::articles()` relation keys (swapp
 
 ### 7.6 Integrations
 
-**Email provider** (choice open, Q3). Requirements:
+**Email provider** (decided 2026-11-13, Q3): Brevo through its SMTP relay (`smtp-relay.brevo.com:587`), with Laravel's built-in `smtp` mailer and no package. Requirements it was chosen against:
 
 - A Laravel mail transport (SMTP or native API driver).
 - Free or cheap for the expected volume (a few hundred subscribers, a few newsletters per month) plus transactional emails.
@@ -581,7 +580,7 @@ Emails sent by the application (all in French, one shared template): subscriptio
 - Tracking: GA4 tag (measurement ID from V1 `G-5ZEWQRGZV5`, to confirm), loaded after consent.
 - Admin dashboard: GA4 Data API with a service account (JSON key in an env variable), property ID in config, responses cached 1 hour.
 
-**Disposable email detection**: a maintained blocklist package, refreshed weekly by the scheduler.
+**Disposable email detection** (decided 2026-11-13): no package. A snapshot of the CC0 list `disposable-email-domains/disposable-email-domains` is committed in `resources/data/disposable-domains.txt`; `subscriptions:update-disposable-domains` refreshes it weekly into `storage/app` and keeps the old copy when a download looks wrong. Parent domains match too (`x.mailinator.com`). The mail-domain check (MX, else A/AAAA record) goes through `App\Support\DnsResolver`.
 
 **Word import** (decided 2026-11-13): `mammoth` converts the .docx to HTML in the browser; `App\Support\WordImport` checks the template's markers and sanitizes on the server (ADM-ART-41).
 
@@ -649,7 +648,7 @@ A rehearsal on a copy of production data MUST be done before the real migration.
 |---|---|---|
 | Q1 | **Text-to-speech on the article page (« Écouter l'article »)**: how to implement it? | (a) Browser Web Speech API: free, no storage, but voice quality and French voices vary by device. (b) Generate an audio file per article with a cloud TTS service (Google Cloud TTS, Azure, ElevenLabs…) on publish, stored on Cloudinary: consistent quality, has a cost, must regenerate on edit. (c) Third-party embedded player (e.g. a TTS widget): fastest, adds an external script. To decide: quality expectations, budget, whether the player needs speed control / progress. |
 | Q2 | TinyMCE licensing: self-hosted GPL build (no API key, like V1's `license_key: 'gpl'`) or Tiny Cloud with an API key? | Self-hosted GPL recommended (no quota, no external dependency). |
-| Q3 | Which email provider? | See §7.6. |
+| Q3 | Which email provider? | **Decided (2026-11-13):** Brevo through its SMTP relay with Laravel's `smtp` mailer, no package, so a later change of provider is `.env` only (§7.6). |
 | Q4 | Timezone for displayed dates: `Europe/Paris` or `Indian/Antananarivo`? | Storage stays UTC. |
 | Q5 | Author profile URL: keep `/profile/randy-donny` or move to `/profil/randy-donny` with a redirect? | |
 | Q6 | Recovery phone number: is SMS verification needed (requires an SMS provider, e.g. Twilio / Brevo SMS), or is storing the number enough? | **Decided (2026-11-11):** store and display it only, in E.164, always « Non vérifié » (ADM-SEC-2). |

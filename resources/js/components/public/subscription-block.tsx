@@ -1,31 +1,42 @@
-import { Link } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import { CircleAlert } from 'lucide-react';
 import type { FormEvent } from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/public/button';
 import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/lib/typography';
 import { privacy } from '@/routes';
-
-export type SubscriptionStatus = 'idle' | 'loading' | 'success';
-
-type SubscriptionBlockProps = {
-    status?: SubscriptionStatus;
-    error?: string | null;
-    onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
-};
+import { store } from '@/routes/subscriptions';
 
 const [consentText] = labels.subscription.consent.split(labels.footer.privacy);
 
 /**
- * Newsletter band (`#abonnement`). Submission is wired by the subscription
- * feature through `onSubmit`, `status` and `error`.
+ * Newsletter band (`#abonnement`), double opt-in (PUB-SUB-1…5). The server answers every valid
+ * address the same way, so the success message never tells whether it was already known.
  */
-export function SubscriptionBlock({
-    status = 'idle',
-    error = null,
-    onSubmit = (event) => event.preventDefault(),
-}: SubscriptionBlockProps) {
+export function SubscriptionBlock() {
+    const form = useForm({ email: '', website: '' });
+    const [isSubscribed, setIsSubscribed] = useState(false);
+    const status = isSubscribed
+        ? 'success'
+        : form.processing
+          ? 'loading'
+          : 'idle';
+    const error = form.errors.email ?? null;
+
+    function submit(event: FormEvent<HTMLFormElement>): void {
+        event.preventDefault();
+        form.post(store.url(), {
+            preserveScroll: true,
+            preserveState: true,
+            onFlash: (flash) => {
+                if (flash.subscribed) {
+                    setIsSubscribed(true);
+                }
+            },
+        });
+    }
+
     const isLoading = status === 'loading';
     const emailRef = useRef<HTMLInputElement>(null);
     const successRef = useRef<HTMLParagraphElement>(null);
@@ -61,7 +72,7 @@ export function SubscriptionBlock({
                     </p>
                 </div>
                 <div className="flex flex-col gap-4">
-                    {status === 'success' ? (
+                    {isSubscribed ? (
                         <p
                             ref={successRef}
                             role="status"
@@ -73,9 +84,32 @@ export function SubscriptionBlock({
                     ) : (
                         <form
                             noValidate
-                            onSubmit={onSubmit}
+                            onSubmit={submit}
                             className="flex flex-col gap-2"
                         >
+                            {/* Honeypot (PUB-SUB-3): off screen, out of the tab order and hidden from assistive technology. */}
+                            <div
+                                aria-hidden="true"
+                                className="absolute left-[-9999px] size-px overflow-hidden"
+                            >
+                                <label htmlFor="abonnement-site">
+                                    Site web
+                                </label>
+                                <input
+                                    id="abonnement-site"
+                                    name="website"
+                                    type="text"
+                                    tabIndex={-1}
+                                    autoComplete="off"
+                                    value={form.data.website}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'website',
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                            </div>
                             <label
                                 htmlFor="abonnement-email"
                                 className="text-body-small font-semibold"
@@ -90,6 +124,13 @@ export function SubscriptionBlock({
                                     type="email"
                                     autoComplete="email"
                                     required
+                                    value={form.data.email}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'email',
+                                            event.target.value,
+                                        )
+                                    }
                                     readOnly={isLoading}
                                     placeholder={
                                         labels.subscription.emailPlaceholder

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AccountSecurityController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Middleware\EnsureAdminIsAuthenticated;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
@@ -51,7 +52,8 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureAdminIsAuthenticated::
     Route::get('/articles/{article}/apercu', [ArticleController::class, 'preview'])->name('articles.preview');
     Route::post('/medias', [MediaController::class, 'store'])->middleware('throttle:60,1')->name('media.store');
     Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::inertia('/abonnements', 'admin/placeholder', ['title' => 'Abonnements'])->name('subscriptions.index');
+    Route::get('/abonnements', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::delete('/abonnements/{subscription}', [SubscriptionController::class, 'destroy'])->name('subscriptions.destroy');
 
     Route::get('/compte', [AccountController::class, 'profile'])->name('account');
     Route::post('/compte/avatar', [AccountController::class, 'updateAvatar'])->middleware('throttle:20,1')->name('account.avatar');

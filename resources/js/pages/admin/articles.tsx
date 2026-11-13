@@ -26,12 +26,12 @@ import { PageHeader } from '@/components/admin/page-header';
 import type { RowAction } from '@/components/admin/row-actions-menu';
 import { RowActionsMenu } from '@/components/admin/row-actions-menu';
 import { StatusBadge } from '@/components/admin/status-badge';
+import type { StatusFilterOption } from '@/components/admin/status-filters';
+import { StatusFilters } from '@/components/admin/status-filters';
 import { buttonClasses } from '@/components/public/button';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { listUrl, listVisitOptions } from '@/lib/list-url';
 import { frenchTypography } from '@/lib/typography';
-import { cn } from '@/lib/utils';
 import { create, edit } from '@/routes/admin/articles';
 import type { AdminList } from '@/types/admin';
 
@@ -64,7 +64,7 @@ type ArticlesProps = {
     hasArticles: boolean;
 };
 
-const statusFilters: { value: StatusFilter | null; label: string }[] = [
+const statusFilters: StatusFilterOption<StatusFilter>[] = [
     { value: null, label: text.statusFilters.all },
     { value: 'draft', label: text.statusFilters.draft },
     { value: 'published', label: text.statusFilters.published },
@@ -234,7 +234,12 @@ export default function Articles({
                             value={filters.q}
                             className="tablet:w-95"
                         />
-                        <StatusFilters current={filters.status} url={url} />
+                        <StatusFilters
+                            label={text.statusFilter}
+                            options={statusFilters}
+                            current={filters.status}
+                            url={url}
+                        />
                         <p
                             role="status"
                             className="text-grey-dark tablet:ml-auto tablet:text-sm text-[0.8125rem]"
@@ -300,48 +305,6 @@ export default function Articles({
 }
 
 Articles.layout = (page: ReactNode) => <AdminLayout>{page}</AdminLayout>;
-
-/**
- * Segmented control from 768 px, a row of chips scrolling inside its own box below.
- */
-function StatusFilters({
-    current,
-    url,
-}: {
-    current: StatusFilter | null;
-    url: string;
-}) {
-    return (
-        <div
-            role="group"
-            aria-label={text.statusFilter}
-            className="tablet:mx-0 tablet:gap-0 tablet:overflow-hidden tablet:rounded-md tablet:border tablet:border-grey-medium tablet:px-0 -mx-4 flex gap-2 overflow-x-auto px-4"
-        >
-            {statusFilters.map((filter, index) => {
-                const isCurrent = filter.value === current;
-
-                return (
-                    <Link
-                        key={filter.label}
-                        href={listUrl(url, { status: filter.value })}
-                        {...listVisitOptions}
-                        aria-current={isCurrent ? 'true' : undefined}
-                        className={cn(
-                            'tablet:h-12 tablet:rounded-none tablet:border-0 tablet:px-4 flex h-10 flex-none items-center rounded-full border px-3.5 text-sm',
-                            index > 0 &&
-                                'tablet:border-l tablet:border-grey-light',
-                            isCurrent
-                                ? 'border-primary bg-primary font-semibold text-white'
-                                : 'border-grey-medium text-primary hover:bg-grey-subtle bg-white font-medium',
-                        )}
-                    >
-                        {filter.label}
-                    </Link>
-                );
-            })}
-        </div>
-    );
-}
 
 function ArticleStatusBadge({ status }: { status: ArticleStatus }) {
     return (

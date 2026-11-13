@@ -128,13 +128,14 @@ Decided (2026-11-13): the import works from a template, `public/modeles/modele-a
 
 Spec §4.7, §5.5.1, §7.6. Boards: `Admin-Abonnements`, `Admin-Abonnements-360`, `Composants-Abonnement`, `Confirmations`.
 
-Decision: Q3, email provider. Dependencies: provider driver, disposable blocklist package.
+Decided (2026-11-13): Q3 is Brevo through its SMTP relay (`smtp-relay.brevo.com:587`) with Laravel's built-in `smtp` mailer, so no package and a later provider change is `.env` only; webhooks stay in session 12. No disposable blocklist package: a committed snapshot of the CC0 list `disposable-email-domains/disposable-email-domains` (`resources/data/disposable-domains.txt`), refreshed weekly into `storage/app` by a `subscriptions:update-disposable-domains` command (`Http`, keeps the old file when the download looks wrong), matching parent domains too. A valid email is `email:rfc`, a domain with an MX (or A) record checked through a `DnsResolver` class faked in tests, not disposable, then confirmed by the double opt-in click.
 
-- [ ] `Subscription` model and `subscriptions` migration
-- [ ] Double opt-in, disposable address check, confirm and unsubscribe pages, shared email template
-- [ ] Wire `resources/js/components/public/subscription-block.tsx`, whose submit is a no-op today
-- [ ] Admin list: search, status filter, permanent delete with confirmation
-- [ ] Remove ADM-SUB-5 from the spec (CSV export dropped on the canvas)
+- [x] `Subscription` model and additive migration (`confirmed_ip`, `last_confirmation_sent_at`), status enum and scopes, `Prunable` for 30-day pending (PUB-SUB-9), restore soft-deleted rows on resubscribe
+- [x] `SubscribeRequest` (format, MX, disposable, honeypot), 5 per hour per IP, same answer for known addresses, no new email for a confirmed one, 10-minute resend for a pending one (PUB-SUB-2…5)
+- [x] Double opt-in: queued confirmation email, signed 48 h confirm link, signed unsubscribe link with one-click POST, one `subscription-status` page (confirmed, expired, unsubscribed), branded shared mail template (`vendor:publish --tag=laravel-mail`)
+- [x] Wire `resources/js/components/public/subscription-block.tsx` (`useForm`, honeypot, success through the `subscribed` flash)
+- [x] Admin list: search, status filter (shared `components/admin/status-filters.tsx`), permanent delete with confirmation; « Newsletters envoyées » tab and « Créer une newsletter » shown disabled until session 11
+- [x] Remove ADM-SUB-5 from the spec (CSV export dropped on the canvas)
 
 ### 11. Newsletter composer
 

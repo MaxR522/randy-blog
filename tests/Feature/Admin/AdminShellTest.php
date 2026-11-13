@@ -35,13 +35,13 @@ test('a logged-in author skips the login pages', function (string $path) {
         ->assertRedirect('/admin');
 })->with(['/admin/connexion', '/admin/mot-de-passe-oublie']);
 
-test('each section opens for a logged-in author', function (string $path, string $title) {
+test('each section opens for a logged-in author', function (string $path, string $component) {
     $this->actingAs(User::factory()->create())
         ->get($path)
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('admin/placeholder')->where('title', $title));
+        ->assertInertia(fn (Assert $page) => $page->component($component));
 })->with([
-    ['/admin/abonnements', 'Abonnements'],
+    ['/admin/abonnements', 'admin/subscriptions'],
 ]);
 
 test('the new article page opens the editor for a logged-in author', function () {
