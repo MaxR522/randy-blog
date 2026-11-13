@@ -1,5 +1,6 @@
 import { lazy, Suspense, useId } from 'react';
 import { FieldError } from '@/components/admin/text-field';
+import type { ToolbarButton } from '@/components/admin/tinymce-editor';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import type { RichTextConfig, UploadFolder } from '@/lib/tinymce-configs';
 import { cn } from '@/lib/utils';
@@ -18,6 +19,8 @@ type RichTextEditorProps = {
     placeholder?: string;
     /** For a field whose label is already shown next to it, such as an inline editor. */
     isLabelHidden?: boolean;
+    toolbarButtons?: ToolbarButton[];
+    onNormalize?: (html: string) => void;
 };
 
 /**
@@ -33,6 +36,8 @@ export function RichTextEditor({
     uploadFolder,
     placeholder,
     isLabelHidden = false,
+    toolbarButtons,
+    onNormalize,
 }: RichTextEditorProps) {
     const id = useId();
     const labelId = `${id}-libelle`;
@@ -78,6 +83,8 @@ export function RichTextEditor({
                         isInvalid={Boolean(error)}
                         uploadFolder={uploadFolder}
                         placeholder={placeholder}
+                        toolbarButtons={toolbarButtons}
+                        onNormalize={onNormalize}
                     />
                 </Suspense>
             </div>

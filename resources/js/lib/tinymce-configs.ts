@@ -145,8 +145,9 @@ export function tinymceOptions(
             ...imageOptions(uploadFolder),
             height: 520,
             plugins: ['image', 'lists', 'link', 'autoresize'],
+            // `insertarticle` is the composer's « Insérer un article » button, registered through `toolbarButtons`.
             toolbar:
-                'undo redo | blocks | bold italic | numlist bullist | link unlink | image',
+                'undo redo | blocks | bold italic | numlist bullist | link unlink | image | insertarticle',
             block_formats: text.newsletterBlockFormats,
             max_height: 900,
             autoresize_overflow_padding: 16,

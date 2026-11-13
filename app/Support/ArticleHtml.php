@@ -54,7 +54,14 @@ class ArticleHtml
         'select', 'textarea', 'svg', 'math', 'head', 'title', 'meta', 'link', 'base', 'frame', 'frameset',
     ];
 
+    /**
+     * Attribute of the newsletter article card placeholder (ADM-SUB-21), whose value is the article ID.
+     */
+    public const string ArticleCardAttribute = 'data-article-card';
+
     private static ?HtmlSanitizer $sanitizer = null;
+
+    private static ?HtmlSanitizer $newsletterSanitizer = null;
 
     /**
      * Sanitize rich text and normalize it for the public article page.
@@ -100,20 +107,28 @@ class ArticleHtml
      * Same allowlist and structure fixes as {@see self::sanitize()}, without the delivery-only changes (lazy loading,
      * resized Cloudinary URLs, table scroll boxes, zoom links): the stored HTML goes back into TinyMCE on the next
      * edit, and the page adds those when it renders.
+     *
+     * With `$allowArticleCards` (newsletter content only), the `div[data-article-card]` placeholders of the
+     * « Insérer un article » button stay, with a numeric article ID; the email renderer replaces them.
      */
-    public static function clean(?string $html): string
+    public static function clean(?string $html, bool $allowArticleCards = false): string
     {
         if ($html === null || trim($html) === '') {
             return '';
         }
 
-        $sanitized = self::sanitizer()->sanitize(self::withoutDroppedElements($html));
+        $sanitizer = $allowArticleCards ? self::newsletterSanitizer() : self::sanitizer();
+        $sanitized = $sanitizer->sanitize(self::withoutDroppedElements($html));
 
         if (trim($sanitized) === '') {
             return '';
         }
 
         [$document, $body] = self::parse($sanitized);
+
+        if ($allowArticleCards) {
+            self::normalizeArticleCards($body);
+        }
 
         self::normalizeHeadings($document, $body);
         self::normalizeClasses($body);
@@ -227,10 +242,21 @@ class ArticleHtml
      */
     private static function sanitizer(): HtmlSanitizer
     {
-        if (self::$sanitizer !== null) {
-            return self::$sanitizer;
-        }
+        return self::$sanitizer ??= new HtmlSanitizer(self::config());
+    }
 
+    /**
+     * The article allowlist, plus the article card placeholder of the newsletter.
+     */
+    private static function newsletterSanitizer(): HtmlSanitizer
+    {
+        return self::$newsletterSanitizer ??= new HtmlSanitizer(
+            self::config()->allowAttribute(self::ArticleCardAttribute, 'div'),
+        );
+    }
+
+    private static function config(): HtmlSanitizerConfig
+    {
         $config = (new HtmlSanitizerConfig)
             ->defaultAction(HtmlSanitizerAction::Block)
             ->withMaxInputLength(-1)
@@ -264,7 +290,19 @@ class ArticleHtml
             $config = $config->dropElement($element);
         }
 
-        return self::$sanitizer = new HtmlSanitizer($config);
+        return $config;
+    }
+
+    /**
+     * An article card placeholder keeps only a numeric article ID; any other value removes the attribute.
+     */
+    private static function normalizeArticleCards(Element $body): void
+    {
+        foreach ($body->querySelectorAll('['.self::ArticleCardAttribute.']') as $element) {
+            if (preg_match('/^[1-9]\d{0,18}$/', $element->getAttribute(self::ArticleCardAttribute) ?? '') !== 1) {
+                $element->removeAttribute(self::ArticleCardAttribute);
+            }
+        }
     }
 
     /**

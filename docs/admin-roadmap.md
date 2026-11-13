@@ -141,10 +141,12 @@ Decided (2026-11-13): Q3 is Brevo through its SMTP relay (`smtp-relay.brevo.com:
 
 Spec §5.5.2, §5.5.3. Boards: `Admin-Newsletter`, `Admin-Newsletter-360`, « Newsletters envoyées » section of `Admin-Abonnements`, `Newsletter`, `Newsletter-360`.
 
-- [ ] `newsletters` and `newsletter_recipients` migrations
-- [ ] Sent list, draft save, reopen, duplicate
-- [ ] Composer, article picker and card block with UTM links
-- [ ] Branded template, desktop and mobile preview, test send, recipient selection
+Decided (2026-11-13): the « Insérer un article » card is stored as a `<div data-article-card="{id}">` placeholder (kept only by `ArticleHtml::clean(…, allowArticleCards: true)`, non-editable preview in TinyMCE) and `App\Support\Newsletter\NewsletterRenderer` renders the real card from the live article, dropping unpublished ones. « Sélection » opens a modal with a searchable, paginated checkbox list of confirmed subscribers; a draft's selection is stored as pending `newsletter_recipients` rows. `utm_campaign` is `Str::slug(subject)`, with no slug column. The email's CSS is inlined with `tijsverkoyen/css-to-inline-styles`, already installed through `laravel/framework`. The test send goes synchronously to the author, its « Se désabonner » link pointing to the home page. « Envoyer » stays disabled until session 12.
+
+- [x] `newsletters` and `newsletter_recipients` migrations
+- [x] Sent list, draft save, reopen, duplicate (sent newsletters open read-only, as the email plus their counts)
+- [x] Composer, article picker and card block with UTM links
+- [x] Branded template, desktop and mobile preview, test send, recipient selection
 
 ### 12. Newsletter sending
 

@@ -35,3 +35,52 @@ body.article-body.is-minimal {
 body.article-body.is-minimal p {
     margin-bottom: 0.75rem;
 }
+
+/*
+ * The newsletter's article card placeholder (ADM-SUB-21): a non-editable preview, after the composer board.
+ * The email shows the real card, rendered by the server.
+ */
+body.article-body [data-article-card] {
+    margin-block: 1rem;
+    border: 1px solid var(--color-grey-light);
+    outline: 2px dashed var(--color-accent-200);
+    outline-offset: 3px;
+    cursor: default;
+}
+
+body.article-body [data-article-card] > img {
+    display: block;
+    width: 100%;
+    aspect-ratio: var(--aspect-card);
+    object-fit: cover;
+    margin: 0;
+}
+
+body.article-body [data-article-card] > p {
+    margin: 0 1rem 0.375rem;
+}
+
+body.article-body [data-article-card] > p:first-of-type {
+    margin-top: 0.875rem;
+    font-size: 1.1875rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+body.article-body [data-article-card] > p:nth-of-type(2) {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-grey-dark);
+}
+
+body.article-body [data-article-card] > p:last-child {
+    display: inline-flex;
+    align-items: center;
+    height: 2.75rem;
+    margin: 0.375rem 1rem 1rem;
+    padding: 0 1.125rem;
+    border-radius: var(--radius-md);
+    background: var(--color-primary);
+    color: var(--color-white, #fff);
+    font-size: 0.9375rem;
+}

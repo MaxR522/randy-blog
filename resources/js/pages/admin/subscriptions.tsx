@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { Mail, Plus, Search, Trash2 } from 'lucide-react';
+import { Mail, Search, Trash2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { destroy } from '@/actions/App/Http/Controllers/Admin/SubscriptionController';
@@ -15,10 +15,13 @@ import type { StatusBadgeVariant } from '@/components/admin/status-badge';
 import { StatusBadge } from '@/components/admin/status-badge';
 import type { StatusFilterOption } from '@/components/admin/status-filters';
 import { StatusFilters } from '@/components/admin/status-filters';
+import {
+    CreateNewsletterLink,
+    SubscriptionTabs,
+} from '@/components/admin/subscription-tabs';
 import { Button } from '@/components/public/button';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { cn } from '@/lib/utils';
 import type { AdminList } from '@/types/admin';
 
 const text = adminLabels.subscriptions;
@@ -43,6 +46,7 @@ type SubscriptionsProps = {
         status: SubscriptionStatus | null;
     };
     subscriberCount: number;
+    newsletterCount: number;
 };
 
 const statusFilters: StatusFilterOption<SubscriptionStatus>[] = [
@@ -59,13 +63,13 @@ const statusVariants: Record<SubscriptionStatus, StatusBadgeVariant> = {
 };
 
 /**
- * Subscriber list (ADM-SUB-1…4). The « Newsletters envoyées » tab and « Créer une newsletter »
- * come with the newsletter composer (session 11), so both are disabled for now.
+ * Subscriber list (ADM-SUB-1…4), the first tab of « Abonnements ».
  */
 export default function Subscriptions({
     subscriptions,
     filters,
     subscriberCount,
+    newsletterCount,
 }: SubscriptionsProps) {
     const { url } = usePage();
     const [deleted, setDeleted] = useState<Subscription | null>(null);
@@ -139,19 +143,16 @@ export default function Subscriptions({
         },
     ];
 
-    const createButton = (
-        <Button disabled className="tablet:w-auto w-full">
-            <Plus aria-hidden="true" className="size-4.5" strokeWidth={2} />
-            {text.createNewsletter}
-        </Button>
-    );
-
     return (
         <>
             <AdminHead title={text.title} />
-            <PageHeader title={text.title} action={createButton} />
+            <PageHeader title={text.title} action={<CreateNewsletterLink />} />
 
-            <Tabs subscriberCount={subscriberCount} />
+            <SubscriptionTabs
+                current="subscribers"
+                subscriberCount={subscriberCount}
+                newsletterCount={newsletterCount}
+            />
 
             {subscriberCount > 0 ? (
                 <>
@@ -221,45 +222,6 @@ export default function Subscriptions({
 }
 
 Subscriptions.layout = (page: ReactNode) => <AdminLayout>{page}</AdminLayout>;
-
-/**
- * « Abonnés » and « Newsletters envoyées ». Only the first exists until session 11: the second is shown, disabled.
- */
-function Tabs({ subscriberCount }: { subscriberCount: number }) {
-    const tabClassName =
-        'tablet:flex-none flex h-11 flex-1 items-center justify-center gap-1.5 text-[0.9375rem]';
-
-    return (
-        <nav
-            aria-label={text.tabs}
-            className="border-grey-light tablet:gap-7 mb-6 flex border-b"
-        >
-            <span
-                aria-current="page"
-                className={cn(
-                    tabClassName,
-                    'border-primary -mb-px border-b-2 font-semibold',
-                )}
-            >
-                {text.subscribersTab}
-                <span className="text-grey-dark font-medium">
-                    {subscriberCount}
-                </span>
-            </span>
-            <span
-                aria-disabled="true"
-                className={cn(tabClassName, 'text-grey-dark font-medium')}
-            >
-                <span className="tablet:inline hidden">
-                    {text.newslettersTab}
-                </span>
-                <span className="tablet:hidden">
-                    {text.newslettersTabShort}
-                </span>
-            </span>
-        </nav>
-    );
-}
 
 function SubscriptionStatusBadge({ status }: { status: SubscriptionStatus }) {
     return (

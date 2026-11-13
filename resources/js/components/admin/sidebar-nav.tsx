@@ -14,14 +14,26 @@ import { home, logout } from '@/routes';
 import { account } from '@/routes/admin';
 import articles from '@/routes/admin/articles';
 import categories from '@/routes/admin/categories';
+import newsletters from '@/routes/admin/newsletters';
 import subscriptions from '@/routes/admin/subscriptions';
 
 const text = adminLabels.shell;
 
-const items: { label: string; href: string; icon: LucideIcon }[] = [
+/** `sections`: other paths that belong to the item, such as the newsletter composer under « Abonnements ». */
+const items: {
+    label: string;
+    href: string;
+    icon: LucideIcon;
+    sections?: string[];
+}[] = [
     { label: text.articles, href: articles.index.url(), icon: FileText },
     { label: text.categories, href: categories.index.url(), icon: Folder },
-    { label: text.subscriptions, href: subscriptions.index.url(), icon: Mail },
+    {
+        label: text.subscriptions,
+        href: subscriptions.index.url(),
+        icon: Mail,
+        sections: [newsletters.create.url().replace(/\/nouvelle$/, '')],
+    },
     { label: text.account, href: account.url(), icon: User },
 ];
 
@@ -51,29 +63,33 @@ export function SidebarNav({ label, isCollapsed = false }: SidebarNavProps) {
 
     return (
         <nav aria-label={label} className="flex flex-1 flex-col gap-1">
-            {items.map(({ label: itemLabel, href, icon: Icon }) => {
-                // Wayfinder URLs are absolute (APP_URL), the page URL is a path.
-                const isActive = url.startsWith(
-                    new URL(href, window.location.origin).pathname,
-                );
+            {items.map(
+                ({ label: itemLabel, href, icon: Icon, sections = [] }) => {
+                    // Wayfinder URLs are absolute (APP_URL), the page URL is a path.
+                    const isActive = [href, ...sections].some((path) =>
+                        url.startsWith(
+                            new URL(path, window.location.origin).pathname,
+                        ),
+                    );
 
-                return (
-                    <Link
-                        key={href}
-                        href={href}
-                        aria-current={isActive ? 'page' : undefined}
-                        className={itemClasses(isCollapsed, isActive)}
-                        {...collapsedLabel(itemLabel)}
-                    >
-                        <Icon
-                            aria-hidden="true"
-                            className="size-5 flex-none"
-                            strokeWidth={1.75}
-                        />
-                        {!isCollapsed && itemLabel}
-                    </Link>
-                );
-            })}
+                    return (
+                        <Link
+                            key={href}
+                            href={href}
+                            aria-current={isActive ? 'page' : undefined}
+                            className={itemClasses(isCollapsed, isActive)}
+                            {...collapsedLabel(itemLabel)}
+                        >
+                            <Icon
+                                aria-hidden="true"
+                                className="size-5 flex-none"
+                                strokeWidth={1.75}
+                            />
+                            {!isCollapsed && itemLabel}
+                        </Link>
+                    );
+                },
+            )}
             <div className="border-grey-light mt-auto flex flex-col gap-1 border-t pt-2">
                 <a
                     href={home.url()}

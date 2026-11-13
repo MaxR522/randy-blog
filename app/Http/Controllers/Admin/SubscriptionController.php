@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SubscriptionResource;
+use App\Models\Newsletter;
 use App\Models\Subscription;
 use App\SubscriptionStatus;
 use Illuminate\Http\RedirectResponse;
@@ -52,6 +53,7 @@ class SubscriptionController extends Controller
             ],
             'filters' => ['q' => $search, 'status' => $status?->value],
             'subscriberCount' => Subscription::query()->count(),
+            'newsletterCount' => Newsletter::query()->count(),
         ]);
     }
 

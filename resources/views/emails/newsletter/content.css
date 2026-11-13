@@ -1,0 +1,63 @@
+/*
+ * The author's content in the newsletter email, inlined by NewsletterRenderer (mail clients drop most stylesheets).
+ * Hex values from resources/css/theme.css. The font size sits on the content cell, so the mobile rule can change it.
+ */
+
+.content p {
+    margin: 0 0 16px;
+}
+
+.content h2 {
+    margin: 32px 0 12px;
+    font-family: Inter, Arial, Helvetica, sans-serif;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 1.25;
+    color: #2b2b2b;
+}
+
+.content h3,
+.content h4 {
+    margin: 24px 0 8px;
+    font-family: Inter, Arial, Helvetica, sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.3;
+    color: #2b2b2b;
+}
+
+.content ul,
+.content ol {
+    margin: 0 0 16px;
+    padding: 0 0 0 24px;
+}
+
+.content li {
+    margin: 0 0 6px;
+}
+
+.content a {
+    color: #365ac0;
+    text-decoration: underline;
+}
+
+.content img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto 16px;
+    border: 0;
+}
+
+.content blockquote {
+    margin: 0 0 16px;
+    padding: 0 0 0 16px;
+    border-left: 2px solid #2b2b2b;
+}
+
+.content .callout-box {
+    margin: 0 0 16px;
+    padding: 16px 20px;
+    background-color: #f1f6ff;
+    border-left: 2px solid #365ac0;
+}
