@@ -11,3 +11,5 @@ Artisan::command('inspire', function () {
 Schedule::command('seo:ping-scheduled-articles')->everyFifteenMinutes();
 
 Schedule::command('model:prune')->daily();
+
+Schedule::command('subscriptions:update-disposable-domains')->weekly();

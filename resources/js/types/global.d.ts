@@ -20,6 +20,8 @@ declare module '@inertiajs/core' {
             recoveryCodes?: string[];
             /** Accessibility problems found in the content of the article just saved (A11Y-BODY-5). */
             accessibilityWarnings?: string[];
+            /** The subscription form was accepted (PUB-SUB-4), whatever the address. */
+            subscribed?: boolean;
         };
     }
 }

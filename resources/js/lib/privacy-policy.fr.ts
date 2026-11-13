@@ -30,7 +30,7 @@ const list = (...items: PolicyInline[][]): PolicyBlock => ({
 export const privacyPolicy = {
     description:
         "Quelles données le site randy-donny.com collecte, pourquoi et combien de temps : mesure d'audience avec Google Analytics, newsletter, cookies et vos droits.",
-    updatedAt: '3 octobre 2026',
+    updatedAt: '13 novembre 2026',
     introduction:
         'Ce site est un blog personnel. Il collecte le moins de données possible : aucune publicité, aucun compte à créer, aucun commentaire. Cette page explique quelles données sont traitées, pourquoi, combien de temps elles sont conservées et comment exercer vos droits, conformément au Règlement général sur la protection des données (RGPD).',
     sections: [
@@ -133,10 +133,10 @@ export const privacyPolicy = {
             title: 'Newsletter',
             blocks: [
                 paragraph(
-                    "Si vous vous abonnez à la newsletter, seule votre adresse email est enregistrée. Elle sert uniquement à vous envoyer les nouveaux articles de Randy Donny. Après votre inscription, un email de confirmation vous est envoyé : votre abonnement n'est activé que lorsque vous cliquez sur le lien qu'il contient (double confirmation). Sans confirmation, l'adresse est supprimée.",
+                    "Si vous vous abonnez à la newsletter, le site enregistre votre adresse email, la date de votre inscription et, comme preuve de votre consentement, la date et l'adresse IP de votre confirmation. L'adresse sert uniquement à vous envoyer les nouveaux articles de Randy Donny. Après votre inscription, un email de confirmation vous est envoyé : votre abonnement n'est activé que lorsque vous cliquez sur le lien qu'il contient (double confirmation). Sans confirmation sous 30 jours, l'adresse est supprimée.",
                 ),
                 paragraph(
-                    "Chaque email contient un lien « Se désabonner ». Dès votre désabonnement, votre adresse est supprimée. Elle n'est jamais transmise à des tiers, en dehors du prestataire technique qui assure l'envoi des emails pour le compte du site.",
+                    "Chaque email contient un lien « Se désabonner ». Dès votre désabonnement, vous ne recevez plus rien : l'adresse reste seulement marquée comme désabonnée, et vous pouvez demander à tout moment qu'elle soit effacée. Elle n'est jamais transmise à des tiers, en dehors du prestataire qui assure l'envoi des emails pour le compte du site, Brevo (Sendinblue SAS, France).",
                 ),
                 paragraph(
                     'Base légale : votre consentement (article 6.1.a du RGPD), que vous retirez en vous désabonnant.',
@@ -161,7 +161,7 @@ export const privacyPolicy = {
                     ['Cookies Google Analytics : 13 mois au plus.'],
                     ['Cookie mémorisant votre choix : 6 mois.'],
                     [
-                        "Adresse email de la newsletter : jusqu'à votre désabonnement, ou supprimée si l'abonnement n'est pas confirmé.",
+                        "Adresse email de la newsletter : jusqu'à votre demande d'effacement, ou 30 jours si l'abonnement n'est pas confirmé.",
                     ],
                     ['Journaux techniques du serveur : 12 mois au plus.'],
                 ),

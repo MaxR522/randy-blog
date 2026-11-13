@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\SubscriptionController;
 use App\Support\ArticleSlug;
 use App\Support\Seo\Seo;
 use Illuminate\Http\Request;
@@ -43,6 +44,19 @@ Route::get('/profile/{slug}', fn (string $slug) => redirect()->route('profile.sh
 Route::inertia('/politique-de-confidentialite', 'privacy', [
     'seo' => fn (): array => Seo::privacy()->toArray(),
 ])->name('privacy');
+
+/*
+ * Newsletter subscription (spec §4.7). The links come from emails, so the controller checks their signature itself.
+ */
+Route::post('/abonnement', [SubscriptionController::class, 'store'])
+    ->middleware('throttle:subscription')
+    ->name('subscriptions.store');
+Route::get('/abonnement/confirmer/{subscription}', [SubscriptionController::class, 'confirm'])
+    ->whereNumber('subscription')
+    ->name('subscriptions.confirm');
+Route::match(['get', 'post'], '/abonnement/desabonner/{subscription}', [SubscriptionController::class, 'unsubscribe'])
+    ->whereNumber('subscription')
+    ->name('subscriptions.unsubscribe');
 
 /*
  * Files for crawlers (SEO-CRAWL-2, SEO-MAP-1) and AI assistants.

@@ -4,9 +4,12 @@ namespace App\Providers;
 
 use App\Support\Seo\Seo;
 use Carbon\CarbonImmutable;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -30,6 +33,18 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureErrorPages();
+        $this->configureRateLimiting();
+    }
+
+    /**
+     * The subscription form takes 5 attempts per IP per hour (PUB-SUB-3). Over the limit, the form shows a message
+     * under the field rather than Laravel's 429 page, which Inertia would open in a modal.
+     */
+    protected function configureRateLimiting(): void
+    {
+        RateLimiter::for('subscription', fn (Request $request): Limit => Limit::perHour(5)
+            ->by($request->ip())
+            ->response(fn (): RedirectResponse => back()->withErrors(['email' => 'Trop de tentatives. Réessayez dans une heure.'])));
     }
 
     /**

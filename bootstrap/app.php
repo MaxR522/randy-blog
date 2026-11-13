@@ -25,6 +25,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->redirectUsersTo('/admin');
+
+        /*
+         * Mail clients call the one-click unsubscribe (`List-Unsubscribe-Post`) without a token; the signed URL protects it.
+         */
+        $middleware->preventRequestForgery(except: ['abonnement/desabonner/*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
