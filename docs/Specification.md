@@ -579,8 +579,8 @@ Emails sent by the application (all in French, one shared template): subscriptio
 
 **Google Analytics 4**:
 
-- Tracking: GA4 tag (measurement ID from V1 `G-5ZEWQRGZV5`, to confirm), loaded after consent.
-- Admin dashboard: GA4 Data API with a service account (JSON key in an env variable), property ID in config, responses cached 1 hour.
+- Tracking: GA4 tag (measurement ID from V1 `G-5ZEWQRGZV5`, to confirm), loaded after consent (admin roadmap session 14).
+- Admin dashboard: GA4 Data API with a service account (JSON key in an env variable), property ID in config, responses cached 1 hour. No package: `Http` with a JWT signed by `openssl_sign` (decided 2026-11-13).
 
 **Disposable email detection** (decided 2026-11-13): no package. A snapshot of the CC0 list `disposable-email-domains/disposable-email-domains` is committed in `resources/data/disposable-domains.txt`; `subscriptions:update-disposable-domains` refreshes it weekly into `storage/app` and keeps the old copy when a download looks wrong. Parent domains match too (`x.mailinator.com`). The mail-domain check (MX, else A/AAAA record) goes through `App\Support\DnsResolver`.
 
