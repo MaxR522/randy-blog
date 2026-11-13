@@ -184,11 +184,43 @@ Spec PUB-MISC-2, NFR-PRIV-1, `docs/public-design-system.md` §5 (Toast, cookie b
 - [x] Privacy policy checked against the tag. No Content-Security-Policy exists, so none was checked: NFR-SEC-2 headers (HSTS, `X-Content-Type-Options`, `Referrer-Policy`, CSP for TinyMCE, GA4 and Cloudinary) are still open, for a later session
 - [ ] Verify in the browser that no request to Google leaves before consent, then that data reaches the session 13 dashboard
 
+## Launch
+
+### 15. Production setup
+
+Spec INF-2, INF-4, NFR-SEC-2, NFR-SEC-5, §7.8, `docs/Infrastructure.md` §7, the deploy repository below. Target: production deploy on 2026-11-14.
+
+Decided (2026-11-13): Q7 V2 replaces V1 on the same host. Backups are manual: the user downloads `pg_dump` files from the host to their own computer, so no automated backup is set up (INF-5 dropped). Q5 closed: `/profil/{slug}`, with the 301 from `/profile/{slug}` already in `routes/web.php`. The GA4 measurement ID `G-5ZEWQRGZV5` from V1 is confirmed. The CSP ships as `Content-Security-Policy-Report-Only` at launch, so TinyMCE, GA4 or Cloudinary cannot break on day one, and is enforced in a later session once the reports are clean.
+
+Deployment lives in a separate repository, `/home/mario/Projects/deploy-personal-blog` (private, `MaxR522/deploy-personal-blog`): one Docker Compose file on the host runs Traefik v3.6 (TLS through Let's Encrypt, HTTP → HTTPS, `www` → apex 301), Postgres 16 (`db`), V1 (`blog`, image `maxr522/personal-blog:latest` from Docker Hub, port 8000), Mémoire du monde (`unesco`, built on the host, not touched by this session) and Watchtower (pulls `latest` every 60 s and restarts labelled containers). V2 takes the `blog` service's place in that file; fixes and optimisations to it are part of this session. Found on 2026-11-13:
+
+- Secrets in git: `config.json` (Docker Hub credentials, mounted by Watchtower) is committed, and `.env.example` carries an `APP_KEY`. Remove both from the repository, rotate the Docker Hub token, and keep the real `.env` and `config.json` only on the host.
+- Postgres publishes `5432:5432` on the host: drop the port mapping (the apps reach `db` on the Compose network; dumps go through `docker exec`). Postgres 16 there, 18 in development: move production to `postgres:18-alpine` on a new volume, which the cutover's dump and restore does anyway.
+- Laravel sits behind Traefik but trusts no proxy: every request looks like it comes from Traefik's IP, so the per-IP rate limits (subscription 5 an hour, login, 2FA) would hit all visitors at once, and `https` URLs depend on `X-Forwarded-Proto`. Add `trustProxies` for the Compose network in `bootstrap/app.php`, with a test.
+- The `blog` service lists every variable one by one, so V2's new ones (`GEMINI_*`, `GOOGLE_ANALYTICS_*`, `BREVO_WEBHOOK_TOKEN`, `NEWSLETTER_*`, `INDEXNOW_KEY`, `INERTIA_SSR_*`, `APP_DISPLAY_TIMEZONE`, `SESSION_SECURE_COOKIE`) would be missing: switch to `env_file`.
+- V1 paths do not fit V2: the healthcheck calls `/health` (V2: `/up`), volumes mount `/var/www/html/storage` (V2 image: `/app`), and the anonymous `/var/www/html/public` volume can keep serving old Vite assets after an image update: drop it, the assets ship in the image.
+- No queue worker and no scheduler run in production, and V2 needs both (mails, newsletter, analytics, pruning, IndexNow). Recommended: `blog-queue` (`queue:work`) and `blog-scheduler` (`schedule:work`) services from the same image instead of a process manager inside one container, so each restarts and logs on its own (asked at the start of the session, since spec INF-2 says process manager: update INF-2 if chosen); the SSR server (`inertia:start-ssr`) runs beside Octane in the `blog` container.
+- Watchtower redeploys any new `latest` within a minute, with `migrate --force` at start: push `latest` only from the CD workflow on a `v*` tag (plus the version tag, for rollback). `deploy.replicas` and `update_config` are Swarm-only and ignored by Compose: remove them.
+- Loose ends: `conf/fail2ban.yml` is not wired into Traefik (no plugin loaded), the Traefik rate limit is commented out, `/var/log/traefik` has no rotation, and the `www` redirect regex leaves its dots unescaped. Fix what is quick; the rest goes to `to-do-security.md`.
+
+- [ ] V1 dump rehearsed locally first, before anything is deployed (§7.8): restore a fresh `pg_dump` of the V1 production database (`docs/dump-database.md` in the deploy repository) into a local scratch database, mark the V1 migrations as run, run the V2 additive migrations, clean up duplicate `article_categories`, recompute `read_duration`, check every article has a slug, then check the site and the admin on that data (articles, categories, author profile, subscribers, search, images); fix any migration that fails on real data
+- [ ] Production image (INF-2): multi-stage `Dockerfile` target, `composer install --no-dev --optimize-autoloader`, `npm ci && npm run build && npm run build:ssr`, no Node dev server, `docker/php/prod.ini` (OPcache on with `validate_timestamps=0`, errors logged not displayed), non-root user, plain HTTP on 8000 (Traefik ends TLS); the same image serves `blog`, `blog-queue` and `blog-scheduler`
+- [ ] Start script of `blog`: `migrate --force`, `optimize` (config, routes, views, events), then Octane (FrankenPHP) and `inertia:start-ssr`; `queue:restart` on deploy; healthcheck on `/up`
+- [ ] `trustProxies` for Traefik, with a test that the client IP and `https` come from the forwarded headers
+- [ ] Security headers (NFR-SEC-2, left open by session 14), set in a Laravel middleware so they are tested: HSTS, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, CSP in report-only mode allowing TinyMCE (self-hosted), GA4 and Cloudinary, with Pest tests on the headers
+- [ ] CD (INF-4): GitHub Actions workflow that builds the production image and pushes it to Docker Hub (`maxr522/personal-blog`, where Watchtower already looks) as `latest` and the version, on a `v*` tag, after the `tests` job passes
+- [ ] Deploy repository: V2 `blog`, `blog-queue` and `blog-scheduler` services with `env_file`, Postgres 18 without the published port, the fixes listed above, secrets out of git, `.env.example` rewritten for V2 with placeholder values only (`APP_ENV=production`, `APP_DEBUG=false`, `SESSION_SECURE_COOKIE=true`, `LOG_LEVEL=warning`, Brevo SMTP, `CLOUDINARY_URL`, `GEMINI_API_KEY`, GA4 IDs and service account, `BREVO_WEBHOOK_TOKEN`, `INDEXNOW_KEY`) (NFR-SEC-5), README with the deploy and rollback steps
+- [ ] Manual backup procedure in `docs/dump-database.md` of the deploy repository: the `pg_dump` command for the V2 database, the `scp` download to this computer, and the restore; drop the `personal-blog-2` lines
+- [ ] V1 → V2 cutover on the shared host (§7.8): V1 in maintenance mode, final V1 dump downloaded and kept for rollback (with the V1 compose file and image tag), the steps rehearsed locally replayed on the new Postgres 18 database, V1 stopped and V2 started in its place; `unesco` stays up throughout
+- [ ] External services: DNS checked (same host, so normally unchanged); Brevo sender domain with SPF, DKIM and DMARC; Brevo webhook to `https://randy-donny.com/webhooks/brevo` with the token; GA4 service account added as Viewer on the property; Google Search Console with `sitemap.xml` and `sitemap-news.xml`; Cloudinary upload preset and folders checked
+- [ ] Launch checks (§7.8 step 6): row counts match V1, every published article URL answers 200, images load, the author logs in with 2FA, the confirmed-subscriber count matches, a test subscription email arrives through Brevo, the queue worker and the scheduler run (`schedule:list`, `analytics:refresh`), `robots.txt` indexable and `X-Robots-Tag` absent, Mémoire du monde still answers, then close session 14's last box in production
+- [ ] `docs/Infrastructure.md`: production section (deploy repository, services, deploy, rollback, manual backups and restore), remove the « Production: to do » notes
+
 ## Nice to have
 
-Not needed for launch. Take it after session 14.
+Not needed for launch. Take it after session 15.
 
-### 15. Passkeys (nice to have)
+### 16. Passkeys (nice to have)
 
 Not in the spec yet: add an ADM-SEC requirement first. Boards: draw a « Clés d'accès » row on `Admin-Compte-Securite` / `-360` and a passkey button on `Admin-Connexion` / `-360` before coding.
 

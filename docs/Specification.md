@@ -473,7 +473,7 @@ The project is a **new, from-scratch** Laravel 13 application. From `personal-bl
 - **INF-2** Production: a single Docker image (FrankenPHP + Octane) running the app, queue worker and scheduler under a process manager, plus the SSR server. The start script MUST run `php artisan migrate --force` (V1 did not).
 - **INF-3** CI on every push/PR: Pint, Larastan, ESLint, Prettier, type check, Pest **against PostgreSQL** (not SQLite: the migrations use Postgres-only features — this broke `personal-blog-2`'s tests), Vitest, production build.
 - **INF-4** CD: build and push the Docker image on tag (as in V1).
-- **INF-5** Daily database backup (**to define** where, see Q7).
+- **INF-5** Database backups are manual (Q7): a `pg_dump` run on the host and downloaded off it. No automated backup.
 
 ### 7.3 Data model
 
@@ -579,7 +579,7 @@ Emails sent by the application (all in French, one shared template): subscriptio
 
 **Google Analytics 4**:
 
-- Tracking: GA4 tag (measurement ID from V1 `G-5ZEWQRGZV5`, to confirm), loaded after consent (admin roadmap session 14).
+- Tracking: GA4 tag (measurement ID from V1 `G-5ZEWQRGZV5`, confirmed 2026-11-13), loaded after consent (admin roadmap session 14).
 - Admin dashboard: GA4 Data API with a service account (JSON key in an env variable), property ID in config, responses cached 1 hour. No package: `Http` with a JWT signed by `openssl_sign` (decided 2026-11-13).
 
 **Disposable email detection** (decided 2026-11-13): no package. A snapshot of the CC0 list `disposable-email-domains/disposable-email-domains` is committed in `resources/data/disposable-domains.txt`; `subscriptions:update-disposable-domains` refreshes it weekly into `storage/app` and keeps the old copy when a download looks wrong. Parent domains match too (`x.mailinator.com`). The mail-domain check (MX, else A/AAAA record) goes through `App\Support\DnsResolver`.
@@ -652,9 +652,9 @@ A rehearsal on a copy of production data MUST be done before the real migration.
 | Q2 | TinyMCE licensing: self-hosted GPL build (no API key, like V1's `license_key: 'gpl'`) or Tiny Cloud with an API key? | Self-hosted GPL recommended (no quota, no external dependency). |
 | Q3 | Which email provider? | **Decided (2026-11-13):** Brevo through its SMTP relay with Laravel's `smtp` mailer, no package, so a later change of provider is `.env` only (§7.6). |
 | Q4 | Timezone for displayed dates: `Europe/Paris` or `Indian/Antananarivo`? | Storage stays UTC. |
-| Q5 | Author profile URL: keep `/profile/randy-donny` or move to `/profil/randy-donny` with a redirect? | |
+| Q5 | Author profile URL: keep `/profile/randy-donny` or move to `/profil/randy-donny` with a redirect? | **Decided (2026-11-13):** `/profil/randy-donny`, with a 301 from `/profile/{slug}`. |
 | Q6 | Recovery phone number: is SMS verification needed (requires an SMS provider, e.g. Twilio / Brevo SMS), or is storing the number enough? | **Decided (2026-11-11):** store and display it only, in E.164, always « Non vérifié » (ADM-SEC-2). |
-| Q7 | Hosting and backups: where is V2 deployed (same host as V1?), and where are daily database backups stored? | |
+| Q7 | Hosting and backups: where is V2 deployed (same host as V1?), and where are daily database backups stored? | **Decided (2026-11-13):** V2 replaces V1 on the same host. Backups are manual `pg_dump` files downloaded to the author's computer; no automated backup (INF-5). |
 | Q8 | Drafts: may a draft be saved with only a title (ADM-ART-29)? | Recommended: yes. |
 | Q9 | Re-publishing an archived article: keep the original publication date (ADM-ART-61)? | Recommended: yes. |
 | Q10 | Unauthenticated `/admin` access: redirect to login or keep V1's 404? | **Decided:** keep the 404, and leave `/admin` out of `robots.txt` (ADM-COM-8). |
