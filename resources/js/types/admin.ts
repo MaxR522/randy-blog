@@ -116,3 +116,25 @@ export type AccountProfile = {
     bioHtml: string;
     email: string;
 };
+
+export type NewsletterStatus =
+    | 'draft'
+    | 'sending'
+    | 'sent'
+    | 'partially_failed';
+
+/**
+ * A newsletter as the admin lists and edits it (`AdminNewsletterResource`).
+ */
+export type AdminNewsletter = {
+    id: number;
+    subject: string;
+    preheader: string | null;
+    status: NewsletterStatus;
+    audience: 'all' | 'selection';
+    sentAtLabel: string | null;
+    sentAtShortLabel: string | null;
+    recipientsCount: number;
+    sentCount: number;
+    failedCount: number;
+};

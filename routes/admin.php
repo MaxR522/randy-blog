@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AccountSecurityController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\NewsletterController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Middleware\EnsureAdminIsAuthenticated;
 use Illuminate\Support\Facades\Route;
@@ -54,6 +55,16 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureAdminIsAuthenticated::
     Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/abonnements', [SubscriptionController::class, 'index'])->name('subscriptions.index');
     Route::delete('/abonnements/{subscription}', [SubscriptionController::class, 'destroy'])->name('subscriptions.destroy');
+    Route::get('/abonnements/newsletters', [NewsletterController::class, 'index'])->name('newsletters.index');
+    Route::get('/newsletters/nouvelle', [NewsletterController::class, 'create'])->name('newsletters.create');
+    Route::post('/newsletters', [NewsletterController::class, 'store'])->name('newsletters.store');
+    Route::post('/newsletters/apercu', [NewsletterController::class, 'preview'])->middleware('throttle:60,1')->name('newsletters.preview');
+    Route::post('/newsletters/test', [NewsletterController::class, 'test'])->middleware('throttle:6,1')->name('newsletters.test');
+    Route::get('/newsletters/articles', [NewsletterController::class, 'articles'])->name('newsletters.articles');
+    Route::get('/newsletters/abonnes', [NewsletterController::class, 'subscribers'])->name('newsletters.subscribers');
+    Route::get('/newsletters/{newsletter}', [NewsletterController::class, 'show'])->whereNumber('newsletter')->name('newsletters.show');
+    Route::put('/newsletters/{newsletter}', [NewsletterController::class, 'update'])->whereNumber('newsletter')->name('newsletters.update');
+    Route::post('/newsletters/{newsletter}/dupliquer', [NewsletterController::class, 'duplicate'])->whereNumber('newsletter')->name('newsletters.duplicate');
 
     Route::get('/compte', [AccountController::class, 'profile'])->name('account');
     Route::post('/compte/avatar', [AccountController::class, 'updateAvatar'])->middleware('throttle:20,1')->name('account.avatar');

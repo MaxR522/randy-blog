@@ -22,6 +22,16 @@ import contentStyle from '../../../css/editor-content.css?inline';
 import type { RichTextConfig, UploadFolder } from '@/lib/tinymce-configs';
 import { tinymceOptions } from '@/lib/tinymce-configs';
 
+/**
+ * A text button added to the toolbar, such as the newsletter's « Insérer un article ». Its name goes in the toolbar.
+ */
+export type ToolbarButton = {
+    name: string;
+    text: string;
+    icon?: string;
+    onAction: (editor: TinyMCEInstance) => void;
+};
+
 export type TinyMCEEditorProps = {
     config: RichTextConfig;
     value: string;
@@ -32,6 +42,12 @@ export type TinyMCEEditorProps = {
     isInvalid?: boolean;
     uploadFolder?: UploadFolder;
     placeholder?: string;
+    toolbarButtons?: ToolbarButton[];
+    /**
+     * Called instead of `onChange` when TinyMCE rewrites the loaded HTML on its own (whitespace, attribute order),
+     * so the page can take it as its saved state rather than as an unsaved change.
+     */
+    onNormalize?: (html: string) => void;
 };
 
 /**
@@ -66,6 +82,21 @@ function addHeaderRowToNewTables(editor: TinyMCEInstance): void {
 }
 
 /**
+ * The newsletter's article card placeholders (ADM-SUB-21) are previews: not editable in the editor, and saved without
+ * the attribute that makes them so. The server renders the real card from `data-article-card`.
+ */
+function protectArticleCards(editor: TinyMCEInstance): void {
+    editor.on('PreInit', () => {
+        editor.parser.addAttributeFilter('data-article-card', (nodes) => {
+            nodes.forEach((node) => node.attr('contenteditable', 'false'));
+        });
+        editor.serializer.addAttributeFilter('data-article-card', (nodes) => {
+            nodes.forEach((node) => node.attr('contenteditable', null));
+        });
+    });
+}
+
+/**
  * Bundled TinyMCE (GPL build, no API key, Q2). Loaded lazily by `RichTextEditor`.
  */
 export default function TinyMCEEditor({
@@ -77,6 +108,8 @@ export default function TinyMCEEditor({
     isInvalid = false,
     uploadFolder,
     placeholder,
+    toolbarButtons = [],
+    onNormalize,
 }: TinyMCEEditorProps) {
     const [editor, setEditor] = useState<TinyMCEInstance | null>(null);
 
@@ -106,12 +139,31 @@ export default function TinyMCEEditor({
             licenseKey="gpl"
             onInit={(_event, instance) => setEditor(instance)}
             value={value}
-            onEditorChange={(html) => onChange(html)}
+            onEditorChange={(html, instance) => {
+                if (onNormalize && !instance.isDirty()) {
+                    onNormalize(html);
+                } else {
+                    onChange(html);
+                }
+            }}
             init={{
                 ...tinymceOptions(config, contentStyle, uploadFolder),
                 placeholder,
                 setup: (editor) => {
                     addHeaderRowToNewTables(editor);
+
+                    if (config === 'newsletter') {
+                        protectArticleCards(editor);
+                    }
+
+                    toolbarButtons.forEach((button) => {
+                        editor.ui.registry.addButton(button.name, {
+                            text: button.text,
+                            icon: button.icon,
+                            onAction: () => button.onAction(editor),
+                        });
+                    });
+
                     editor.on('init', () => {
                         copyFontFaces(editor);
                         // Name the editing area after the visible label, for screen readers inside the iframe.
