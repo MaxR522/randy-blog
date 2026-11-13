@@ -29,6 +29,14 @@ return [
         'url' => env('CLOUDINARY_URL'),
     ],
 
+    /*
+     * « Générer avec l’IA » in the article editor. A free-tier key from Google AI Studio is enough.
+     */
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-3.5-flash-lite'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],

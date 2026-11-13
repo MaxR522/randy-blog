@@ -43,6 +43,8 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureAdminIsAuthenticated::
 
     Route::resource('articles', ArticleController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/articles/nouveau', [ArticleController::class, 'create'])->name('articles.create');
+    Route::post('/articles/import-word', [ArticleController::class, 'importWord'])->middleware('throttle:30,1')->name('articles.import-word');
+    Route::post('/articles/suggestions', [ArticleController::class, 'suggest'])->middleware('throttle:10,1')->name('articles.suggestions');
     Route::get('/articles/{article}/modifier', [ArticleController::class, 'edit'])->name('articles.edit');
     Route::patch('/articles/{article}/publier', [ArticleController::class, 'publish'])->name('articles.publish');
     Route::patch('/articles/{article}/archiver', [ArticleController::class, 'archive'])->name('articles.archive');

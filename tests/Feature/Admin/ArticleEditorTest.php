@@ -324,3 +324,23 @@ test('SEO-URL-1 apostrophes and accents in the title give separate plain words i
 
     expect(Article::sole()->slug)->toBe('je-pense-donc-j-essuie-l-ete');
 });
+
+test('A11Y-BODY-5 a save with accessibility problems in the content flashes them without blocking it', function () {
+    $this->actingAs($this->author)
+        ->post(route('admin.articles.store'), ['intent' => 'save', 'title' => 'Titre', 'content' => '<h3>Deux</h3><p><img src="https://res.cloudinary.com/randy/image/upload/a.jpg"></p>'])
+        ->assertSessionHasNoErrors()
+        ->assertInertiaFlash('success', 'Article enregistré.')
+        ->assertInertiaFlash('accessibilityWarnings', [
+            'Une image n’a pas de texte alternatif : ajoutez-en un, ou cochez « Image décorative ».',
+            'Le texte commence par un « Titre 2 » : commencez par un « Titre 1 ».',
+        ]);
+
+    $article = Article::sole();
+    $this->flushSession();
+
+    $this->actingAs($this->author)
+        ->put(route('admin.articles.update', $article), ['intent' => 'save', 'title' => 'Titre', 'content' => '<h2>Un</h2><p><img src="https://res.cloudinary.com/randy/image/upload/a.jpg" alt=""></p>'])
+        ->assertSessionHasNoErrors()
+        ->assertInertiaFlash('success', 'Article enregistré.')
+        ->assertInertiaFlashMissing('accessibilityWarnings');
+});

@@ -106,30 +106,21 @@ Decided (2026-11-11): TOTP through Fortify (no email or SMS codes); the password
 - [x] Challenge page `/admin/deux-facteurs` with its routes in `routes/admin.php` (Fortify's are ignored), recovery code login, `two_factor_used` in the history (`RecordLoginEvent` also records on the challenge route and on `TwoFactorAuthenticationFailed`)
 - [x] Security alert on 2FA enable and disable (`TwoFactorEnabled`, `TwoFactorDisabled`, implementing `SecurityAlert`)
 
-### 8b. Passkeys
-
-Not in the spec yet: add an ADM-SEC requirement first. Boards: draw a « Clés d'accès » row on `Admin-Compte-Securite` / `-360` and a passkey button on `Admin-Connexion` / `-360` before coding.
-
-Decided (2026-11-11): Fortify's passkeys (`laravel/passkeys`, already installed with Fortify); dependency `@laravel/passkeys` (npm, 0.4.1, pre-1.0) approved. A passkey login skips the TOTP challenge: the passkey is itself a second factor. Passkeys are kept in the password manager.
-
-- [ ] Passkeys migration (`vendor:publish --tag=fortify-migrations`, keep only the passkeys one), enable `Features::passkeys()`, `PasskeyAuthenticatable` and `PasskeyUser` on `User`, routes in `routes/admin.php` with throttles, management guarded by the password inline as in session 8
-- [ ] Security tab « Clés d'accès » row: add (name), list (name, added, last used), delete (password required)
-- [ ] Login page: « Se connecter avec une clé d'accès » button and conditional UI (autofill from the email field)
-- [ ] `RecordLoginEvent` records passkey logins (history shows « Clé d'accès »), security alert on passkey added and deleted
-
 ## Article editor helpers
 
 ### 9. Word import and editor helpers
 
-Spec §5.3.3, ADM-ART-27. Board: state section of `Admin-Article-Editeur`.
+Spec §5.3.3, ADM-ART-26, ADM-ART-27. Boards: state sections of `Admin-Article-Editeur` and `Admin-Article-Editeur-360`.
 
 Deferred after the account sessions (decided 2026-11-10).
 
-Dependency: `mammoth` recommended (spec §7.6).
+Dependency: `mammoth` (npm, approved 2026-11-13). Gemini is called through Laravel's `Http` client, with no package.
 
-- [ ] `.docx` modal, conversion and pre-fill, embedded images to Cloudinary, replace confirmation, French errors
-- [ ] « Générer les mots-clés »
-- [ ] Warnings on save for missing alt text, heading levels and table headers (A11Y-BODY-5)
+Decided (2026-11-13): the import works from a template, `public/modeles/modele-article.docx`, whose bracket markers split the document: `[Titre]`, `[Chapô]` and `[Corps]` open a section, `[Encadré]` … `[Fin encadré]` wrap an Encadré. Images in the document are not imported (warning only); the author adds them in the editor. The SEO description and the keywords are not in the template: one « Générer avec l’IA » button fills both with Gemini on the free tier (`GEMINI_API_KEY`, model `GEMINI_MODEL`, default `gemini-3.5-flash-lite`), accepting that Google may use the text sent to improve its products. Mammoth converts the file in the browser; `App\Support\WordImport` checks the markers and sanitizes on the server.
+
+- [x] `.docx` modal with the template link, conversion in the browser, marker check on the server, pre-fill, replace confirmation, French errors
+- [x] « Générer avec l’IA » for the SEO description and the keywords (Gemini)
+- [x] Warnings on save for missing alt text, heading levels and table headers (A11Y-BODY-5)
 
 ## Subscribers and newsletter
 
@@ -176,3 +167,20 @@ Dependency: GA4 Data client. Needs the service account and property ID from the 
 - [ ] KPI tiles, page views line chart (accessible SVG, hover tooltip, table view; load the `dataviz` skill), top 10, sources, devices, countries
 - [ ] `/admin` becomes this page; remove the session 1 redirect; add « Analytique » back at the top of `sidebar-nav.tsx`
 - [ ] Verify the GA4 tag is actually loaded after consent, otherwise there is no data to show
+
+## Nice to have
+
+Not needed for launch. Take it after session 13.
+
+### 14. Passkeys (nice to have)
+
+Not in the spec yet: add an ADM-SEC requirement first. Boards: draw a « Clés d'accès » row on `Admin-Compte-Securite` / `-360` and a passkey button on `Admin-Connexion` / `-360` before coding.
+
+Decided (2026-11-11): Fortify's passkeys (`laravel/passkeys`, already installed with Fortify); dependency `@laravel/passkeys` (npm, 0.4.1, pre-1.0) approved. A passkey login skips the TOTP challenge: the passkey is itself a second factor. Passkeys are kept in the password manager.
+
+Notes from the 2026-11-13 exploration: Fortify's passkey routes are skipped by `Fortify::ignoreRoutes()`, so redefine them with the `Laravel\Passkeys\Http\Controllers\*` controllers; enable the feature with `Features::passkeys(['confirmPassword' => false])`, since the app has no `password.confirm` route; the app's `fortify.limiters` has no `passkeys` key, so define an admin limiter; passkey login calls `$guard->login()` directly (no Fortify pipeline), so `RecordLoginEvent`'s `routeIs` filter must include the passkey login route, and soft-deleted users need `Passkeys::authorizeLoginUsing`; `@laravel/passkeys` takes per-call `routes` overrides for the French URLs and sends the XSRF token itself.
+
+- [ ] Passkeys migration (`vendor:publish --tag=fortify-migrations`, keep only the passkeys one), enable `Features::passkeys()`, `PasskeyAuthenticatable` and `PasskeyUser` on `User`, routes in `routes/admin.php` with throttles, management guarded by the password inline as in session 8
+- [ ] Security tab « Clés d'accès » row: add (name), list (name, added, last used), delete (password required)
+- [ ] Login page: « Se connecter avec une clé d'accès » button and conditional UI (autofill from the email field)
+- [ ] `RecordLoginEvent` records passkey logins (history shows « Clé d'accès »), security alert on passkey added and deleted

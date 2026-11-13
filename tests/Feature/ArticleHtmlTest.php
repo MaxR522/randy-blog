@@ -128,3 +128,43 @@ test('plainText separates blocks with a space and decodes entities', function ()
     expect(ArticleHtml::plainText('<p>Un&nbsp;chapô.</p><h2>Partie</h2><ul><li>un</li><li>deux</li></ul>'))
         ->toBe('Un chapô. Partie un deux');
 });
+
+test('A11Y-BODY-5 clean content has no accessibility warning', function () {
+    expect(ArticleHtml::accessibilityWarnings(
+        '<h2>Un</h2><h3>Deux</h3><h4>Trois</h4><h2>Un</h2><div class="callout-box" role="note"><h4>Encadré</h4></div>'
+        .'<img src="a.jpg" alt="Un taxi-be"><img src="b.jpg" alt=""><table><tr><th scope="col">A</th></tr></table>',
+    ))->toBe([]);
+});
+
+test('A11Y-BODY-5 images without alt text, skipped heading levels and tables without headers are reported', function (string $html, array $warnings) {
+    expect(ArticleHtml::accessibilityWarnings($html))->toBe($warnings);
+})->with([
+    'one image without alt' => [
+        '<p><img src="a.jpg"></p>',
+        ['Une image n’a pas de texte alternatif : ajoutez-en un, ou cochez « Image décorative ».'],
+    ],
+    'two images without alt' => [
+        '<img src="a.jpg"><img src="b.jpg"><img src="c.jpg" alt="">',
+        ['2 images n’ont pas de texte alternatif : ajoutez-en un, ou cochez « Image décorative ».'],
+    ],
+    'level skipped' => [
+        '<h2>Un</h2><h4>Trois</h4>',
+        ['Un « Titre 3 » suit directement un « Titre 1 » : il manque un « Titre 2 » entre les deux.'],
+    ],
+    'text starting below Titre 1' => [
+        '<h3>Deux</h3>',
+        ['Le texte commence par un « Titre 2 » : commencez par un « Titre 1 ».'],
+    ],
+    'table without header row' => [
+        '<table><tr><td>A</td></tr></table>',
+        ['Un tableau n’a pas de ligne d’en-tête.'],
+    ],
+    'all three' => [
+        '<h2>Un</h2><h4>Trois</h4><img src="a.jpg"><table><tr><td>A</td></tr></table><table><tr><td>B</td></tr></table>',
+        [
+            'Une image n’a pas de texte alternatif : ajoutez-en un, ou cochez « Image décorative ».',
+            'Un « Titre 3 » suit directement un « Titre 1 » : il manque un « Titre 2 » entre les deux.',
+            '2 tableaux n’ont pas de ligne d’en-tête.',
+        ],
+    ],
+]);

@@ -1,5 +1,5 @@
-import { Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Eye } from 'lucide-react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
+import { ArrowLeft, Eye, TriangleAlert, Upload } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useMemo, useRef, useState } from 'react';
 import { AdminHead } from '@/components/admin/admin-head';
@@ -14,8 +14,10 @@ import { ImageUploader } from '@/components/admin/image-uploader';
 import { RichTextEditor } from '@/components/admin/rich-text-editor';
 import type { RowAction } from '@/components/admin/row-actions-menu';
 import { RowActionsMenu } from '@/components/admin/row-actions-menu';
+import { SeoSuggestions } from '@/components/admin/seo-suggestions';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { TextField } from '@/components/admin/text-field';
+import { WordImportModal } from '@/components/admin/word-import-modal';
 import { Button } from '@/components/public/button';
 import AdminLayout from '@/layouts/admin-layout';
 import type { AutosavedFields } from '@/lib/article-autosave';
@@ -28,7 +30,11 @@ import { adminLabels } from '@/lib/labels.admin.fr';
 import { useUnsavedChangesGuard } from '@/lib/unsaved-changes';
 import { cn } from '@/lib/utils';
 import { archive, index, store, update } from '@/routes/admin/articles';
-import type { CategoryOption, EditorArticle } from '@/types/admin';
+import type {
+    CategoryOption,
+    EditorArticle,
+    WordImportResult,
+} from '@/types/admin';
 
 const text = adminLabels.editor;
 
@@ -147,6 +153,8 @@ function Editor({ article, categories }: ArticleEditorProps) {
     );
     const [leavingUrl, setLeavingUrl] = useState<string | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [isWordImportOpen, setIsWordImportOpen] = useState(false);
+    const accessibilityWarnings = usePage().flash.accessibilityWarnings ?? [];
     const isLeavingRef = useRef(false);
 
     const autosave = useArticleAutosave(
@@ -242,6 +250,21 @@ function Editor({ article, categories }: ArticleEditorProps) {
         }
     }
 
+    /**
+     * Fill the form from a checked Word document (ADM-ART-41). Nothing is saved; the autosave keeps a copy.
+     */
+    function importDocument(fields: WordImportResult['fields']): void {
+        setData((current) => ({
+            ...current,
+            title: fields.title,
+            lead_paragraph: fields.lead_paragraph,
+            content: fields.content,
+            slug: isSlugEdited ? current.slug : slugFromTitle(fields.title),
+        }));
+        setIsWordImportOpen(false);
+        router.flash('success', adminLabels.wordImport.imported);
+    }
+
     function restoreAutosave(): void {
         if (autosave.pending) {
             setData((current) => ({ ...current, ...autosave.pending!.fields }));
@@ -267,7 +290,13 @@ function Editor({ article, categories }: ArticleEditorProps) {
                     ]
                   : []),
           ]
-        : [];
+        : [
+              {
+                  key: 'word-import',
+                  label: adminLabels.wordImport.open,
+                  onSelect: () => setIsWordImportOpen(true),
+              },
+          ];
 
     const title = article ? text.editTitle : text.createTitle;
 
@@ -321,6 +350,15 @@ function Editor({ article, categories }: ArticleEditorProps) {
                     </StatusBadge>
                 </div>
                 <div className="tablet:flex hidden flex-wrap items-center justify-end gap-3">
+                    {!article && (
+                        <Button
+                            variant="ghost"
+                            onClick={() => setIsWordImportOpen(true)}
+                        >
+                            <Upload className="size-4" aria-hidden="true" />
+                            {adminLabels.wordImport.open}
+                        </Button>
+                    )}
                     {article && (
                         <Button
                             variant="ghost"
@@ -360,6 +398,30 @@ function Editor({ article, categories }: ArticleEditorProps) {
                 {autosave.savedAt &&
                     text.autosavedAt(frenchTime(autosave.savedAt))}
             </p>
+
+            {accessibilityWarnings.length > 0 && (
+                <div
+                    role="status"
+                    className="text-body-small mb-6 rounded-md border border-yellow-600 bg-yellow-50 px-4 py-3.5 text-yellow-800"
+                >
+                    <p className="flex gap-2 font-semibold">
+                        <TriangleAlert
+                            aria-hidden="true"
+                            className="mt-0.5 size-4 flex-none"
+                            strokeWidth={2}
+                        />
+                        {adminLabels.accessibilityWarnings.title}
+                    </p>
+                    <ul className="mt-2 flex list-disc flex-col gap-1.5 pl-10.5 font-medium">
+                        {accessibilityWarnings.map((warning) => (
+                            <li key={warning}>{warning}</li>
+                        ))}
+                    </ul>
+                    <p className="mt-2.5 pl-6">
+                        {adminLabels.accessibilityWarnings.note}
+                    </p>
+                </div>
+            )}
 
             {autosave.pending && autosave.pendingSavedAt && (
                 <div
@@ -518,6 +580,23 @@ function Editor({ article, categories }: ArticleEditorProps) {
                         >
                             {text.seo}
                         </h2>
+                        <SeoSuggestions
+                            title={data.title}
+                            leadParagraph={data.lead_paragraph}
+                            content={data.content}
+                            hasContent={words > 0}
+                            hasCurrentValues={
+                                data.description.trim() !== '' ||
+                                data.keywords.trim() !== ''
+                            }
+                            onSuggest={(suggestions) =>
+                                setData((current) => ({
+                                    ...current,
+                                    description: suggestions.description,
+                                    keywords: suggestions.keywords,
+                                }))
+                            }
+                        />
                         <DescriptionField
                             value={data.description}
                             error={errors.description}
@@ -592,6 +671,15 @@ function Editor({ article, categories }: ArticleEditorProps) {
                 onClose={() => setIsPreviewOpen(false)}
                 isFromEditor
             />
+
+            {!article && (
+                <WordImportModal
+                    isOpen={isWordImportOpen}
+                    onClose={() => setIsWordImportOpen(false)}
+                    hasContent={data.title.trim() !== '' || words > 0}
+                    onImport={importDocument}
+                />
+            )}
 
             <ConfirmModal
                 isOpen={leavingUrl !== null}

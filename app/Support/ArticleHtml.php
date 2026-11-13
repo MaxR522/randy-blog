@@ -125,6 +125,67 @@ class ArticleHtml
     }
 
     /**
+     * Accessibility problems in an article body, shown to the author after a save but never blocking it
+     * (A11Y-BODY-5, standing in for TinyMCE's premium checker): images without alt text, skipped heading
+     * levels and tables without a header row. The Encadré's own heading is left out of the heading order.
+     *
+     * @return list<string>
+     */
+    public static function accessibilityWarnings(?string $html): array
+    {
+        if ($html === null || trim($html) === '') {
+            return [];
+        }
+
+        [, $body] = self::parse($html);
+        $warnings = [];
+
+        $imagesWithoutAlt = count(array_filter(
+            iterator_to_array($body->getElementsByTagName('img')),
+            fn (Element $image): bool => ! $image->hasAttribute('alt'),
+        ));
+
+        if ($imagesWithoutAlt > 0) {
+            $warnings[] = $imagesWithoutAlt === 1
+                ? 'Une image n’a pas de texte alternatif : ajoutez-en un, ou cochez « Image décorative ».'
+                : "{$imagesWithoutAlt} images n’ont pas de texte alternatif : ajoutez-en un, ou cochez « Image décorative ».";
+        }
+
+        $previousLevel = 1;
+
+        foreach ($body->querySelectorAll('h2, h3, h4') as $heading) {
+            if ($heading->closest('.callout-box') !== null) {
+                continue;
+            }
+
+            $level = (int) substr($heading->localName, 1);
+
+            if ($level > $previousLevel + 1) {
+                $warnings[] = $previousLevel === 1
+                    ? 'Le texte commence par un « Titre '.($level - 1).' » : commencez par un « Titre 1 ».'
+                    : 'Un « Titre '.($level - 1).' » suit directement un « Titre '.($previousLevel - 1).' » : il manque un « Titre '.$previousLevel.' » entre les deux.';
+
+                break;
+            }
+
+            $previousLevel = $level;
+        }
+
+        $tablesWithoutHeader = count(array_filter(
+            iterator_to_array($body->getElementsByTagName('table')),
+            fn (Element $table): bool => $table->getElementsByTagName('th')->length === 0,
+        ));
+
+        if ($tablesWithoutHeader > 0) {
+            $warnings[] = $tablesWithoutHeader === 1
+                ? 'Un tableau n’a pas de ligne d’en-tête.'
+                : "{$tablesWithoutHeader} tableaux n’ont pas de ligne d’en-tête.";
+        }
+
+        return $warnings;
+    }
+
+    /**
      * Plain text of rich text, blocks separated by a space, for `raw_content` (search, word count).
      */
     public static function plainText(?string $html): string

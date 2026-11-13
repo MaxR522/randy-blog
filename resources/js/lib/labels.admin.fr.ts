@@ -110,6 +110,70 @@ export const adminLabels = {
             'Les modifications non enregistrées seront perdues. Une copie reste dans ce navigateur.',
         leaveConfirm: 'Quitter la page',
     },
+    wordImport: {
+        open: 'Importer depuis Word',
+        title: 'Importer depuis Word',
+        intro: 'Le document pré-remplit le formulaire ; rien n’est enregistré automatiquement.',
+        templateIntro:
+            'Partez du modèle : écrivez sous les repères [Titre], [Chapô] et [Corps], et entourez un encadré de [Encadré] et [Fin encadré].',
+        templateLink: 'Télécharger le modèle (.docx)',
+        choose: 'Choisir un fichier .docx',
+        dropHint: 'ou le déposer ici · 20 Mo maximum',
+        imagesNote:
+            'Les images ne sont pas importées : ajoutez-les ensuite dans l’éditeur.',
+        change: 'Changer',
+        changeLabel: (name: string) => `Changer de fichier (${name})`,
+        checking: 'Vérification du document…',
+        invalidFile:
+            'Le fichier n’a pas pu être importé. Vérifiez qu’il s’agit bien d’un document Word (.docx).',
+        checkFailed:
+            'La vérification n’a pas abouti. Réessayez dans quelques instants.',
+        errorsTitle:
+            'Le document ne peut pas être importé. Corrigez-le dans Word, puis choisissez-le à nouveau.',
+        readyTitle: 'Document prêt à être importé',
+        summaryTitle: (title: string) => `Titre : « ${title} »`,
+        summaryChapo: (paragraphs: number) =>
+            paragraphs === 0
+                ? 'Chapô : vide'
+                : `Chapô : ${paragraphs} ${paragraphs > 1 ? 'paragraphes' : 'paragraphe'}`,
+        summaryContent: (words: number, headings: number, callouts: number) => {
+            const parts = [`${words} ${words > 1 ? 'mots' : 'mot'}`];
+
+            if (headings > 0) {
+                parts.push(
+                    `${headings} ${headings > 1 ? 'intertitres' : 'intertitre'}`,
+                );
+            }
+
+            if (callouts > 0) {
+                parts.push(
+                    `${callouts} ${callouts > 1 ? 'encadrés' : 'encadré'}`,
+                );
+            }
+
+            return `Contenu : ${parts.join(', ')}`;
+        },
+        replaceNotice:
+            'Le formulaire contient déjà du texte : l’import remplacera le titre, le chapô et le contenu.',
+        submit: 'Importer',
+        replace: 'Remplacer le contenu',
+        imported:
+            'Document importé. Ajoutez l’image de couverture, puis générez la description et les mots-clés.',
+    },
+    suggestions: {
+        generate: 'Générer avec l’IA',
+        help: 'Propose une description SEO et des mots-clés à partir du titre, du chapô et du contenu.',
+        missingText: 'Ajoutez d’abord le titre et le contenu de l’article.',
+        failed: 'La génération n’a pas abouti. Réessayez dans quelques instants.',
+        replaceTitle: 'Remplacer la description et les mots-clés ?',
+        replaceDescription:
+            'Les textes actuels seront remplacés par les propositions. Vous pourrez encore les modifier avant d’enregistrer.',
+        replace: 'Remplacer',
+    },
+    accessibilityWarnings: {
+        title: 'Article enregistré. Quelques points d’accessibilité à vérifier dans le contenu :',
+        note: 'Ces points n’empêchent ni l’enregistrement ni la publication.',
+    },
     imageUploader: {
         drop: 'Glissez une image ici ou cliquez pour en choisir une',
         help: 'JPG, PNG ou WebP, 10 Mo maximum. Paysage, 1600 px de large au moins.',
