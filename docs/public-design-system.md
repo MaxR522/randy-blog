@@ -174,7 +174,7 @@ Full-width band, `bg-accent-50 border-y border-accent-200`, padding 80 (48 mobil
 
 ### Toast, cookie banner
 - Toast: `bg-primary text-white rounded-md h-12 px-4`, check icon, `role="status"`, 320 ms fade + 8 px rise (none under reduced motion).
-- Cookie banner (Google Analytics only): `bg-white border border-grey-light border-t-2 border-t-primary rounded-lg`, bottom of the viewport. Text « Ce site utilise Google Analytics pour mesurer son audience. Aucune donnée n'est utilisée à des fins publicitaires. Vous pouvez accepter, refuser ou choisir. » Buttons: « Accepter » and « Refuser » (both primary), « Personnaliser » (ghost). Stacked full-width on mobile.
+- Cookie banner (Google Analytics only): `bg-white border border-grey-light border-t-2 border-t-primary rounded-lg`, bottom of the viewport. Text « Ce site utilise Google Analytics pour mesurer son audience. Vous pouvez accepter, refuser ou choisir. » Buttons: « Accepter » and « Refuser » (both primary), « Personnaliser » (ghost). Stacked full-width on mobile.
 
 ## 6. Pages
 

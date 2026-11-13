@@ -48,6 +48,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user()?->only(['id', 'avatar']),
             ],
+            'analytics' => [
+                'measurementId' => $request->is('admin', 'admin/*')
+                    ? null
+                    : (config('services.google_analytics.measurement_id') ?: null),
+            ],
         ];
     }
 }

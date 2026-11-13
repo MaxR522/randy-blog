@@ -11,6 +11,8 @@ declare module '@inertiajs/core' {
         sharedPageProps: {
             name: string;
             auth: Auth;
+            /** GA4 measurement ID, `null` on admin pages or when unset. */
+            analytics: { measurementId: string | null };
             [key: string]: unknown;
         };
         flashDataType: {
