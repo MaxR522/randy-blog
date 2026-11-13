@@ -12,10 +12,12 @@ type ConfirmModalProps = {
     /** Optional: a deletion may have nothing more to say than its title. */
     description?: string;
     confirmLabel: string;
+    /** Red by default; a replacement the author can still undo by hand stays a plain primary button. */
+    confirmVariant?: 'danger' | 'primary';
 };
 
 /**
- * Confirmation of a destructive action. Focus starts on « Annuler »; stays a card on phones.
+ * Confirmation of a destructive or replacing action. Focus starts on « Annuler »; stays a card on phones.
  */
 export function ConfirmModal({
     isOpen,
@@ -25,6 +27,7 @@ export function ConfirmModal({
     title,
     description,
     confirmLabel,
+    confirmVariant = 'danger',
 }: ConfirmModalProps) {
     const id = useId();
     const titleId = `${id}-titre`;
@@ -67,7 +70,7 @@ export function ConfirmModal({
                             {adminLabels.modal.cancel}
                         </Button>
                         <Button
-                            variant="danger"
+                            variant={confirmVariant}
                             onClick={onConfirm}
                             isLoading={isConfirming}
                             disabled={isConfirming}

@@ -18,6 +18,8 @@ declare module '@inertiajs/core' {
             error?: string;
             /** Shown once, right after 2FA is confirmed or its codes regenerated. */
             recoveryCodes?: string[];
+            /** Accessibility problems found in the content of the article just saved (A11Y-BODY-5). */
+            accessibilityWarnings?: string[];
         };
     }
 }

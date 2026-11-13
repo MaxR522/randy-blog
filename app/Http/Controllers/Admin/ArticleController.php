@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\ArticleStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ArticleRequest;
+use App\Http\Requests\ArticleSuggestionRequest;
+use App\Http\Requests\WordImportRequest;
 use App\Http\Resources\AdminArticleEditorResource;
 use App\Http\Resources\AdminArticleResource;
 use App\Http\Resources\ArticleResource;
@@ -13,9 +15,13 @@ use App\Models\Article;
 use App\Models\Category;
 use App\Support\ArticleHtml;
 use App\Support\ArticleSlug;
+use App\Support\ArticleSuggester;
+use App\Support\ArticleSuggestionException;
 use App\Support\Cloudinary\Cloudinary;
 use App\Support\Cloudinary\CloudinaryException;
 use App\Support\Seo\Seo;
+use App\Support\WordImport;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -95,6 +101,35 @@ class ArticleController extends Controller
     }
 
     /**
+     * Check a Word document written from the template, already turned into HTML in the browser, and return the fields
+     * it fills (ADM-ART-40…43). Nothing is saved: the editor fills the form once the author confirms.
+     * Problems in the document are part of a normal answer, not a failed request.
+     */
+    public function importWord(WordImportRequest $request): JsonResponse
+    {
+        return response()->json(WordImport::read($request->string('html')->toString()));
+    }
+
+    /**
+     * Propose the SEO description and the keywords from the editor's current text (ADM-ART-26, ADM-ART-27).
+     * Nothing is saved: the editor fills its fields and the author reviews them.
+     */
+    public function suggest(ArticleSuggestionRequest $request, ArticleSuggester $suggester): JsonResponse
+    {
+        try {
+            return response()->json($suggester->suggest(
+                $request->string('title')->squish()->toString(),
+                $request->string('lead_paragraph')->toString(),
+                $request->string('content')->toString(),
+            ));
+        } catch (ArticleSuggestionException $exception) {
+            Log::warning($exception->getMessage());
+
+            return response()->json(['message' => ArticleSuggestionException::UserMessage], 502);
+        }
+    }
+
+    /**
      * Save a new article as a draft, or publish it straight away.
      */
     public function store(ArticleRequest $request, Cloudinary $cloudinary): RedirectResponse
@@ -103,7 +138,7 @@ class ArticleController extends Controller
 
         $this->save($request, $article, $cloudinary);
 
-        Inertia::flash('success', $request->wantsToPublish() ? 'Article publié.' : 'Article enregistré.');
+        Inertia::flash($this->savedFlash($request, $article));
 
         return to_route('admin.articles.edit', $article);
     }
@@ -128,7 +163,7 @@ class ArticleController extends Controller
     {
         $this->save($request, $article, $cloudinary);
 
-        return Inertia::flash('success', $request->wantsToPublish() ? 'Article publié.' : 'Article enregistré.')->back();
+        return Inertia::flash($this->savedFlash($request, $article))->back();
     }
 
     /**
@@ -185,6 +220,21 @@ class ArticleController extends Controller
             'isPublished' => $article->isPublished(),
             'isEmbedded' => $request->boolean('integre'),
         ]);
+    }
+
+    /**
+     * The confirmation of a save, with the accessibility problems left in the content (A11Y-BODY-5).
+     *
+     * @return array{success: string, accessibilityWarnings?: list<string>}
+     */
+    private function savedFlash(ArticleRequest $request, Article $article): array
+    {
+        $warnings = ArticleHtml::accessibilityWarnings($article->content);
+
+        return [
+            'success' => $request->wantsToPublish() ? 'Article publié.' : 'Article enregistré.',
+            ...($warnings === [] ? [] : ['accessibilityWarnings' => $warnings]),
+        ];
     }
 
     /**

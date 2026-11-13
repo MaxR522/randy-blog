@@ -271,7 +271,7 @@ Fields, in order:
 | ADM-ART-24 | « Contenu » | Full TinyMCE (§5.3.4) | Required. |
 | ADM-ART-25 | « Catégories » | Multi-select with search | At least one. **(added)** Allows creating a category inline, as in V1. |
 | ADM-ART-26 | « Description SEO » | Textarea with a live counter | Required, max 160. Helper text: « Ce champ n'apparaît pas dans l'article mais améliore le référencement. {n}/160 caractères ». |
-| ADM-ART-27 | « Mots-clés » | Text input | Required. Helper text: « Séparez les mots-clés par des virgules ». Stored trimmed, deduplicated, comma separated. **(added)** « Générer les mots-clés » button (V1 feature) that suggests keywords from the content. |
+| ADM-ART-27 | « Mots-clés » | Text input | Required. Helper text: « Séparez les mots-clés par des virgules ». Stored trimmed, deduplicated, comma separated. **(changed 2026-11-13)** The V1 « Générer les mots-clés » button becomes « Générer avec l’IA », above the description: Gemini proposes both the SEO description (160 characters at most) and 5 to 8 keywords from the title, chapô and content. Filled fields are replaced only after a confirmation; nothing is saved. Errors: « Ajoutez d’abord le titre et le contenu de l’article. », « La génération n’a pas abouti. Réessayez dans quelques instants. » |
 
 - **ADM-ART-29** **All fields are required.** "Required" is enforced when **publishing**. **(added, to confirm)** Saving a draft only requires the title, so the author can save work in progress, especially on mobile.
 - **ADM-ART-30** The editor MUST be fully usable on phone (TinyMCE mobile mode, sticky action bar at the bottom of the screen).
@@ -279,12 +279,13 @@ Fields, in order:
 
 #### 5.3.3 Import from Word
 
-- **ADM-ART-40** « Importer depuis Word » opens a modal with a file input accepting `.docx` only (max 20 MB).
-- **ADM-ART-41** The document is converted to HTML and pre-fills the form. Nothing is saved automatically: the author reviews and completes the form.
-  - The first heading (or the first paragraph if there is no heading) becomes the « Titre ».
-  - The rest becomes the « Contenu », keeping: headings, paragraphs, bold, italic, underline, links, bulleted/numbered lists, tables, images.
-  - Embedded images are uploaded to Cloudinary and referenced by URL.
+- **ADM-ART-40** « Importer depuis Word » opens a modal with a file input accepting `.docx` only (max 20 MB) and a link to download the article template (`/modeles/modele-article.docx`).
+- **ADM-ART-41** **(changed 2026-11-13)** The document is written from the template and converted to HTML in the browser; the server checks it and returns the fields, which pre-fill the form once the author confirms. Nothing is saved automatically: the author reviews and completes the form.
+  - Markers, each alone on its paragraph, split the document: `[Titre]`, `[Chapô]` and `[Corps]` open a section that runs until the next one; `[Encadré]` … `[Fin encadré]` wrap an Encadré inside the body. Case, accents and spaces in a marker are ignored. Text before the first marker (the template's instructions) is ignored.
+  - The body keeps headings (Word « Titre 1/2/3 » become h2/h3/h4), paragraphs, bold, italic, underline, links, bulleted/numbered lists and tables. The chapô keeps bold, italic and links.
+  - Images in the document are not imported: the check warns with their number, and the author adds them in the editor.
   - Unsupported formatting (colors, fonts, sizes) is dropped. The resulting HTML goes through the same sanitizer as the editor.
+  - The check refuses a document without `[Titre]` or `[Corps]`, with an empty or multi-paragraph title, a title over 255 characters, an empty body, a repeated section, an unknown marker, or an Encadré not closed, nested or outside the body, and lists each reason in French. An empty chapô is only a warning.
 - **ADM-ART-42** If the form already has content, ask for confirmation before replacing it.
 - **ADM-ART-43** Errors (corrupted file, wrong format, too large) are shown in French in the modal: « Le fichier n'a pas pu être importé. Vérifiez qu'il s'agit bien d'un document Word (.docx). »
 - The legacy `.doc` format is out of scope.
@@ -559,7 +560,7 @@ Code-level fixes (no schema change): `Category::articles()` relation keys (swapp
 
 ### 7.5 Media (Cloudinary)
 
-- All uploads (covers, in-content images, avatars, .docx images) go through one authenticated upload service, stored in folders `articles/`, `avatars/`, `newsletters/`.
+- All uploads (covers, in-content images, avatars) go through one authenticated upload service, stored in folders `articles/`, `avatars/`, `newsletters/`.
 - Delivery URLs use `f_auto,q_auto` and width transformations for `srcset`.
 - When an image is replaced (cover, avatar), the old asset is deleted from Cloudinary (never done in V1/`personal-blog-2`).
 
@@ -582,7 +583,9 @@ Emails sent by the application (all in French, one shared template): subscriptio
 
 **Disposable email detection**: a maintained blocklist package, refreshed weekly by the scheduler.
 
-**Word import**: server-side or client-side .docx → HTML conversion (e.g. `mammoth` on the client, or PHPWord on the server — to be chosen at implementation; mammoth gives cleaner semantic HTML).
+**Word import** (decided 2026-11-13): `mammoth` converts the .docx to HTML in the browser; `App\Support\WordImport` checks the template's markers and sanitizes on the server (ADM-ART-41).
+
+**Gemini** (decided 2026-11-13): « Générer avec l’IA » (ADM-ART-27) calls the Gemini API `generateContent` endpoint with a JSON schema for the answer. Free tier, key in `GEMINI_API_KEY`, model in `GEMINI_MODEL` (default `gemini-3.5-flash-lite`). On the free tier Google may use the text sent to improve its products, which is accepted since the articles are published. Rate limited to 10 requests a minute.
 
 ### 7.7 Routes summary
 

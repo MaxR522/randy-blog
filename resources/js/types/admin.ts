@@ -39,6 +39,26 @@ export type EditorArticle = {
 };
 
 /**
+ * The fields a Word document fills, with what the check found (`App\Support\WordImport`).
+ */
+export type WordImportResult = {
+    fields: { title: string; lead_paragraph: string; content: string };
+    errors: string[];
+    warnings: string[];
+    summary: {
+        leadParagraphs: number;
+        words: number;
+        headings: number;
+        callouts: number;
+    };
+};
+
+/**
+ * What « Générer avec l’IA » proposes for the SEO fields (`App\Support\ArticleSuggester`).
+ */
+export type ArticleSuggestions = { description: string; keywords: string };
+
+/**
  * The author's own fields on the account Profile tab.
  */
 export type AccountDevice = {
