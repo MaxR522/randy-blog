@@ -111,6 +111,7 @@ export const labels = {
         follow: 'Suivre',
         info: 'Informations',
         privacy: 'Politique de confidentialité',
+        manageCookies: 'Gérer les cookies',
         copyright: '© 2026 Randy Donny',
         credit: 'Site conçu et développé par',
         developer: {
@@ -129,6 +130,17 @@ export const labels = {
         accept: 'Accepter',
         refuse: 'Refuser',
         customize: 'Personnaliser',
+        region: 'Consentement aux cookies',
+        dialogTitle: 'Vos choix pour les cookies',
+        dialogIntro:
+            'Le site fonctionne de la même façon quel que soit votre choix. Vous pouvez le modifier à tout moment depuis le pied de page.',
+        analyticsLabel: "Mesure d'audience (Google Analytics)",
+        analyticsHint:
+            "Dépose les cookies _ga pour compter les visites de façon anonyme. Aucune donnée n'est utilisée à des fins publicitaires.",
+        save: 'Enregistrer',
+        close: 'Fermer',
+        acceptedAnnouncement: "Mesure d'audience acceptée.",
+        refusedAnnouncement: "Mesure d'audience refusée.",
     },
     a11y: {
         // Screen reader only copy (skip link, landmarks, announcements), see docs/seo-accessibility.md.

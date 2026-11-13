@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { buttonClasses } from '@/components/public/button';
+import { CookieConsent } from '@/components/public/cookie-consent';
 import { Footer } from '@/components/public/footer';
 import type { NavbarVariant } from '@/components/public/navbar';
 import { Navbar } from '@/components/public/navbar';
@@ -44,6 +45,7 @@ export default function PublicLayout({
             >
                 {labels.a11y.skipToContent}
             </a>
+            <CookieConsent mainId={MAIN_ID} />
             {banner}
             <Navbar variant={navbar} authorUrl={authorUrl} />
             <main

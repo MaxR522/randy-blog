@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ExternalLink } from '@/components/public/external-link';
 import { socialLinks } from '@/components/public/social-links';
+import { openPreferences } from '@/lib/cookie-consent';
 import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/lib/typography';
 import { home, privacy } from '@/routes';
@@ -59,6 +60,17 @@ export function Footer() {
                                         {labels.footer.privacy}
                                     </span>
                                 </Link>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    onClick={openPreferences}
+                                    className={`${footerLinkClasses} cursor-pointer`}
+                                >
+                                    <span className="border-b border-current">
+                                        {labels.footer.manageCookies}
+                                    </span>
+                                </button>
                             </li>
                         </ul>
                     </div>

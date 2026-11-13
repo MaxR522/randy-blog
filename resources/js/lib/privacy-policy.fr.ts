@@ -119,7 +119,7 @@ export const privacyPolicy = {
                     ],
                 ),
                 paragraph(
-                    "Vous pouvez changer d'avis à tout moment : supprimez les cookies de randy-donny.com dans les réglages de votre navigateur, et le bandeau vous sera proposé de nouveau. Vous pouvez aussi bloquer Google Analytics sur tous les sites avec le ",
+                    "Vous pouvez changer d'avis à tout moment avec le bouton « Gérer les cookies » en bas de chaque page, ou en supprimant les cookies de randy-donny.com dans les réglages de votre navigateur : le bandeau vous sera alors proposé de nouveau. Vous pouvez aussi bloquer Google Analytics sur tous les sites avec le ",
                     {
                         text: 'module de désactivation de Google Analytics',
                         href: 'https://tools.google.com/dlpage/gaoptout?hl=fr',

@@ -179,9 +179,9 @@ Dependency: none (decided 2026-11-13): the GA4 Data API is called through Larave
 
 Spec PUB-MISC-2, NFR-PRIV-1, `docs/public-design-system.md` §5 (Toast, cookie banner), `docs/seo-accessibility.md`. Labels exist in `labels.cookies`; the privacy policy already mentions the `_ga` cookies. Moved out of session 13 (decided 2026-11-13): nothing loads the tag today.
 
-- [ ] Cookie banner (Accepter, Refuser, Personnaliser), consent kept in `localStorage`, same-weight buttons, focus and live region per the accessibility rules
-- [ ] GA4 tag loaded only after consent, from `services.google_analytics.measurement_id`; never loaded on `/admin`
-- [ ] Content-Security-Policy and privacy policy checked against the tag
+- [x] Cookie banner (Accepter, Refuser, Personnaliser), consent kept in a 6-month cookie `randy-blog-consent` (as the privacy policy says), same-weight buttons, focus and live region per the accessibility rules, footer « Gérer les cookies » reopens the dialog
+- [x] GA4 tag loaded only after consent, from `services.google_analytics.measurement_id` (shared as `analytics.measurementId`, `null` on `/admin`); never loaded on `/admin`
+- [x] Privacy policy checked against the tag. No Content-Security-Policy exists, so none was checked: NFR-SEC-2 headers (HSTS, `X-Content-Type-Options`, `Referrer-Policy`, CSP for TinyMCE, GA4 and Cloudinary) are still open, for a later session
 - [ ] Verify in the browser that no request to Google leaves before consent, then that data reaches the session 13 dashboard
 
 ## Nice to have
