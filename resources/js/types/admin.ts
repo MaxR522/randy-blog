@@ -28,6 +28,9 @@ export type EditorArticle = {
     content: string;
     coverPhoto: string | null;
     coverPhotoCredit: string;
+    audioUrl: string | null;
+    /** Seconds, from Cloudinary. */
+    audioDuration: number | null;
     description: string;
     keywords: string;
     status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';

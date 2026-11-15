@@ -33,19 +33,24 @@ class CloudinaryUrl
     }
 
     /**
-     * Cloud name and public ID of a delivery URL, without transformations, version or extension.
+     * Cloud name, resource type (`image`, or `video` for audio) and public ID of a delivery URL, without
+     * transformations, version or extension.
      *
-     * @return array{cloud: string, publicId: string}|null
+     * @return array{cloud: string, resourceType: 'image'|'video', publicId: string}|null
      */
     public static function parse(string $url): ?array
     {
-        $pattern = '#^https?://res\.cloudinary\.com/([^/]+)'.preg_quote(self::UploadSegment, '#')
+        $pattern = '#^https?://res\.cloudinary\.com/([^/]+)/(image|video)/upload/'
             .self::StoredTransformations.'(?:v\d+/)?(.+?)(?:\.[a-z0-9]+)?(?:[?\#].*)?$#i';
 
         if (preg_match($pattern, $url, $matches) !== 1) {
             return null;
         }
 
-        return ['cloud' => $matches[1], 'publicId' => rawurldecode($matches[2])];
+        return [
+            'cloud' => $matches[1],
+            'resourceType' => strtolower($matches[2]) === 'video' ? 'video' : 'image',
+            'publicId' => rawurldecode($matches[3]),
+        ];
     }
 }

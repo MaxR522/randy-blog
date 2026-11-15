@@ -10,6 +10,7 @@ import { ShareButtons } from '@/components/public/share-buttons';
 import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { frenchTypography } from '@/lib/typography';
+import { cn } from '@/lib/utils';
 import type { ArticleCard, ArticleDetail, SeoData } from '@/types';
 import type { MouseEvent } from 'react';
 import { useState } from 'react';
@@ -128,8 +129,21 @@ export default function Article({
                 <ArticleHeader article={article} />
 
                 <div className={`${container} tablet:pt-10 pt-6`}>
-                    <div className="max-w-article-header laptop:max-w-article-cover border-grey-light tablet:flex-row tablet:items-center tablet:justify-between tablet:gap-6 tablet:py-3 mx-auto flex flex-col gap-3.5 border-y py-3.5">
-                        <AudioSlot minutes={article.readingTime} />
+                    {/* Without audio the share buttons stay on the right and nothing announces a missing player. */}
+                    <div
+                        className={cn(
+                            'max-w-article-header laptop:max-w-article-cover border-grey-light tablet:flex-row tablet:items-center tablet:gap-6 tablet:py-3 mx-auto flex flex-col gap-3.5 border-y py-3.5',
+                            article.audio
+                                ? 'tablet:justify-between'
+                                : 'tablet:justify-end',
+                        )}
+                    >
+                        {article.audio && (
+                            <AudioSlot
+                                url={article.audio.url}
+                                duration={article.audio.duration}
+                            />
+                        )}
                         <ShareButtons url={article.url} title={title} />
                     </div>
                 </div>

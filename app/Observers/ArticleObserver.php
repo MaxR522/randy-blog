@@ -4,11 +4,14 @@ namespace App\Observers;
 
 use App\Jobs\PingIndexNow;
 use App\Models\Article;
+use App\Support\Cloudinary\Cloudinary;
 use App\Support\Seo\Seo;
 use App\Support\Seo\SeoCache;
 
 class ArticleObserver
 {
+    public function __construct(private readonly Cloudinary $cloudinary) {}
+
     /**
      * Changes visitors can see; a view or share count alone does not count.
      */
@@ -36,6 +39,14 @@ class ArticleObserver
     public function deleted(Article $article): void
     {
         SeoCache::flush();
+    }
+
+    /**
+     * A permanently deleted article takes its audio file with it; a soft delete keeps it for a restore.
+     */
+    public function forceDeleted(Article $article): void
+    {
+        $this->cloudinary->delete($article->audio_url);
     }
 
     public function restored(Article $article): void

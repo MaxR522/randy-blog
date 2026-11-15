@@ -51,6 +51,8 @@ export type ArticleDetail = {
     date: string | null;
     dateLabel: string | null;
     readingTime: number;
+    /** The audio version (`audio_url`, duration in seconds), or `null`: then no player is shown. */
+    audio: { url: string; duration: number } | null;
     categories: ArticleCategory[];
     author: ArticleAuthor | null;
 };

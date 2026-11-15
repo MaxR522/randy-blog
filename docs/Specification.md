@@ -158,7 +158,7 @@ Differences from V1:
 
 Text-to-speech:
 
-- **PUB-ART-14 (added, to be defined)** A « Écouter l'article » feature is wanted on the article page. Implementation is not decided — see open question Q1 (§11). Layout SHOULD reserve a place for the player near the share buttons.
+- **PUB-ART-14 (added, decided 2026-11-15)** « Écouter l'article »: the author makes the audio file with Piper on their own computer and uploads it per article (ADM-ART-23a); see Q1 (§11). An article with audio shows the player in the tools bar, left of the share buttons: idle, one button « Écouter l'article » with « Lecture audio · N min » from the file's real duration; once started, a play/pause button, `1:24 / 6:00` and a 4 px seekable progress bar. The file loads only when the reader presses play (`preload="none"`), never autoplays. An article without audio shows the share buttons alone, still on the right on desktop, and nothing announces a missing player.
 
 ### 4.6 Author profile page
 
@@ -268,6 +268,7 @@ Fields, in order:
 | ADM-ART-21 | « Chapô » | Minimal TinyMCE: bold, italic, link | Required. |
 | ADM-ART-22 | « Image de couverture » | File upload with preview | Required. JPG, PNG, WebP, max 10 MB. Uploaded to Cloudinary, capped at 2400 px with automatic quality. |
 | ADM-ART-23 | « Crédit photo » | Text input | Required, max 255. |
+| ADM-ART-23a | « Audio de l'article » **(added 2026-11-15)** | File upload with a listen button, file name, duration and size | Optional, never required to publish. MP3 or M4A, max 50 MB. Sent with « Enregistrer » / « Publier » like the cover (with an upload progress bar), stored on Cloudinary (resource type `video`, folder `audio`), whose answer gives the duration saved in `audio_duration` (seconds). « Remplacer » and « Retirer » work on a published article too; the replaced or removed file is deleted from Cloudinary once the article is saved, and a permanently deleted article deletes its file. The browser autosave does not keep a picked file. Errors: « Le fichier doit être un audio MP3 ou M4A. », « L’audio ne doit pas dépasser 50 Mo. », « L’audio n’a pas pu être envoyé. Réessayez dans quelques instants. » |
 | ADM-ART-24 | « Contenu » | Full TinyMCE (§5.3.4) | Required. |
 | ADM-ART-25 | « Catégories » | Multi-select with search | At least one. **(added)** Allows creating a category inline, as in V1. |
 | ADM-ART-26 | « Description SEO » | Textarea with a live counter | Required, max 160. Helper text: « Ce champ n'apparaît pas dans l'article mais améliore le référencement. {n}/160 caractères ». |
@@ -648,7 +649,7 @@ A rehearsal on a copy of production data MUST be done before the real migration.
 
 | # | Question | Options / notes |
 |---|---|---|
-| Q1 | **Text-to-speech on the article page (« Écouter l'article »)**: how to implement it? | (a) Browser Web Speech API: free, no storage, but voice quality and French voices vary by device. (b) Generate an audio file per article with a cloud TTS service (Google Cloud TTS, Azure, ElevenLabs…) on publish, stored on Cloudinary: consistent quality, has a cost, must regenerate on edit. (c) Third-party embedded player (e.g. a TTS widget): fastest, adds an external script. To decide: quality expectations, budget, whether the player needs speed control / progress. |
+| Q1 | **Text-to-speech on the article page (« Écouter l'article »)**: how to implement it? | (a) Browser Web Speech API: free, no storage, but voice quality and French voices vary by device. (b) Generate an audio file per article with a cloud TTS service (Google Cloud TTS, Azure, ElevenLabs…) on publish, stored on Cloudinary: consistent quality, has a cost, must regenerate on edit. (c) Third-party embedded player (e.g. a TTS widget): fastest, adds an external script. To decide: quality expectations, budget, whether the player needs speed control / progress. **Decided (2026-09-30, built 2026-11-15):** none of these. The author generates an MP3 with Piper on their own computer and uploads it per article (ADM-ART-23a, PUB-ART-14); no browser speech, no cloud TTS, no third-party player. |
 | Q2 | TinyMCE licensing: self-hosted GPL build (no API key, like V1's `license_key: 'gpl'`) or Tiny Cloud with an API key? | Self-hosted GPL recommended (no quota, no external dependency). |
 | Q3 | Which email provider? | **Decided (2026-11-13):** Brevo through its SMTP relay with Laravel's `smtp` mailer, no package, so a later change of provider is `.env` only (§7.6). |
 | Q4 | Timezone for displayed dates: `Europe/Paris` or `Indian/Antananarivo`? | Storage stays UTC. |

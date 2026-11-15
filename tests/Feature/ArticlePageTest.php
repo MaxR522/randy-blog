@@ -150,3 +150,25 @@ test('articles published at the same moment are ordered by id', function () {
             ->where('previous.id', $first->id)
             ->where('next', null));
 });
+
+test('PUB-ART-14 an article with audio exposes it to the player', function () {
+    $article = publishedArticleDaysAgo(1, [
+        'slug' => 'avec-audio',
+        'audio_url' => 'https://res.cloudinary.com/randy/video/upload/v1/audio/lecture.mp3',
+        'audio_duration' => 360,
+    ]);
+
+    $this->get('/articles/avec-audio')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('article.id', $article->id)
+            ->where('article.audio', ['url' => 'https://res.cloudinary.com/randy/video/upload/v1/audio/lecture.mp3', 'duration' => 360]));
+});
+
+test('PUB-ART-14 an article without audio exposes no player', function () {
+    publishedArticleDaysAgo(1, ['slug' => 'sans-audio']);
+
+    $this->get('/articles/sans-audio')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('article.audio', null));
+});
