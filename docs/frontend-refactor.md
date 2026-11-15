@@ -119,22 +119,22 @@ Tests: `tests/Feature/Admin/ArticleTest.php`.
 
 Tests: `tests/Feature/Admin/CategoryTest.php`, `SubscriptionTest.php`. Reuses the session 4 hooks: `useListSearch` is already wired in both pages; replace their local deletion state and `MAIN_ID` with `useRowDeletion` and `helpers/admin-shell.ts`.
 
-- [ ] `pages/admin/categories.tsx` (387)
-- [ ] `pages/admin/subscriptions.tsx` (270) and `components/admin/subscription-tabs.tsx` (90)
+- [x] `pages/admin/categories.tsx` (387 to 116): `hooks/use-categories-list.ts` (sort, form modal, `useRowDeletion`), `hooks/use-category-form.ts` (`useForm` replaces the `<Form>` the modal held), `helpers/categories.ts` (`categorySortOf`), components in `components/admin/categories/`
+- [x] `pages/admin/subscriptions.tsx` (270 to 113) and `subscription-tabs.tsx` (90): `useRowDeletion`, `helpers/subscriptions.ts` (types, filters, badge variants, `subscriptionsUrlsOf`), components in `components/admin/subscriptions/`; the tabs move there and take `subscribersUrl` / `newslettersUrl`, `CreateNewsletterLink` takes `href`
 
 ### 6. Newsletter pickers and preview
 
 Tests: `tests/Feature/Admin/NewsletterTest.php`.
 
-- [ ] `components/admin/article-picker-modal.tsx` (205) and `subscriber-picker-modal.tsx` (191) with `picker-search.tsx`: requests to hooks called by `pages/admin/newsletter-editor.tsx`, one shared picker hook if both repeat the same search and select logic
-- [ ] `components/admin/newsletter-preview-modal.tsx` (155): request to `hooks/use-newsletter-preview.ts`
+- [x] `components/admin/article-picker-modal.tsx` (205 to 126) and `subscriber-picker-modal.tsx` (191 to 115) with `picker-search.tsx`: `hooks/use-article-picker.ts` and `use-subscriber-picker.ts` (own `isOpen`, reset and load on `open()`), shared `hooks/use-picker-request.ts` (GET, failure, stale responses ignored) and `hooks/use-picker-search.ts` (debounce), `helpers/article-picker.ts` (`PickedArticle`, `selectionMoveOf`) and `helpers/subscriber-picker.ts`
+- [x] `components/admin/newsletter-preview-modal.tsx` (155 to 124): request to `hooks/use-newsletter-preview.ts` (`open(fields)` posts the current fields through `transform`), types in `helpers/newsletter-preview.ts`
 
 ### 7. Newsletter pages
 
 Tests: `tests/Feature/Admin/NewsletterTest.php`.
 
-- [ ] `pages/admin/newsletter-editor.tsx` (599): `hooks/use-newsletter-editor-form.ts`, `helpers/newsletter-editor.ts`, `components/admin/newsletter-editor/`
-- [ ] `pages/admin/newsletters.tsx` (206)
+- [x] `pages/admin/newsletter-editor.tsx` (599 to 139): `hooks/use-newsletter-editor-form.ts` (exposes `articlePicker`, `subscriberPicker`, `preview`), `hooks/use-newsletter-sending-poll.ts`, `helpers/newsletter-editor.ts` (`articleCardHtml`, `newsletterFieldsOf`, `selectionErrorOf`), components in `components/admin/newsletter-editor/`; the page keeps two small containers, `SentView` and `Composer`
+- [x] `pages/admin/newsletters.tsx` (206 to 77): `helpers/newsletters.ts` (`NewsletterRow` carries `showUrl`), `hooks/use-newsletter-duplicate.ts` (also used by `SentView`), components in `components/admin/newsletters/`
 
 ### 8. Account foundation and profile
 

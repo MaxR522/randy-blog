@@ -1,104 +1,28 @@
-import { useHttp } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
-import { subscribers as searchSubscribers } from '@/actions/App/Http/Controllers/Admin/NewsletterController';
 import { Modal, ModalBody, ModalFooter } from '@/components/admin/modal';
 import { PickerSearch } from '@/components/admin/picker-search';
 import { Button } from '@/components/public/button';
+import type { SubscriberPicker } from '@/hooks/use-subscriber-picker';
 import { adminLabels } from '@/lib/labels.admin.fr';
 
 const text = adminLabels.subscriberPicker;
 
-export type PickedSubscriber = { id: number; email: string };
-
-type SubscriberPage = {
-    data: PickedSubscriber[];
-    total: number;
-    currentPage: number;
-    lastPage: number;
-};
-
 type SubscriberPickerModalProps = {
-    isOpen: boolean;
-    onClose: () => void;
-    selection: PickedSubscriber[];
-    onConfirm: (selection: PickedSubscriber[]) => void;
+    picker: SubscriberPicker;
 };
 
 /**
  * « Sélection » (ADM-SUB-25): tick confirmed subscribers, across searches and pages. Nothing changes until « Valider ».
  */
-export function SubscriberPickerModal({
-    isOpen,
-    onClose,
-    selection,
-    onConfirm,
-}: SubscriberPickerModalProps) {
+export function SubscriberPickerModal({ picker }: SubscriberPickerModalProps) {
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={text.title}>
-            <PickerContent
-                onClose={onClose}
-                selection={selection}
-                onConfirm={onConfirm}
-            />
+        <Modal isOpen={picker.isOpen} onClose={picker.close} title={text.title}>
+            <PickerContent picker={picker} />
         </Modal>
     );
 }
 
-function PickerContent({
-    onClose,
-    selection,
-    onConfirm,
-}: Omit<SubscriberPickerModalProps, 'isOpen'>) {
-    const [picked, setPicked] = useState(
-        () =>
-            new Map(selection.map((subscriber) => [subscriber.id, subscriber])),
-    );
-    const [query, setQuery] = useState('');
-    const [page, setPage] = useState<SubscriberPage | null>(null);
-    const [hasFailed, setHasFailed] = useState(false);
-    const http = useHttp<Record<string, never>, SubscriberPage>({});
-
-    function load(search: string, pageNumber: number): void {
-        setQuery(search);
-        setHasFailed(false);
-        http.get(
-            searchSubscribers.url({
-                query: {
-                    ...(search === '' ? {} : { q: search }),
-                    ...(pageNumber > 1 ? { page: pageNumber } : {}),
-                },
-            }),
-            {
-                onSuccess: setPage,
-                onHttpException: () => {
-                    setHasFailed(true);
-
-                    return false;
-                },
-                onNetworkError: () => {
-                    setHasFailed(true);
-
-                    return false;
-                },
-            },
-        ).catch(() => undefined);
-    }
-
-    useEffect(() => load('', 1), []);
-
-    function toggle(subscriber: PickedSubscriber, isChecked: boolean): void {
-        setPicked((current) => {
-            const next = new Map(current);
-
-            if (isChecked) {
-                next.set(subscriber.id, subscriber);
-            } else {
-                next.delete(subscriber.id);
-            }
-
-            return next;
-        });
-    }
+function PickerContent({ picker }: SubscriberPickerModalProps) {
+    const { page } = picker;
 
     return (
         <>
@@ -106,18 +30,18 @@ function PickerContent({
                 <PickerSearch
                     label={text.search}
                     placeholder={text.searchPlaceholder}
-                    onSearch={(search) => load(search, 1)}
+                    onSearch={picker.search}
                 />
                 <p
                     role="status"
                     className="text-body-small text-primary font-semibold"
                 >
-                    {text.selectedCount(picked.size)}
+                    {text.selectedCount(picker.pickedCount)}
                 </p>
                 <p role="status" className="text-caption text-grey-dark">
-                    {http.processing
+                    {picker.isLoading
                         ? text.loading
-                        : hasFailed
+                        : picker.hasFailed
                           ? text.failed
                           : page?.data.length === 0
                             ? text.noMatch
@@ -135,9 +59,11 @@ function PickerContent({
                                     <label className="flex min-h-11 cursor-pointer items-center gap-3 px-1.5 py-1.5 text-[0.9375rem]">
                                         <input
                                             type="checkbox"
-                                            checked={picked.has(subscriber.id)}
+                                            checked={picker.isPicked(
+                                                subscriber.id,
+                                            )}
                                             onChange={(event) =>
-                                                toggle(
+                                                picker.toggle(
                                                     subscriber,
                                                     event.target.checked,
                                                 )
@@ -157,8 +83,8 @@ function PickerContent({
                     <div className="flex items-center justify-between gap-2">
                         <Button
                             variant="secondary"
-                            disabled={page.currentPage <= 1 || http.processing}
-                            onClick={() => load(query, page.currentPage - 1)}
+                            disabled={page.currentPage <= 1 || picker.isLoading}
+                            onClick={picker.previousPage}
                         >
                             {text.previous}
                         </Button>
@@ -169,9 +95,9 @@ function PickerContent({
                             variant="secondary"
                             disabled={
                                 page.currentPage >= page.lastPage ||
-                                http.processing
+                                picker.isLoading
                             }
-                            onClick={() => load(query, page.currentPage + 1)}
+                            onClick={picker.nextPage}
                         >
                             {text.next}
                         </Button>
@@ -179,12 +105,10 @@ function PickerContent({
                 )}
             </ModalBody>
             <ModalFooter>
-                <Button variant="secondary" onClick={onClose}>
+                <Button variant="secondary" onClick={picker.close}>
                     {text.cancel}
                 </Button>
-                <Button onClick={() => onConfirm([...picked.values()])}>
-                    {text.confirm}
-                </Button>
+                <Button onClick={picker.confirm}>{text.confirm}</Button>
             </ModalFooter>
         </>
     );

@@ -1,25 +1,19 @@
-import { useHttp } from '@inertiajs/react';
 import { X } from 'lucide-react';
-import { useEffect, useId, useState } from 'react';
-import { preview } from '@/actions/App/Http/Controllers/Admin/NewsletterController';
+import { useId } from 'react';
+import type { PreviewFormat } from '@/helpers/newsletter-preview';
+import { previewFormats } from '@/helpers/newsletter-preview';
 import { useModalDialog } from '@/hooks/use-modal-dialog';
+import type { NewsletterPreview } from '@/hooks/use-newsletter-preview';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { cn } from '@/lib/utils';
 
 const text = adminLabels.newsletterPreview;
 
-type PreviewFields = { subject: string; preheader: string; content: string };
-
 type NewsletterPreviewModalProps = {
-    isOpen: boolean;
-    onClose: () => void;
-    /** The composer's current fields, unsaved ones included. */
-    fields: PreviewFields;
+    preview: NewsletterPreview;
 };
 
-type Format = 'desktop' | 'mobile';
-
-const frameWidths: Record<Format, string> = {
+const frameWidths: Record<PreviewFormat, string> = {
     desktop: 'w-160',
     mobile: 'w-90',
 };
@@ -29,27 +23,24 @@ const frameWidths: Record<Format, string> = {
  * The email sits in a sandboxed iframe, so its styles and links stay out of the admin.
  */
 export function NewsletterPreviewModal({
-    isOpen,
-    onClose,
-    fields,
+    preview,
 }: NewsletterPreviewModalProps) {
     const titleId = useId();
-    const { dialogRef, closeOnVeilClick } = useModalDialog(isOpen, onClose);
+    const { dialogRef, closeOnVeilClick } = useModalDialog(
+        preview.isOpen,
+        preview.close,
+    );
 
     return (
         <dialog
             ref={dialogRef}
             aria-labelledby={titleId}
-            onClose={onClose}
+            onClose={preview.close}
             onClick={closeOnVeilClick}
             className="backdrop:bg-primary/50 text-primary tablet:m-auto tablet:h-[calc(100dvh-4rem)] tablet:w-[calc(100%-4rem)] tablet:max-w-5xl tablet:rounded-lg m-0 h-dvh max-h-none w-full max-w-none bg-white p-0"
         >
-            {isOpen && (
-                <PreviewContent
-                    titleId={titleId}
-                    onClose={onClose}
-                    fields={fields}
-                />
+            {preview.isOpen && (
+                <PreviewContent titleId={titleId} preview={preview} />
             )}
         </dialog>
     );
@@ -57,34 +48,12 @@ export function NewsletterPreviewModal({
 
 function PreviewContent({
     titleId,
-    onClose,
-    fields,
+    preview,
 }: {
     titleId: string;
-    onClose: () => void;
-    fields: PreviewFields;
+    preview: NewsletterPreview;
 }) {
-    const [format, setFormat] = useState<Format>('desktop');
-    const [html, setHtml] = useState<string | null>(null);
-    const [hasFailed, setHasFailed] = useState(false);
-    const http = useHttp<PreviewFields, { html: string }>(fields);
-
-    useEffect(() => {
-        http.post(preview.url(), {
-            onSuccess: (response) => setHtml(response.html),
-            onError: () => setHasFailed(true),
-            onHttpException: () => {
-                setHasFailed(true);
-
-                return false;
-            },
-            onNetworkError: () => {
-                setHasFailed(true);
-
-                return false;
-            },
-        }).catch(() => undefined);
-    }, []);
+    const { format, html, hasFailed } = preview;
 
     return (
         <div className="flex h-full flex-col">
@@ -100,12 +69,12 @@ function PreviewContent({
                     aria-label={text.format}
                     className="border-grey-medium flex h-10 overflow-hidden rounded-md border"
                 >
-                    {(['desktop', 'mobile'] as const).map((value) => (
+                    {previewFormats.map((value) => (
                         <button
                             key={value}
                             type="button"
                             aria-pressed={format === value}
-                            onClick={() => setFormat(value)}
+                            onClick={() => preview.changeFormat(value)}
                             className={cn(
                                 'border-grey-light cursor-pointer px-3.5 text-sm not-first:border-l',
                                 format === value
@@ -119,7 +88,7 @@ function PreviewContent({
                 </div>
                 <button
                     type="button"
-                    onClick={onClose}
+                    onClick={preview.close}
                     aria-label={text.close}
                     className="text-primary flex size-11 flex-none cursor-pointer items-center justify-center rounded-md"
                 >

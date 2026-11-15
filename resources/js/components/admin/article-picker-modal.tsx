@@ -1,112 +1,33 @@
-import { useHttp } from '@inertiajs/react';
 import { Check } from 'lucide-react';
-import type { KeyboardEvent } from 'react';
-import { useEffect, useId, useState } from 'react';
-import { articles as searchArticles } from '@/actions/App/Http/Controllers/Admin/NewsletterController';
+import { useId } from 'react';
 import { Modal, ModalBody, ModalFooter } from '@/components/admin/modal';
 import { PickerSearch } from '@/components/admin/picker-search';
 import { Button } from '@/components/public/button';
-import { adminLabels } from '@/lib/labels.admin.fr';
 import { frenchTypography } from '@/helpers/typography';
+import type { ArticlePicker } from '@/hooks/use-article-picker';
+import { adminLabels } from '@/lib/labels.admin.fr';
 import { cn } from '@/lib/utils';
 
 const text = adminLabels.articlePicker;
 
-/**
- * A published article as `NewsletterController::articles` lists it.
- */
-export type PickedArticle = {
-    id: number;
-    title: string;
-    dateLabel: string | null;
-    thumbnail: string | null;
-    chapo: string;
-};
-
 type ArticlePickerModalProps = {
-    isOpen: boolean;
-    onClose: () => void;
-    onInsert: (article: PickedArticle) => void;
+    picker: ArticlePicker;
 };
 
 /**
  * « Insérer un article » (ADM-SUB-21): search among the published articles and pick one. Full screen on phones.
  */
-export function ArticlePickerModal({
-    isOpen,
-    onClose,
-    onInsert,
-}: ArticlePickerModalProps) {
+export function ArticlePickerModal({ picker }: ArticlePickerModalProps) {
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={text.title}>
-            <PickerContent onClose={onClose} onInsert={onInsert} />
+        <Modal isOpen={picker.isOpen} onClose={picker.close} title={text.title}>
+            <PickerContent picker={picker} />
         </Modal>
     );
 }
 
-function PickerContent({
-    onClose,
-    onInsert,
-}: Omit<ArticlePickerModalProps, 'isOpen'>) {
+function PickerContent({ picker }: ArticlePickerModalProps) {
     const listId = useId();
-    const [results, setResults] = useState<PickedArticle[]>([]);
-    const [selectedId, setSelectedId] = useState<number | null>(null);
-    const [hasFailed, setHasFailed] = useState(false);
-    const http = useHttp<Record<string, never>, { data: PickedArticle[] }>({});
-
-    function search(query: string): void {
-        setHasFailed(false);
-        http.get(
-            searchArticles.url({ query: query === '' ? {} : { q: query } }),
-            {
-                onSuccess: (response) => {
-                    setResults(response.data);
-                    setSelectedId(response.data[0]?.id ?? null);
-                },
-                onHttpException: () => {
-                    setHasFailed(true);
-
-                    return false;
-                },
-                onNetworkError: () => {
-                    setHasFailed(true);
-
-                    return false;
-                },
-            },
-        ).catch(() => undefined);
-    }
-
-    // The newest articles show before any search.
-    useEffect(() => search(''), []);
-
-    const selected = results.find((article) => article.id === selectedId);
-
-    function moveSelection(event: KeyboardEvent<HTMLUListElement>): void {
-        if (results.length === 0) {
-            return;
-        }
-
-        const index = results.findIndex((article) => article.id === selectedId);
-        const moves: Record<string, number> = {
-            ArrowDown: Math.min(index + 1, results.length - 1),
-            ArrowUp: Math.max(index - 1, 0),
-            Home: 0,
-            End: results.length - 1,
-        };
-
-        if (event.key === 'Enter' && selected) {
-            event.preventDefault();
-            onInsert(selected);
-
-            return;
-        }
-
-        if (event.key in moves) {
-            event.preventDefault();
-            setSelectedId(results[moves[event.key]].id);
-        }
-    }
+    const { results, selectedId, selected } = picker;
 
     return (
         <>
@@ -114,12 +35,12 @@ function PickerContent({
                 <PickerSearch
                     label={text.search}
                     placeholder={text.searchPlaceholder}
-                    onSearch={search}
+                    onSearch={picker.search}
                 />
                 <p role="status" className="text-caption text-grey-dark">
-                    {http.processing
+                    {picker.isLoading
                         ? text.loading
-                        : hasFailed
+                        : picker.hasFailed
                           ? text.failed
                           : results.length === 0
                             ? text.noMatch
@@ -136,7 +57,7 @@ function PickerContent({
                                 ? undefined
                                 : `${listId}-${selectedId}`
                         }
-                        onKeyDown={moveSelection}
+                        onKeyDown={picker.moveSelection}
                         className="border-grey-light border-t"
                     >
                         {results.map((article) => (
@@ -145,8 +66,8 @@ function PickerContent({
                                 id={`${listId}-${article.id}`}
                                 role="option"
                                 aria-selected={article.id === selectedId}
-                                onClick={() => setSelectedId(article.id)}
-                                onDoubleClick={() => onInsert(article)}
+                                onClick={() => picker.select(article.id)}
+                                onDoubleClick={() => picker.insert(article)}
                                 className={cn(
                                     'border-grey-light flex cursor-pointer items-center gap-3 border-b py-2.5 pr-3 pl-2.5',
                                     article.id === selectedId
@@ -190,12 +111,12 @@ function PickerContent({
                 )}
             </ModalBody>
             <ModalFooter>
-                <Button variant="secondary" onClick={onClose}>
+                <Button variant="secondary" onClick={picker.close}>
                     {text.cancel}
                 </Button>
                 <Button
                     disabled={!selected}
-                    onClick={() => selected && onInsert(selected)}
+                    onClick={() => selected && picker.insert(selected)}
                 >
                     {text.insert}
                 </Button>
