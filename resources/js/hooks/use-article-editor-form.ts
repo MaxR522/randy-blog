@@ -14,6 +14,7 @@ import {
     wordCount,
 } from '@/helpers/article-editor';
 import { useArticleAutosave } from '@/hooks/use-article-autosave';
+import { useSeoSuggestions } from '@/hooks/use-seo-suggestions';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { archive, store, update } from '@/routes/admin/articles';
@@ -58,6 +59,18 @@ export function useArticleEditorForm(article: EditorArticle | null) {
     );
 
     useUnsavedChangesGuard(isDirty, isLeavingRef, setLeavingUrl);
+
+    const seoSuggestions = useSeoSuggestions(
+        {
+            title: data.title,
+            leadParagraph: data.lead_paragraph,
+            content: data.content,
+            hasContent: words > 0,
+            hasCurrentValues:
+                data.description.trim() !== '' || data.keywords.trim() !== '',
+        },
+        applySeoSuggestions,
+    );
 
     function slugFor(title: string, currentSlug: string): string {
         return isSlugEdited ? currentSlug : slugFromTitle(title);
@@ -204,6 +217,7 @@ export function useArticleEditorForm(article: EditorArticle | null) {
         existingCover,
         existingAudio,
         autosave,
+        seoSuggestions,
         isLeaving: leavingUrl !== null,
         changeTitle,
         changeSlug,
@@ -211,7 +225,6 @@ export function useArticleEditorForm(article: EditorArticle | null) {
         changeAudio,
         changeCategories,
         changeKeywords,
-        applySeoSuggestions,
         submit,
         archive: archiveArticle,
         importDocument,

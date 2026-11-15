@@ -22,6 +22,7 @@ import { StatusBadge } from '@/components/admin/status-badge';
 import type { StatusFilterOption } from '@/components/admin/status-filters';
 import { StatusFilters } from '@/components/admin/status-filters';
 import { buttonClasses } from '@/components/public/button';
+import { useArticlePreview } from '@/hooks/use-article-preview';
 import AdminLayout from '@/layouts/admin-layout';
 import type { ArticleStatus, PreviewedArticle } from '@/helpers/article';
 import { statusVariants } from '@/helpers/article';
@@ -80,6 +81,7 @@ export default function Articles({
         ? (articles.data.find((article) => article.id === previewed.id) ??
           previewed)
         : null;
+    const preview = useArticlePreview(previewedArticle);
     const shouldFocusMain = useRef(false);
 
     // The trigger of the dialog is gone with its row, so the focus has nowhere to return. Runs after the dialog has closed.
@@ -280,6 +282,14 @@ export default function Articles({
             <ArticlePreviewPanel
                 article={previewedArticle}
                 onClose={() => setPreviewed(null)}
+                editUrl={
+                    previewedArticle ? edit.url(previewedArticle.id) : null
+                }
+                isChangingStatus={preview.isChangingStatus}
+                onChangeStatus={preview.changeStatus}
+                frameVersion={preview.frameVersion}
+                isFrameLoaded={preview.isFrameLoaded}
+                onFrameLoad={preview.markFrameLoaded}
             />
 
             <ConfirmModal

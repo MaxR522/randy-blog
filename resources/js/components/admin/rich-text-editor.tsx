@@ -1,6 +1,6 @@
 import { lazy, Suspense, useId } from 'react';
 import { FieldError } from '@/components/admin/text-field';
-import type { ToolbarButton } from '@/components/admin/tinymce-editor';
+import type { ToolbarButton } from '@/helpers/tinymce-editor';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import type { RichTextConfig, UploadFolder } from '@/lib/tinymce-configs';
 import { cn } from '@/lib/utils';
