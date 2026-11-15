@@ -9,11 +9,14 @@ use App\Models\User;
 use App\Support\Seo\Seo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * The public home page. An article appears at most once on it (PUB-HOME-6): sections claim articles in page order,
+ * « Dernières publications » first, then each category row from the top, then every page of « Tous les articles ».
+ */
 class HomeController extends Controller
 {
     /**
@@ -29,7 +32,7 @@ class HomeController extends Controller
     private const int CategoryRowSize = 4;
 
     /**
-     * A category gets a row only once it has this many published articles.
+     * A category gets a row only once it has this many published articles, counted before any article is claimed.
      */
     private const int CategoryMinimumArticles = 3;
 
@@ -41,19 +44,28 @@ class HomeController extends Controller
     /**
      * Show the public home page.
      *
-     * Every prop but `articles` is lazy so the « Voir plus » partial reload only queries the next page.
+     * Every prop but `articles` is lazy so the « Voir plus » partial reload only queries the claimed IDs and the next page.
      * `?page=n` renders that page of « Tous les articles » server-side, so crawlers reach every article (SEO-CRAWL-6).
+     * The layout is memoised in a local variable, not on the controller, which Octane may reuse across requests.
      */
     public function __invoke(Request $request): Response
     {
+        $layout = null;
+        $resolveLayout = function () use (&$layout): array {
+            return $layout ??= $this->layout();
+        };
+
         return Inertia::render('home', [
             'seo' => fn (): array => Seo::home(max(1, $request->integer('page', 1)))->toArray(),
             'authorUrl' => fn (): ?string => $this->authorUrl(),
-            'latest' => fn (): array => ArticleCardResource::collection($this->latestArticles())->resolve(),
-            'categorySections' => fn (): array => $this->categorySections(),
+            'latest' => fn (): array => ArticleCardResource::collection(
+                $this->cards($resolveLayout()['latest']),
+            )->resolve(),
+            'categorySections' => fn (): array => $this->categorySections($resolveLayout()['rows']),
             'articles' => Inertia::scroll(fn () => ArticleCardResource::collection(
                 Article::query()
                     ->published()
+                    ->whereNotIn('id', $resolveLayout()['claimed'])
                     ->with('categories')
                     ->latest('published_date')
                     ->paginate(self::AllArticlesPerPage),
@@ -72,43 +84,105 @@ class HomeController extends Controller
     }
 
     /**
-     * @return Collection<int, Article>
+     * Which articles each section above « Tous les articles » shows, as IDs only.
+     *
+     * Category rows are ordered by their newest published article, before anything is claimed. Each row takes its
+     * newest articles not claimed higher up, so an article in several categories lands in the first row with room.
+     * A row left with no article is skipped and the next category takes its place.
+     *
+     * @return array{latest: list<int>, rows: list<array{id: int, name: string, articleIds: list<int>}>, claimed: list<int>}
      */
-    private function latestArticles(): Collection
+    private function layout(): array
     {
-        return Article::query()
+        /** @var list<int> $latest */
+        $latest = Article::query()
             ->published()
-            ->with('categories')
             ->latest('published_date')
             ->limit(self::SectionSize)
-            ->get();
-    }
+            ->pluck('id')
+            ->all();
 
-    /**
-     * Categories with enough published articles, most recently fed first, each with its latest articles.
-     *
-     * @return array<int, array{id: int, name: string, articles: array<mixed>}>
-     */
-    private function categorySections(): array
-    {
         $published = fn (Builder $query): Builder => self::onlyPublished($query);
 
-        return Category::query()
+        $categories = Category::query()
+            ->select(['id', 'value'])
             ->whereHas('articles', $published, '>=', self::CategoryMinimumArticles)
             ->withMax(['articles as latest_published_date' => $published], 'published_date')
             ->orderByDesc('latest_published_date')
-            ->limit(self::CategoryRows)
-            ->with('articles', fn (Relation $query): Relation => $query
-                ->where(fn (Builder $query) => $published($query))
-                ->latest('published_date')
-                ->limit(self::CategoryRowSize))
-            ->get()
-            ->map(fn (Category $category): array => [
-                'id' => $category->id,
-                'name' => $category->value,
-                'articles' => ArticleCardResource::collection($category->articles)->resolve(),
-            ])
-            ->all();
+            ->orderBy('id')
+            ->get();
+
+        $articleIdsByCategory = Article::query()
+            ->published()
+            ->join('article_categories', 'article_categories.article_id', '=', 'articles.id')
+            ->whereIn('article_categories.category_id', $categories->modelKeys())
+            ->latest('published_date')
+            ->orderByDesc('articles.id')
+            ->get(['articles.id', 'article_categories.category_id'])
+            ->groupBy('category_id')
+            ->map(fn (Collection $articles): array => $articles->modelKeys());
+
+        $claimed = array_fill_keys($latest, true);
+        $rows = [];
+
+        foreach ($categories as $category) {
+            if (count($rows) === self::CategoryRows) {
+                break;
+            }
+
+            $articleIds = [];
+
+            foreach ($articleIdsByCategory->get($category->id, []) as $articleId) {
+                if (! isset($claimed[$articleId])) {
+                    $articleIds[] = $articleId;
+                    $claimed[$articleId] = true;
+                }
+
+                if (count($articleIds) === self::CategoryRowSize) {
+                    break;
+                }
+            }
+
+            if ($articleIds !== []) {
+                $rows[] = ['id' => $category->id, 'name' => $category->value, 'articleIds' => $articleIds];
+            }
+        }
+
+        return ['latest' => $latest, 'rows' => $rows, 'claimed' => array_keys($claimed)];
+    }
+
+    /**
+     * Category rows with their article cards, in the order the layout gave.
+     *
+     * @param  list<array{id: int, name: string, articleIds: list<int>}>  $rows
+     * @return list<array{id: int, name: string, articles: array<mixed>}>
+     */
+    private function categorySections(array $rows): array
+    {
+        $cards = $this->cards(array_merge(...array_column($rows, 'articleIds')));
+
+        return array_map(fn (array $row): array => [
+            'id' => $row['id'],
+            'name' => $row['name'],
+            'articles' => ArticleCardResource::collection($cards->only($row['articleIds'])->values())->resolve(),
+        ], $rows);
+    }
+
+    /**
+     * Articles ready for a card, in the order of the given IDs.
+     *
+     * @param  list<int>  $ids
+     * @return Collection<int, Article>
+     */
+    private function cards(array $ids): Collection
+    {
+        $positions = array_flip($ids);
+
+        return Article::query()
+            ->with('categories')
+            ->findMany($ids)
+            ->sortBy(fn (Article $article): int => $positions[$article->id])
+            ->values();
     }
 
     /**

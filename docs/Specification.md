@@ -112,11 +112,11 @@ Sections, top to bottom:
 |---|---|---|---|
 | PUB-HOME-1 | « Dernières publications » | Latest published articles. One large card + smaller cards. | 5 |
 | PUB-HOME-2 | « Les plus lus » **(added)** | Most viewed published articles over the last 30 days (fallback: all time), numbered list style. | 5 |
-| PUB-HOME-3 | One row per category, titled with the category name | Latest published articles in that category. Only categories with ≥ 3 published articles are shown, ordered by most recent publication. | 4 per row, max 4 rows |
-| PUB-HOME-4 | « Tous les articles » | Paginated list of all published articles, newest first, with « Voir plus » button (loads the next page in place). | 9 per page |
+| PUB-HOME-3 | One row per category, titled with the category name | Latest published articles in that category not already shown higher up (PUB-HOME-6), going further back as needed. Only categories with ≥ 3 published articles qualify, counted before exclusion, ordered by most recent publication. A row with fewer than 4 articles left shows what remains; a row with none left is skipped and the next category takes its place. | 4 per row, max 4 rows |
+| PUB-HOME-4 | « Tous les articles » | Paginated list of all published articles not already shown higher up (PUB-HOME-6), newest first, with « Voir plus » button (loads the next page in place). Every page excludes the same articles. | 9 per page |
 | PUB-HOME-5 | Subscription block | See §4.7. | — |
 
-- **PUB-HOME-6** An article MUST NOT appear twice among the hero, « Dernières publications » and « Les plus lus ». Category rows and « Tous les articles » may repeat articles.
+- **PUB-HOME-6** An article MUST NOT appear twice on the home page. Sections claim articles in page order: « Dernières publications », then each category row from the top, then « Tous les articles » (every page of it). An article in several categories goes to the first row that still has room for it. (Changed 2026-11-15: category rows and « Tous les articles » used to repeat articles.)
 - **PUB-HOME-7** Every card shows at least: cover image, title, publication date. Large cards also show the chapô and categories.
 - **PUB-HOME-8** Responsive: 1 column on phone, 2 on tablet, 3–4 on desktop. Category rows scroll horizontally on phone (the page itself MUST NOT scroll horizontally).
 - **PUB-HOME-9** Views: see §7.4 for how `articles.views` is counted.

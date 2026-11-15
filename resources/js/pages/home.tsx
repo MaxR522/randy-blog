@@ -218,7 +218,11 @@ export default function Home({
                     <SectionHeader
                         id="dernieres-publications"
                         title={labels.home.latest}
-                        moreHref="#tous-les-articles"
+                        moreHref={
+                            articles.data.length > 0
+                                ? '#tous-les-articles'
+                                : undefined
+                        }
                     />
                     <div className="gap-x-grid laptop:grid-cols-2 laptop:items-start grid">
                         <LargeCard article={leadArticle} />
