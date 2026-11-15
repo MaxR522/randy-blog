@@ -1,10 +1,5 @@
 import { Link } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
-import {
-    create as createNewsletter,
-    index as newslettersIndex,
-} from '@/actions/App/Http/Controllers/Admin/NewsletterController';
-import { index as subscriptionsIndex } from '@/actions/App/Http/Controllers/Admin/SubscriptionController';
 import { buttonClasses } from '@/components/public/button';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { cn } from '@/lib/utils';
@@ -15,6 +10,8 @@ type SubscriptionTabsProps = {
     current: 'subscribers' | 'newsletters';
     subscriberCount: number;
     newsletterCount: number;
+    subscribersUrl: string;
+    newslettersUrl: string;
 };
 
 /**
@@ -24,6 +21,8 @@ export function SubscriptionTabs({
     current,
     subscriberCount,
     newsletterCount,
+    subscribersUrl,
+    newslettersUrl,
 }: SubscriptionTabsProps) {
     const tabClassName =
         'tablet:flex-none flex h-11 flex-1 items-center justify-center gap-1.5 text-[0.9375rem]';
@@ -36,7 +35,7 @@ export function SubscriptionTabs({
             className="border-grey-light tablet:gap-7 mb-6 flex border-b"
         >
             <Link
-                href={subscriptionsIndex.url()}
+                href={subscribersUrl}
                 aria-current={current === 'subscribers' ? 'page' : undefined}
                 className={cn(
                     tabClassName,
@@ -51,7 +50,7 @@ export function SubscriptionTabs({
                 </span>
             </Link>
             <Link
-                href={newslettersIndex.url()}
+                href={newslettersUrl}
                 aria-current={current === 'newsletters' ? 'page' : undefined}
                 className={cn(
                     tabClassName,
@@ -77,10 +76,10 @@ export function SubscriptionTabs({
 /**
  * « Créer une newsletter », in the header of both tabs (ADM-SUB-1).
  */
-export function CreateNewsletterLink() {
+export function CreateNewsletterLink({ href }: { href: string }) {
     return (
         <Link
-            href={createNewsletter.url()}
+            href={href}
             className={buttonClasses('primary', 'tablet:w-auto w-full')}
         >
             <Plus aria-hidden="true" className="size-4.5" strokeWidth={2} />

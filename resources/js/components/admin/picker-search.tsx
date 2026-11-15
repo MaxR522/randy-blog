@@ -1,7 +1,6 @@
 import { Search } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
-
-const DEBOUNCE_MILLISECONDS = 300;
+import { useId } from 'react';
+import { usePickerSearch } from '@/hooks/use-picker-search';
 
 type PickerSearchProps = {
     label: string;
@@ -19,10 +18,7 @@ export function PickerSearch({
     onSearch,
 }: PickerSearchProps) {
     const id = useId();
-    const [query, setQuery] = useState('');
-    const timeout = useRef<number | undefined>(undefined);
-
-    useEffect(() => () => window.clearTimeout(timeout.current), []);
+    const { query, changeQuery } = usePickerSearch(onSearch);
 
     return (
         <div className="relative">
@@ -40,16 +36,7 @@ export function PickerSearch({
                 data-autofocus
                 value={query}
                 placeholder={placeholder}
-                onChange={(event) => {
-                    const search = event.target.value;
-
-                    setQuery(search);
-                    window.clearTimeout(timeout.current);
-                    timeout.current = window.setTimeout(
-                        () => onSearch(search.trim()),
-                        DEBOUNCE_MILLISECONDS,
-                    );
-                }}
+                onChange={(event) => changeQuery(event.target.value)}
                 className="border-grey-medium text-body text-primary focus:border-primary h-12 w-full rounded-md border bg-white pr-4 pl-10.5"
             />
         </div>
