@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { useModalDialog } from '@/components/admin/modal';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { Button } from '@/components/public/button';
 import { adminLabels } from '@/lib/labels.admin.fr';
 

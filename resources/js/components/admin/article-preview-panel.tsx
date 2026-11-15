@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { ExternalLink, X } from 'lucide-react';
-import { useModalDialog } from '@/components/admin/modal';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { Button, buttonClasses } from '@/components/public/button';
 import type { PreviewedArticle } from '@/helpers/article';
 import { adminLabels } from '@/lib/labels.admin.fr';

@@ -18,6 +18,7 @@ import { Modal, ModalBody, ModalFooter } from '@/components/admin/modal';
 import { PageHeader } from '@/components/admin/page-header';
 import { TextField } from '@/components/admin/text-field';
 import { Button } from '@/components/public/button';
+import { useListSearch } from '@/hooks/use-list-search';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { listUrl, listVisitOptions } from '@/helpers/list-url';
@@ -58,6 +59,7 @@ export default function Categories({
     hasCategories,
 }: CategoriesProps) {
     const { url } = usePage();
+    const search = useListSearch(filters.q);
     const [edited, setEdited] = useState<EditedCategory>(null);
     const [deleted, setDeleted] = useState<Category | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -186,7 +188,8 @@ export default function Categories({
                         <ListSearch
                             label={text.search}
                             placeholder={text.searchPlaceholder}
-                            value={filters.q}
+                            query={search.query}
+                            onQueryChange={search.changeQuery}
                             className="tablet:w-95"
                         />
                         <div className="tablet:ml-auto flex items-center justify-between gap-4">

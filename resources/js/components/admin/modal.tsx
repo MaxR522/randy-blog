@@ -1,50 +1,9 @@
 import { X } from 'lucide-react';
-import type { MouseEvent, ReactNode, RefObject } from 'react';
-import { useEffect, useId, useRef } from 'react';
+import type { ReactNode } from 'react';
+import { useId } from 'react';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { cn } from '@/lib/utils';
-
-/**
- * Drives a native modal `<dialog>`, which brings the focus trap, Escape and the focus return.
- * Focus goes to the element marked `data-autofocus`, otherwise the browser would pick the close button.
- */
-export function useModalDialog(
-    isOpen: boolean,
-    onClose: () => void,
-): {
-    dialogRef: RefObject<HTMLDialogElement | null>;
-    closeOnVeilClick: (event: MouseEvent<HTMLDialogElement>) => void;
-} {
-    const dialogRef = useRef<HTMLDialogElement>(null);
-
-    useEffect(() => {
-        const dialog = dialogRef.current;
-
-        if (!dialog || !isOpen) {
-            return;
-        }
-
-        dialog.showModal();
-        dialog.querySelector<HTMLElement>('[data-autofocus]')?.focus();
-        document.documentElement.style.overflow = 'hidden';
-
-        return () => {
-            document.documentElement.style.overflow = '';
-
-            if (dialog.open) {
-                dialog.close();
-            }
-        };
-    }, [isOpen]);
-
-    function closeOnVeilClick(event: MouseEvent<HTMLDialogElement>): void {
-        if (event.target === dialogRef.current) {
-            onClose();
-        }
-    }
-
-    return { dialogRef, closeOnVeilClick };
-}
 
 type ModalProps = {
     isOpen: boolean;

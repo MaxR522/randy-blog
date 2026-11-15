@@ -6,11 +6,11 @@ import { SidebarDrawer } from '@/components/admin/sidebar-drawer';
 import { SidebarNav } from '@/components/admin/sidebar-nav';
 import { TopBar } from '@/components/admin/top-bar';
 import { buttonClasses } from '@/components/public/button';
+import { MAIN_ID } from '@/helpers/admin-shell';
 import { PageAnnouncer } from '@/components/public/page-announcer';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { cn } from '@/lib/utils';
 
-const MAIN_ID = 'contenu';
 const COLLAPSED_STORAGE_KEY = 'admin-sidebar-collapsed';
 
 function readIsCollapsed(): boolean {
