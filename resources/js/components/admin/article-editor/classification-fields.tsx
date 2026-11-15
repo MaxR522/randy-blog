@@ -1,5 +1,5 @@
 import { CategoryPicker } from '@/components/admin/category-picker';
-import type { ArticleEditorForm } from '@/lib/article-editor-form';
+import type { ArticleEditorForm } from '@/hooks/use-article-editor-form';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import type { CategoryOption } from '@/types/admin';
 import { SidebarSection } from '@/components/admin/article-editor/sidebar-section';

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ConfirmModal } from '@/components/admin/confirm-modal';
 import { Button } from '@/components/public/button';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { useUnsavedChangesGuard } from '@/lib/unsaved-changes';
+import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { cn } from '@/lib/utils';
 import { account } from '@/routes/admin';
 import { security } from '@/routes/admin/account';

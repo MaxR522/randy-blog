@@ -14,10 +14,16 @@ import { SeoFields } from '@/components/admin/article-editor/seo-fields';
 import { ArticlePreviewPanel } from '@/components/admin/article-preview-panel';
 import { ConfirmModal } from '@/components/admin/confirm-modal';
 import { WordImportModal } from '@/components/admin/word-import-modal';
+import { previewedArticleOf } from '@/helpers/article-editor';
+import { useArticleEditorForm } from '@/hooks/use-article-editor-form';
 import AdminLayout from '@/layouts/admin-layout';
-import { useArticleEditorForm } from '@/lib/article-editor-form';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import type { CategoryOption, EditorArticle } from '@/types/admin';
+import { index } from '@/routes/admin/articles';
+import type {
+    CategoryOption,
+    EditorArticle,
+    WordImportResult,
+} from '@/types/admin';
 
 const text = adminLabels.editor;
 
@@ -44,6 +50,11 @@ function Editor({ article, categories }: ArticleEditorProps) {
     const { autosave, isPublished, processing } = editor;
     const title = article ? text.editTitle : text.createTitle;
 
+    function importDocument(fields: WordImportResult['fields']): void {
+        editor.importDocument(fields);
+        setIsWordImportOpen(false);
+    }
+
     const actionButtons = (
         <EditorActionButtons
             isPublished={isPublished}
@@ -57,6 +68,7 @@ function Editor({ article, categories }: ArticleEditorProps) {
             <AdminHead title={title} />
 
             <EditorHeader
+                backUrl={index.url()}
                 title={title}
                 status={editor.status}
                 isSaved={article !== null}
@@ -114,12 +126,7 @@ function Editor({ article, categories }: ArticleEditorProps) {
             <ArticlePreviewPanel
                 article={
                     article && isPreviewOpen
-                        ? {
-                              id: article.id,
-                              title: article.title,
-                              status: article.status,
-                              previewUrl: article.previewUrl,
-                          }
+                        ? previewedArticleOf(article)
                         : null
                 }
                 onClose={() => setIsPreviewOpen(false)}
@@ -130,13 +137,8 @@ function Editor({ article, categories }: ArticleEditorProps) {
                 <WordImportModal
                     isOpen={isWordImportOpen}
                     onClose={() => setIsWordImportOpen(false)}
-                    hasContent={
-                        editor.data.title.trim() !== '' || editor.words > 0
-                    }
-                    onImport={(fields) => {
-                        editor.importDocument(fields);
-                        setIsWordImportOpen(false);
-                    }}
+                    hasContent={editor.hasContent}
+                    onImport={importDocument}
                 />
             )}
 

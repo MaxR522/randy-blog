@@ -1,4 +1,5 @@
-import type { AutosavedFields } from '@/lib/article-autosave';
+import type { PreviewedArticle } from '@/helpers/article';
+import type { AutosavedFields } from '@/helpers/article-autosave';
 import type { EditorArticle } from '@/types/admin';
 
 export const WORDS_PER_MINUTE = 200;
@@ -81,6 +82,18 @@ export function fieldsOf(article: EditorArticle | null): AutosavedFields {
         description: article?.description ?? '',
         keywords: article?.keywords ?? '',
         slug: article?.slug ?? '',
+    };
+}
+
+/**
+ * The saved article as the preview panel shows it, as in the list.
+ */
+export function previewedArticleOf(article: EditorArticle): PreviewedArticle {
+    return {
+        id: article.id,
+        title: article.title,
+        status: article.status,
+        previewUrl: article.previewUrl,
     };
 }
 
