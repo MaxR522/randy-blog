@@ -1,10 +1,7 @@
 import { router, useForm } from '@inertiajs/react';
 import { useMemo, useRef, useState } from 'react';
-import {
-    clearArticleAutosave,
-    useArticleAutosave,
-} from '@/lib/article-autosave';
-import type { EditorForm, SubmitIntent } from '@/lib/article-editor';
+import { clearArticleAutosave } from '@/helpers/article-autosave';
+import type { EditorForm, SubmitIntent } from '@/helpers/article-editor';
 import {
     autosavedFields,
     emptyFiles,
@@ -12,11 +9,13 @@ import {
     focusFirstError,
     isSlugCustom,
     keywordsFromInput,
+    readingMinutes,
     slugFromTitle,
     wordCount,
-} from '@/lib/article-editor';
+} from '@/helpers/article-editor';
+import { useArticleAutosave } from '@/hooks/use-article-autosave';
+import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { useUnsavedChangesGuard } from '@/lib/unsaved-changes';
 import { archive, store, update } from '@/routes/admin/articles';
 import type {
     ArticleSuggestions,
@@ -199,6 +198,9 @@ export function useArticleEditorForm(article: EditorArticle | null) {
         status,
         isPublished: status === 'PUBLISHED',
         words,
+        readingMinutes: readingMinutes(words),
+        /** Something to lose if a Word document replaces the form. */
+        hasContent: data.title.trim() !== '' || words > 0,
         existingCover,
         existingAudio,
         autosave,

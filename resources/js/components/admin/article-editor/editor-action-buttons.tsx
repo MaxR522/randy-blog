@@ -1,5 +1,5 @@
 import { Button } from '@/components/public/button';
-import type { SubmitIntent } from '@/lib/article-editor';
+import type { SubmitIntent } from '@/helpers/article-editor';
 import { adminLabels } from '@/lib/labels.admin.fr';
 
 const text = adminLabels.editor;

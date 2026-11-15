@@ -6,28 +6,13 @@ import {
     publish,
 } from '@/actions/App/Http/Controllers/Admin/ArticleController';
 import { useModalDialog } from '@/components/admin/modal';
-import type { StatusBadgeVariant } from '@/components/admin/status-badge';
 import { Button, buttonClasses } from '@/components/public/button';
+import type { PreviewedArticle } from '@/helpers/article';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { cn } from '@/lib/utils';
 import { edit } from '@/routes/admin/articles';
 
 const text = adminLabels.articles;
-
-export type ArticleStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-
-export const statusVariants: Record<ArticleStatus, StatusBadgeVariant> = {
-    DRAFT: 'neutral',
-    PUBLISHED: 'ok',
-    ARCHIVED: 'muted',
-};
-
-export type PreviewedArticle = {
-    id: number;
-    title: string;
-    status: ArticleStatus;
-    previewUrl: string;
-};
 
 type ArticlePreviewPanelProps = {
     /** `null` when closed. */

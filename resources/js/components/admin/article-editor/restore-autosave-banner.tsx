@@ -1,5 +1,5 @@
 import { Button } from '@/components/public/button';
-import { frenchTime } from '@/lib/article-autosave';
+import { frenchTime } from '@/helpers/article-autosave';
 import { adminLabels } from '@/lib/labels.admin.fr';
 
 const text = adminLabels.editor;

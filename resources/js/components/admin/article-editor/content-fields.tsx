@@ -2,8 +2,7 @@ import { AudioUploader } from '@/components/admin/audio-uploader';
 import { ImageUploader } from '@/components/admin/image-uploader';
 import { RichTextEditor } from '@/components/admin/rich-text-editor';
 import { TextField } from '@/components/admin/text-field';
-import type { ArticleEditorForm } from '@/lib/article-editor-form';
-import { readingMinutes } from '@/lib/article-editor';
+import type { ArticleEditorForm } from '@/hooks/use-article-editor-form';
 import { adminLabels } from '@/lib/labels.admin.fr';
 
 const text = adminLabels.editor;
@@ -86,7 +85,7 @@ export function ContentFields({ editor, audioDuration }: ContentFieldsProps) {
                     uploadFolder="articles"
                 />
                 <p className="text-caption text-grey-dark" aria-live="off">
-                    {text.wordCount(words, readingMinutes(words))}
+                    {text.wordCount(words, editor.readingMinutes)}
                 </p>
             </div>
         </div>

@@ -1,75 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-
-const INTERVAL_MS = 30_000;
-
-const KEY_PREFIX = 'admin-article-brouillon:';
-
-/**
- * The editor fields that can live in the browser: everything but the cover file.
- */
-export type AutosavedFields = {
-    title: string;
-    lead_paragraph: string;
-    content: string;
-    cover_photo_credit: string;
-    category_ids: number[];
-    new_categories: string[];
-    description: string;
-    keywords: string;
-    slug: string;
-};
-
-type Snapshot = { fields: AutosavedFields; savedAt: string };
-
-function storageKey(articleId: number | null): string {
-    return `${KEY_PREFIX}${articleId ?? 'nouveau'}`;
-}
-
-function read(key: string): Snapshot | null {
-    try {
-        const raw = window.localStorage.getItem(key);
-
-        return raw ? (JSON.parse(raw) as Snapshot) : null;
-    } catch {
-        return null;
-    }
-}
-
-function write(key: string, snapshot: Snapshot): boolean {
-    try {
-        window.localStorage.setItem(key, JSON.stringify(snapshot));
-
-        return true;
-    } catch {
-        return false;
-    }
-}
-
-function remove(key: string): void {
-    try {
-        window.localStorage.removeItem(key);
-    } catch {
-        // Storage can be blocked: there is nothing to clear then.
-    }
-}
-
-/**
- * Forget the copy of an article, once the server has it.
- */
-export function clearArticleAutosave(articleId: number | null): void {
-    remove(storageKey(articleId));
-}
-
-/**
- * « 14 h 32 », as French typography writes times.
- */
-export function frenchTime(date: Date): string {
-    return `${date.getHours()} h ${String(date.getMinutes()).padStart(2, '0')}`;
-}
-
-function sameFields(a: AutosavedFields, b: AutosavedFields): boolean {
-    return JSON.stringify(a) === JSON.stringify(b);
-}
+import type { AutosavedFields, Snapshot } from '@/helpers/article-autosave';
+import {
+    AUTOSAVE_INTERVAL_MS,
+    read,
+    remove,
+    sameFields,
+    storageKey,
+    write,
+} from '@/helpers/article-autosave';
 
 /**
  * Keeps a copy of the editor in `localStorage` every 30 s while it has unsaved changes (ADM-ART-31), and offers
@@ -122,7 +60,7 @@ export function useArticleAutosave(
             ) {
                 setSavedAt(now);
             }
-        }, INTERVAL_MS);
+        }, AUTOSAVE_INTERVAL_MS);
 
         return () => window.clearInterval(timer);
     }, [isDirty, key]);

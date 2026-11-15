@@ -1,6 +1,6 @@
 # Front-end refactor: containers, headless components, custom hooks, pure helpers
 
-How the React code of randy-blog is structured, how a long page or component is split to reach that structure, and a ready-to-paste prompt to run the refactor in a new Claude Code session. The reference is the article editor split (`resources/js/pages/admin/article-editor.tsx`, 783 lines down to 153).
+How the React code of randy-blog is structured, how a long page or component is split to reach that structure, the ordered sessions that bring the whole front end to that structure, and a ready-to-paste prompt to run the next session. The reference is the article editor split (`resources/js/pages/admin/article-editor.tsx`, 783 lines down to 153).
 
 ## Roles
 
@@ -18,7 +18,8 @@ The data flows one way: container calls the hook, the hook talks to the server, 
 - `resources/js/hooks/`: custom hooks only, one per file, file named after the hook in kebab-case (`use-article-editor-form.ts` exports `useArticleEditorForm`).
 - `resources/js/helpers/`: pure functions and constants only, file named after the feature (`article-editor.ts`).
 - `resources/js/lib/`: what is neither, such as copy (`labels.fr.ts`, `labels.admin.fr.ts`), `utils.ts` (`cn`) and third-party setup (`cloudinary.ts`, `tinymce-configs.ts`, `google-analytics.ts`).
-- Hooks and helpers still in `lib/` today move out when their feature is refactored: `lib/article-editor.ts` to `helpers/article-editor.ts`, `lib/article-editor-form.ts` to `hooks/use-article-editor-form.ts`, `useArticleAutosave` out of `lib/article-autosave.ts` (its storage functions to `helpers/`), `useUnsavedChangesGuard` out of `lib/unsaved-changes.ts`. Update every import when moving a file.
+- Hooks and helpers still in `lib/` (`list-url.ts`, `analytics-format.ts`, `phone.ts`, `typography.ts`, `cookie-consent.ts`) move out in session 1. Update every import when moving a file.
+- Types and constants shared by several features of one domain go in `helpers/<domain>.ts` (`helpers/article.ts`: `ArticleStatus`, `statusVariants`, `PreviewedArticle`), not in the component that first used them.
 
 ## The pattern
 
@@ -26,7 +27,7 @@ The data flows one way: container calls the hook, the hook talks to the server, 
 
 - Everything that needs no React: constants, types of the form data, value transforms (`slugFromTitle`, `wordCount`, `readingMinutes`, `keywordsFromInput`), mapping server props to form fields (`fieldsOf`, `emptyFiles`), DOM helpers that run outside render (`focusFirstError`).
 - Named exports, explicit parameter and return types, a one-line JSDoc saying what the function does and which server rule it mirrors (for example « Same rule as `ArticleSlug::fromTitle` »).
-- Reference: `resources/js/lib/article-editor.ts` (to move to `helpers/article-editor.ts`).
+- Reference: `resources/js/helpers/article-editor.ts`, `resources/js/helpers/article-autosave.ts`.
 
 ### 2. Custom hooks in `resources/js/hooks/`
 
@@ -34,7 +35,7 @@ The data flows one way: container calls the hook, the hook talks to the server, 
 - Returns data plus intention-named actions (`changeTitle`, `changeCover`, `submit(intent)`, `archive`, `restoreAutosave`, `confirmLeave`, `cancelLeave`). Derived values are computed there (`isPublished`, `words`, `uploadPercentage`, `isLeaving`).
 - No JSX, no class names. Export its type: `export type ArticleEditorForm = ReturnType<typeof useArticleEditorForm>;`.
 - Behaviour that is purely visual and reusable (open/close, focus trap, keyboard navigation, drag, crop) also goes in a hook rather than in the component body, so the component stays markup.
-- Reference: `resources/js/lib/article-editor-form.ts` (to move to `hooks/use-article-editor-form.ts`).
+- Reference: `resources/js/hooks/use-article-editor-form.ts`, `resources/js/hooks/use-article-autosave.ts`.
 
 ### 3. Headless components in `resources/js/components/<area>/<feature>/`
 
@@ -65,24 +66,144 @@ The data flows one way: container calls the hook, the hook talks to the server, 
 - Pest feature tests of the page in the container: `docker exec randy-blog-app php artisan test --compact tests/Feature/<Area>/<Page>Test.php`.
 - Browser at the URL from Boost `get-absolute-url`: the main flows of the page work, no console errors. Clear any test draft left in `localStorage` before closing the tab.
 
-## Candidates
+## Sessions
 
-Components that make their own requests today, to turn headless (request moved to a hook called by the container): `components/admin/seo-suggestions.tsx`, `word-import-modal.tsx`, `article-preview-panel.tsx`, `article-picker-modal.tsx`, `subscriber-picker-modal.tsx`, `newsletter-preview-modal.tsx`, `list-search.tsx`, `account-row.tsx`, `avatar-editor.tsx`, `password-editor.tsx`, `recovery-email-editor.tsx`, `recovery-phone-editor.tsx`, `two-factor-editor.tsx`, `connected-devices.tsx`, `components/public/search-bar.tsx`, `subscription-block.tsx`. Find the current list with `grep -lE "useHttp|useForm|router\.(post|put|patch|delete|visit|get|reload)" -r resources/js/components`.
+The refactor runs in sessions that each fit one context window. Work through them in order: take the first session with an open box. Features that share a component are grouped in one session so its hook moves once. Line counts are from 2026-11-15.
 
-Largest files at the time of writing (lines): `pages/admin/newsletter-editor.tsx` (599), `components/public/image-lightbox.tsx` (489), `components/admin/word-import-modal.tsx` (406), `pages/admin/categories.tsx` (387), `pages/admin/articles.tsx` (368), `components/admin/row-actions-menu.tsx` (354), `components/admin/two-factor-editor.tsx` (338), `components/admin/audio-uploader.tsx` (328), `components/admin/square-cropper.tsx` (322), `pages/admin/analytics.tsx` (314), `pages/admin/account-profile.tsx` (299), `pages/home.tsx` (279), `pages/admin/subscriptions.tsx` (270), `components/admin/category-picker.tsx` (260), `components/admin/image-uploader.tsx` (253). Re-check with `wc -l` first; split only files where logic and markup are mixed, not files that are long only because of markup.
+### Session rules
+
+- Start each session with `/clear`, then read only this document, the reference files and the files listed under the session (plus the pages that use them).
+- One branch per session, `refactor/<feature>`. Do not commit unless asked.
+- Re-check the files with `wc -l` first; split only where logic and markup are mixed, not files that are long only because of markup.
+- A request a component makes moves into a hook called by the page; the component gets the data and the action as props.
+- Each session ends with the checks of the Verification section, the Pest tests listed under it, and its boxes ticked here.
+
+### 0. Article editor page
+
+- [x] `pages/admin/article-editor.tsx` split (783 to 153 lines), components in `components/admin/article-editor/`
+- [x] Re-check against these rules: hook and helpers moved to `hooks/use-article-editor-form.ts` and `helpers/article-editor.ts`; autosave split into `helpers/article-autosave.ts` and `hooks/use-article-autosave.ts`; `useUnsavedChangesGuard` to `hooks/use-unsaved-changes-guard.ts`; `ArticleStatus` and `statusVariants` out of `article-preview-panel.tsx` into `helpers/article.ts`; `EditorHeader` gets `backUrl` instead of calling Wayfinder; reading minutes and `hasContent` derived in the hook; preview mapping in `previewedArticleOf`
+
+### 1. Folders and `lib/` cleanup
+
+Mechanical moves, no behaviour change. Every later session imports from `hooks/` and `helpers/`. Tests: `tests/Feature/Admin/ArticleEditorTest.php`, `HomePageTest.php`.
+
+- [x] Create `resources/js/hooks/` and `resources/js/helpers/`, move the article editor hook, helpers, autosave and unsaved-changes guard (done in session 0)
+- [ ] Pure helpers `lib/list-url.ts`, `lib/analytics-format.ts`, `lib/phone.ts`, `lib/typography.ts` to `helpers/`
+- [ ] `lib/cookie-consent.ts` split: store and `setConsent` / `openPreferences` / `closePreferences` to `helpers/cookie-consent.ts`, `useCookieConsent` to `hooks/use-cookie-consent.ts`
+- [ ] `lib/` keeps only copy (`labels.fr.ts`, `labels.admin.fr.ts`, `privacy-policy.fr.ts`), `utils.ts`, `social.ts` and third-party setup (`cloudinary.ts`, `tinymce-configs.ts`, `google-analytics.ts`); update the Folders section and the reference paths in this document
+
+### 2. Article editor satellites
+
+Tests: `tests/Feature/Admin/ArticleEditorTest.php`, `ArticleSuggestionTest.php`, `WordImportTest.php`, `ArticleTest.php`.
+
+- [ ] `components/admin/seo-suggestions.tsx` (133): request to `hooks/use-seo-suggestions.ts`
+- [ ] `components/admin/word-import-modal.tsx` (406): request and parsing to `hooks/use-word-import.ts` and `helpers/`, markup split in `components/admin/word-import/` if mixed
+- [ ] `components/admin/article-preview-panel.tsx` (182): request to `hooks/use-article-preview.ts`, called by both `pages/admin/article-editor.tsx` and `pages/admin/articles.tsx`
+
+### 3. Article editor inputs
+
+Tests: `tests/Feature/Admin/ArticleEditorTest.php`, `MediaUploadTest.php`, `CloudinaryTest.php`.
+
+- [ ] `components/admin/image-uploader.tsx` (253) and `audio-uploader.tsx` (328): upload behaviour to hooks (`use-image-upload.ts`, `use-audio-upload.ts`), reused by `avatar-editor.tsx`
+- [ ] `components/admin/category-picker.tsx` (260): picker behaviour to a hook
+- [ ] `components/admin/tinymce-editor.tsx` (182) and `rich-text-editor.tsx` (99): setup behaviour to a hook if mixed
+
+### 4. Articles list and shared list primitives
+
+Tests: `tests/Feature/Admin/ArticleTest.php`.
+
+- [ ] `components/admin/list-search.tsx` (68): request to `hooks/use-list-search.ts`, called by the articles, categories and subscriptions pages
+- [ ] `components/admin/row-actions-menu.tsx` (354): open, close and keyboard behaviour to `hooks/use-menu.ts`
+- [ ] `pages/admin/articles.tsx` (368): feature hook, helpers and components in `components/admin/articles/`
+
+### 5. Categories and subscriptions pages
+
+Tests: `tests/Feature/Admin/CategoryTest.php`, `SubscriptionTest.php`. Reuses the session 4 hooks.
+
+- [ ] `pages/admin/categories.tsx` (387)
+- [ ] `pages/admin/subscriptions.tsx` (270) and `components/admin/subscription-tabs.tsx` (90)
+
+### 6. Newsletter pickers and preview
+
+Tests: `tests/Feature/Admin/NewsletterTest.php`.
+
+- [ ] `components/admin/article-picker-modal.tsx` (205) and `subscriber-picker-modal.tsx` (191) with `picker-search.tsx`: requests to hooks called by `pages/admin/newsletter-editor.tsx`, one shared picker hook if both repeat the same search and select logic
+- [ ] `components/admin/newsletter-preview-modal.tsx` (155): request to `hooks/use-newsletter-preview.ts`
+
+### 7. Newsletter pages
+
+Tests: `tests/Feature/Admin/NewsletterTest.php`.
+
+- [ ] `pages/admin/newsletter-editor.tsx` (599): `hooks/use-newsletter-editor-form.ts`, `helpers/newsletter-editor.ts`, `components/admin/newsletter-editor/`
+- [ ] `pages/admin/newsletters.tsx` (206)
+
+### 8. Account foundation and profile
+
+Tests: `tests/Feature/Admin/AccountProfileTest.php`, `AccountSecurityTest.php`.
+
+- [ ] `components/admin/account-row.tsx` (196) split: `useInlineEditing` and `useFocusOnOpen` to `hooks/`, `AccountTabs`, `AccountRow`, `FieldValue` and `EditorProps` to `components/admin/account/`
+- [ ] `EditorActions` and `AvatarPlaceholder` out of `avatar-editor.tsx` into their own files
+- [ ] `components/admin/avatar-editor.tsx` (236) and `square-cropper.tsx` (322): crop behaviour to `hooks/use-square-crop.ts`, avatar request to a hook called by the page
+- [ ] `pages/admin/account-profile.tsx` (299)
+
+### 9. Account security editors
+
+Tests: `tests/Feature/Admin/AccountSecurityTest.php`.
+
+- [ ] `components/admin/password-editor.tsx` (84), `recovery-email-editor.tsx` (97), `recovery-phone-editor.tsx` (72): requests to hooks called by `pages/admin/account-security.tsx`
+- [ ] `components/admin/connected-devices.tsx` (186) and `login-history.tsx` (121)
+- [ ] `pages/admin/account-security.tsx` (178)
+
+### 10. Two-factor
+
+Tests: `tests/Feature/Admin/AccountSecurityTest.php`, `TwoFactorAuthenticationTest.php`.
+
+- [ ] `components/admin/two-factor-editor.tsx` (338): `hooks/use-two-factor.ts` called by the security page, markup in `components/admin/account/two-factor/`
+
+### 11. Analytics
+
+Tests: `tests/Feature/Admin/AnalyticsTest.php`.
+
+- [ ] `pages/admin/analytics.tsx` (314) and `components/admin/analytics/line-chart.tsx` (chart behaviour to a hook if mixed)
+
+### 12. Public search and subscription
+
+Use the `public-design-system` and `seo-accessibility` skills. Tests: `HomePageTest.php`, `SearchPageTest.php`, `NotFoundPageTest.php`, `SubscriptionTest.php`.
+
+- [ ] `components/public/search-bar.tsx` (96): request to `hooks/use-search.ts`, called by the home, search and not-found pages
+- [ ] `components/public/subscription-block.tsx` (187): request to `hooks/use-subscription.ts`, called by `pages/home.tsx`
+- [ ] `pages/home.tsx` (279) and `pages/search.tsx` (118)
+
+### 13. Public article page
+
+Use the `public-design-system` and `seo-accessibility` skills. Tests: `ArticlePageTest.php`.
+
+- [ ] `components/public/image-lightbox.tsx` (489): zoom and pan, keyboard and focus trap to hooks, markup in `components/public/image-lightbox/`
+- [ ] `components/public/audio-slot.tsx` (185) and `share-buttons.tsx` (178)
+- [ ] `components/public/cookie-consent.tsx` (177) and `pages/article.tsx` (185)
+
+### 14. Sweep
+
+Tests: `tests/Feature/Admin/AuthenticationTest.php`, `AdminShellTest.php`, `SubscriptionTest.php`, `ProfilePageTest.php`.
+
+- [ ] Auth pages: `pages/admin/login.tsx`, `forgot-password.tsx`, `reset-password.tsx`, `two-factor-challenge.tsx`
+- [ ] Shell: `layouts/admin-layout.tsx`, `components/admin/flash-toasts.tsx`, `sidebar-nav.tsx`
+- [ ] `pages/subscription-status.tsx` and `pages/profile.tsx`
+- [ ] No component makes a request: `grep -lE "useHttp|useForm|router\.(post|put|patch|delete|visit|get|reload)" -r resources/js/components` returns nothing
+- [ ] Re-run `wc -l`, update the reference paths of this document and the project memory
 
 ## Prompt
 
-Paste this in a new session, replacing `<FILE>`:
+Paste this in a new session:
 
 ```text
-Refactor <FILE> following docs/frontend-refactor.md (the article editor split is the reference: resources/js/pages/admin/article-editor.tsx, resources/js/lib/article-editor.ts, resources/js/lib/article-editor-form.ts, resources/js/components/admin/article-editor/; hooks and helpers that still sit in lib/ move to hooks/ and helpers/ as described in the Folders section).
+Run the next session of docs/frontend-refactor.md: the first session with an open box in the Sessions section (the article editor split is the reference: resources/js/pages/admin/article-editor.tsx, resources/js/components/admin/article-editor/, and the article editor hook and helpers in resources/js/hooks/ and resources/js/helpers/).
 
 Roles: pages are the containers (logic and API calls, through the feature hook they call); components are headless (props in, callbacks out, no request, no usePage, no router); behaviour lives in custom hooks as far as possible; pure functions live in resources/js/helpers/, hooks in resources/js/hooks/.
 
-1. Read docs/frontend-refactor.md and the reference files, then read <FILE> in full, and the page(s) that use it if <FILE> is a component.
+1. Read docs/frontend-refactor.md and the reference files, then read the files listed under the session in full, and the pages that use them.
 2. Plan first: list the pure helpers that move to resources/js/helpers/<feature>.ts, the custom hook(s) in resources/js/hooks/use-<name>.ts with their state and actions, any hook or helper of this feature still in resources/js/lib/ that moves out, the headless components in resources/js/components/<area>/<feature>/, any request a component makes that moves up to a hook called by the page, any generic component worth extracting one level up, and what stays in the page. Reuse existing helpers, hooks and components instead of duplicating them.
-3. Implement: no behaviour change, same markup, classes, ARIA, ids and data attributes, same page path, @/ imports, adminLabels/labels for copy, no new dependency.
-4. Verify: npm run types:check, npm run check, npm run build, the page's Pest feature tests in the container, and a browser check of the main flows with no console errors.
-5. Report the new file list with line counts and what was checked. Do not commit.
+3. Implement on a refactor/<feature> branch: no behaviour change, same markup, classes, ARIA, ids and data attributes, same page path, @/ imports, adminLabels/labels for copy, no new dependency.
+4. Verify: npm run types:check, npm run check, npm run build, the session's Pest feature tests in the container, and a browser check of the main flows with no console errors.
+5. Tick the session's boxes in docs/frontend-refactor.md and report the new file list with line counts and what was checked. Do not commit.
 ```

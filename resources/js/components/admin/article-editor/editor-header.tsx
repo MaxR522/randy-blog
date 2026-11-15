@@ -1,18 +1,19 @@
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Eye, Upload } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { ArticleStatus } from '@/components/admin/article-preview-panel';
-import { statusVariants } from '@/components/admin/article-preview-panel';
 import type { RowAction } from '@/components/admin/row-actions-menu';
 import { RowActionsMenu } from '@/components/admin/row-actions-menu';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Button } from '@/components/public/button';
+import type { ArticleStatus } from '@/helpers/article';
+import { statusVariants } from '@/helpers/article';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { index } from '@/routes/admin/articles';
 
 const text = adminLabels.editor;
 
 type EditorHeaderProps = {
+    /** The articles list, where the back links lead. */
+    backUrl: string;
     title: string;
     status: ArticleStatus;
     /** A saved article can be previewed; a new one can be filled from a Word document. */
@@ -30,6 +31,7 @@ type EditorHeaderProps = {
  * Back link, page title with the article status, and the actions: buttons from tablet up, a menu on mobile.
  */
 export function EditorHeader({
+    backUrl,
     title,
     status,
     isSaved,
@@ -64,7 +66,7 @@ export function EditorHeader({
     return (
         <>
             <Link
-                href={index.url()}
+                href={backUrl}
                 className="tablet:inline-flex text-body-small text-primary mb-3 hidden min-h-11 items-center gap-1.5 font-medium hover:underline"
             >
                 <ArrowLeft className="size-4" aria-hidden="true" />
@@ -73,7 +75,7 @@ export function EditorHeader({
 
             <div className="tablet:mb-2 tablet:gap-4 mb-1 flex items-center gap-1">
                 <Link
-                    href={index.url()}
+                    href={backUrl}
                     aria-label={text.back}
                     className="tablet:hidden -ml-3 inline-flex size-11 flex-none items-center justify-center rounded-md"
                 >

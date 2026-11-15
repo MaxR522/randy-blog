@@ -1,7 +1,7 @@
 import { SeoSuggestions } from '@/components/admin/seo-suggestions';
 import { TextAreaField } from '@/components/admin/text-area-field';
 import { TextField } from '@/components/admin/text-field';
-import type { ArticleEditorForm } from '@/lib/article-editor-form';
+import type { ArticleEditorForm } from '@/hooks/use-article-editor-form';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { SidebarSection } from '@/components/admin/article-editor/sidebar-section';
 

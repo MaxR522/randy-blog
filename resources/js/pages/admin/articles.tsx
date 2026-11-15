@@ -8,14 +8,7 @@ import {
     publish,
 } from '@/actions/App/Http/Controllers/Admin/ArticleController';
 import { AdminHead } from '@/components/admin/admin-head';
-import type {
-    ArticleStatus,
-    PreviewedArticle,
-} from '@/components/admin/article-preview-panel';
-import {
-    ArticlePreviewPanel,
-    statusVariants,
-} from '@/components/admin/article-preview-panel';
+import { ArticlePreviewPanel } from '@/components/admin/article-preview-panel';
 import { ConfirmModal } from '@/components/admin/confirm-modal';
 import type { DataTableColumn } from '@/components/admin/data-table';
 import { DataTable } from '@/components/admin/data-table';
@@ -30,6 +23,8 @@ import type { StatusFilterOption } from '@/components/admin/status-filters';
 import { StatusFilters } from '@/components/admin/status-filters';
 import { buttonClasses } from '@/components/public/button';
 import AdminLayout from '@/layouts/admin-layout';
+import type { ArticleStatus, PreviewedArticle } from '@/helpers/article';
+import { statusVariants } from '@/helpers/article';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { frenchTypography } from '@/lib/typography';
 import { create, edit } from '@/routes/admin/articles';
