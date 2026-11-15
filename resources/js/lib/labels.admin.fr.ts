@@ -134,6 +134,7 @@ export const adminLabels = {
         chapo: 'Chapô',
         cover: 'Image de couverture',
         coverCredit: 'Crédit photo',
+        audio: 'Audio de l’article',
         content: 'Contenu',
         contentHelp:
             'Formats : Paragraphe, Titre 1 (h2), Titre 2 (h3), Titre 3 (h4). « Encadré » dans Styles, affiché comme sur le site. Images : texte alternatif obligatoire (ou décorative), légende possible.',
@@ -159,7 +160,7 @@ export const adminLabels = {
         restoreTitle: (time: string) =>
             `Une version plus récente, enregistrée dans ce navigateur à ${time}, n’a pas été envoyée.`,
         restoreCoverNote:
-            'L’image de couverture choisie n’y est pas conservée.',
+            'L’image de couverture et l’audio choisis n’y sont pas conservés.',
         restore: 'Restaurer',
         discard: 'Ignorer',
         leaveTitle: 'Quitter sans enregistrer ?',
@@ -240,6 +241,20 @@ export const adminLabels = {
         currentImage: 'Image actuelle',
         invalidType: 'Le fichier doit être une image JPG, PNG ou WebP.',
         tooLarge: 'L’image ne doit pas dépasser 10 Mo.',
+    },
+    audioUploader: {
+        drop: 'Glissez un fichier audio ici ou cliquez pour en choisir un',
+        help: 'MP3 ou M4A, 50 Mo maximum. Facultatif : sans audio, le lecteur n’apparaît pas sur l’article.',
+        replace: 'Remplacer',
+        remove: 'Retirer',
+        current: 'Audio enregistré',
+        duration: (clock: string) => `Durée ${clock}`,
+        listen: 'Écouter l’audio de l’article',
+        pause: 'Mettre en pause l’audio de l’article',
+        uploading: 'Envoi de l’audio',
+        progress: (percent: number) => `Envoi de l’audio… ${percent} %`,
+        invalidType: 'Le fichier doit être un audio MP3 ou M4A.',
+        tooLarge: 'L’audio ne doit pas dépasser 50 Mo.',
     },
     richText: {
         loading: 'Chargement de l’éditeur…',

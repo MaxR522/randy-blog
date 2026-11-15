@@ -10,4 +10,5 @@ enum MediaFolder: string
     case Articles = 'articles';
     case Avatars = 'avatars';
     case Newsletters = 'newsletters';
+    case Audio = 'audio';
 }

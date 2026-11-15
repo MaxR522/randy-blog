@@ -28,6 +28,8 @@ use Illuminate\Support\Str;
  * @property string $raw_content
  * @property string|null $cover_photo
  * @property string|null $cover_photo_credit
+ * @property string|null $audio_url
+ * @property int|null $audio_duration seconds
  * @property string|null $description
  * @property string|null $keywords
  * @property ArticleStatus $status
@@ -92,6 +94,7 @@ class Article extends Model
             'views' => 'integer',
             'shares' => 'integer',
             'read_duration' => 'integer',
+            'audio_duration' => 'integer',
         ];
     }
 

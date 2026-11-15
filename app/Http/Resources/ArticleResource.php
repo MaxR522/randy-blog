@@ -31,6 +31,7 @@ class ArticleResource extends JsonResource
      *     date: string|null,
      *     dateLabel: string|null,
      *     readingTime: int,
+     *     audio: array{url: string, duration: int}|null,
      *     categories: array<int, array{id: int, name: string}>,
      *     author: array{name: string, url: string}|null,
      * }
@@ -52,6 +53,11 @@ class ArticleResource extends JsonResource
             'date' => $this->published_date?->toIso8601String(),
             'dateLabel' => $this->published_date_label,
             'readingTime' => $this->readingTime(),
+            // Without audio the page shows no player at all (PUB-ART-14).
+            'audio' => $this->audio_url === null ? null : [
+                'url' => $this->audio_url,
+                'duration' => $this->audio_duration ?? 0,
+            ],
             'categories' => $this->whenLoaded('categories', fn () => $this->categories
                 ->map(fn (Category $category): array => ['id' => $category->id, 'name' => $category->value])
                 ->values()

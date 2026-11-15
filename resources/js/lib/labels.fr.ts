@@ -2,6 +2,21 @@
 // Typography (non-breaking spaces before : ; ! ? and inside « »), apostrophes and
 // ellipses are applied by the content formatter, not stored here.
 
+/**
+ * « 1 min 24 », « 6 min », « 45 s »: a time as a screen reader should say it.
+ */
+function spokenDuration(seconds: number): string {
+    const whole = Math.max(0, Math.floor(seconds));
+    const minutes = Math.floor(whole / 60);
+    const rest = whole % 60;
+
+    if (minutes === 0) {
+        return `${rest} s`;
+    }
+
+    return rest === 0 ? `${minutes} min` : `${minutes} min ${rest}`;
+}
+
 export const labels = {
     brand: { name: 'Randy Donny', tagline: "Je pense, donc j'essuie..." },
     nav: {
@@ -49,6 +64,12 @@ export const labels = {
         byline: 'Par',
         listen: "Écouter l'article",
         audioDuration: (min: number) => `Lecture audio · ${min} min`,
+        pause: 'Mettre en pause',
+        player: 'Lecteur audio',
+        seek: 'Position de lecture',
+        /** « 1 min 24 sur 6 min », the slider's spoken value (docs/seo-accessibility.md B4). */
+        audioPosition: (current: number, total: number) =>
+            `${spokenDuration(current)} sur ${spokenDuration(total)}`,
         photoCredit: 'Crédit photo :',
         share: "Partager l'article",
         copyLink: 'Copier le lien',

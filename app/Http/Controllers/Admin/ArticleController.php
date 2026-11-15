@@ -19,6 +19,7 @@ use App\Support\ArticleSuggester;
 use App\Support\ArticleSuggestionException;
 use App\Support\Cloudinary\Cloudinary;
 use App\Support\Cloudinary\CloudinaryException;
+use App\Support\Cloudinary\UploadedAudio;
 use App\Support\Seo\Seo;
 use App\Support\WordImport;
 use Illuminate\Http\JsonResponse;
@@ -240,15 +241,17 @@ class ArticleController extends Controller
     }
 
     /**
-     * Fill, save and optionally publish the article. The new cover is uploaded first; the image it replaces is
-     * deleted only once the article points to the new one, so a failed save never leaves a broken cover.
+     * Fill, save and optionally publish the article. The new cover and audio are uploaded first; the files they
+     * replace are deleted only once the article points to the new ones, so a failed save never leaves a broken link.
      */
     private function save(ArticleRequest $request, Article $article, Cloudinary $cloudinary): void
     {
         $previousCover = $article->cover_photo;
+        $previousAudio = $article->audio_url;
         $newCover = $request->file('cover') === null ? null : $this->uploadCover($request, $cloudinary);
+        $newAudio = $request->file('audio') === null ? null : $this->uploadAudio($request, $cloudinary);
 
-        DB::transaction(function () use ($request, $article, $newCover): void {
+        DB::transaction(function () use ($request, $article, $newCover, $newAudio): void {
             $leadParagraph = ArticleHtml::clean($request->input('lead_paragraph'));
             $content = ArticleHtml::clean($request->input('content'));
             $rawContent = trim(ArticleHtml::plainText($leadParagraph).' '.ArticleHtml::plainText($content));
@@ -271,6 +274,14 @@ class ArticleController extends Controller
                 $article->cover_photo = null;
             }
 
+            if ($newAudio !== null) {
+                $article->audio_url = $newAudio->url;
+                $article->audio_duration = $newAudio->durationSeconds;
+            } elseif ($request->boolean('remove_audio')) {
+                $article->audio_url = null;
+                $article->audio_duration = null;
+            }
+
             $this->applySlug($request, $article);
             $article->save();
 
@@ -286,6 +297,24 @@ class ArticleController extends Controller
 
         if ($previousCover !== null && $previousCover !== $article->cover_photo) {
             $cloudinary->delete($previousCover);
+        }
+
+        if ($previousAudio !== null && $previousAudio !== $article->audio_url) {
+            $cloudinary->delete($previousAudio);
+        }
+    }
+
+    /**
+     * @throws ValidationException when Cloudinary refuses the file
+     */
+    private function uploadAudio(ArticleRequest $request, Cloudinary $cloudinary): UploadedAudio
+    {
+        try {
+            return $cloudinary->uploadAudio($request->file('audio'));
+        } catch (CloudinaryException $exception) {
+            Log::error($exception->getMessage());
+
+            throw ValidationException::withMessages(['audio' => CloudinaryException::AudioUserMessage]);
         }
     }
 

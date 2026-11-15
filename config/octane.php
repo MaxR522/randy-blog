@@ -217,9 +217,12 @@ return [
     | being handled by Octane. You may set this value to 0 to indicate that
     | there isn't a specific time limit on Octane request execution time.
     |
+    | 120 seconds: saving an article sends its audio file (up to 50 MB) on to
+    | Cloudinary within the request.
+    |
     */
 
-    'max_execution_time' => 30,
+    'max_execution_time' => 120,
 
     /*
     |--------------------------------------------------------------------------

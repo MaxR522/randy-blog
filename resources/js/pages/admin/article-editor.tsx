@@ -7,6 +7,7 @@ import {
     ArticlePreviewPanel,
     statusVariants,
 } from '@/components/admin/article-preview-panel';
+import { AudioUploader } from '@/components/admin/audio-uploader';
 import { CategoryPicker } from '@/components/admin/category-picker';
 import { ConfirmModal } from '@/components/admin/confirm-modal';
 import { FieldError } from '@/components/admin/text-field';
@@ -48,6 +49,7 @@ const FIELD_ORDER = [
     'lead_paragraph',
     'cover',
     'cover_photo_credit',
+    'audio',
     'content',
     'category_ids',
     'description',
@@ -63,6 +65,8 @@ type ArticleEditorProps = {
 type EditorForm = AutosavedFields & {
     cover: File | null;
     remove_cover: boolean;
+    audio: File | null;
+    remove_audio: boolean;
 };
 
 /**
@@ -140,10 +144,15 @@ function Editor({ article, categories }: ArticleEditorProps) {
         ...serverFields,
         cover: null,
         remove_cover: false,
+        audio: null,
+        remove_audio: false,
     });
-    const { data, setData, errors, processing, isDirty } = form;
+    const { data, setData, errors, processing, isDirty, progress } = form;
     const [existingCover, setExistingCover] = useState(
         article?.coverPhoto ?? null,
+    );
+    const [existingAudio, setExistingAudio] = useState(
+        article?.audioUrl ?? null,
     );
     const [isSlugEdited, setIsSlugEdited] = useState(
         () =>
@@ -234,11 +243,14 @@ function Editor({ article, categories }: ArticleEditorProps) {
                         ...fieldsOf(saved),
                         cover: null,
                         remove_cover: false,
+                        audio: null,
+                        remove_audio: false,
                     };
 
                     form.setDefaults(fields);
                     form.setData(fields);
                     setExistingCover(saved.coverPhoto);
+                    setExistingAudio(saved.audioUrl);
                 }
             },
         });
@@ -511,6 +523,33 @@ function Editor({ article, categories }: ArticleEditorProps) {
                                     event.target.value,
                                 )
                             }
+                        />
+                    </div>
+                    <div data-field="audio">
+                        <AudioUploader
+                            label={text.audio}
+                            value={data.audio}
+                            existingUrl={existingAudio}
+                            existingDuration={article?.audioDuration ?? null}
+                            progress={
+                                processing && data.audio && progress
+                                    ? (progress.percentage ?? 0)
+                                    : null
+                            }
+                            error={errors.audio}
+                            onChange={(file) => {
+                                if (!file) {
+                                    setExistingAudio(null);
+                                }
+
+                                setData((current) => ({
+                                    ...current,
+                                    audio: file,
+                                    remove_audio:
+                                        file === null &&
+                                        article?.audioUrl != null,
+                                }));
+                            }}
                         />
                     </div>
                     <div data-field="content" className="flex flex-col gap-2">

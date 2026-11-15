@@ -344,3 +344,141 @@ test('A11Y-BODY-5 a save with accessibility problems in the content flashes them
         ->assertInertiaFlash('success', 'Article enregistré.')
         ->assertInertiaFlashMissing('accessibilityWarnings');
 });
+
+function fakeCloudinaryAudio(string $url = 'https://res.cloudinary.com/randy/video/upload/v1/audio/nouveau.mp3'): void
+{
+    Http::fake([
+        'https://api.cloudinary.com/v1_1/randy/video/upload' => Http::response(['secure_url' => $url, 'duration' => 83.4]),
+        'https://api.cloudinary.com/v1_1/randy/video/destroy' => Http::response(['result' => 'ok']),
+    ]);
+}
+
+test('PUB-ART-14 an audio file is uploaded to the audio folder and saved with its duration', function () {
+    fakeCloudinaryAudio();
+
+    $this->actingAs($this->author)
+        ->post(route('admin.articles.store'), ['intent' => 'save', 'title' => 'Titre', 'audio' => UploadedFile::fake()->create('lecture.mp3', 4000, 'audio/mpeg')])
+        ->assertSessionHasNoErrors();
+
+    expect(Article::sole())
+        ->audio_url->toBe('https://res.cloudinary.com/randy/video/upload/v1/audio/nouveau.mp3')
+        ->audio_duration->toBe(84);
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/video/upload')
+        && collect($request->data())->contains(fn (array $part) => $part['name'] === 'folder' && $part['contents'] === 'audio'));
+});
+
+test('PUB-ART-14 an M4A file is accepted', function () {
+    fakeCloudinaryAudio();
+
+    $this->actingAs($this->author)
+        ->post(route('admin.articles.store'), ['intent' => 'save', 'title' => 'Titre', 'audio' => UploadedFile::fake()->create('lecture.m4a', 4000, 'audio/x-m4a')])
+        ->assertSessionHasNoErrors();
+
+    expect(Article::sole()->audio_duration)->toBe(84);
+});
+
+test('PUB-ART-14 publishing does not require audio', function () {
+    fakeCloudinaryUpload();
+
+    $this->actingAs($this->author)
+        ->post(route('admin.articles.store'), completeArticlePayload(['intent' => 'publish']))
+        ->assertSessionHasNoErrors();
+
+    expect(Article::sole())
+        ->status->toBe(ArticleStatus::Published)
+        ->audio_url->toBeNull();
+});
+
+test('PUB-ART-14 an audio file of the wrong type or over 50 MB is refused in French', function (UploadedFile $file, string $message) {
+    Http::fake();
+
+    $this->actingAs($this->author)
+        ->post(route('admin.articles.store'), ['intent' => 'save', 'title' => 'Titre', 'audio' => $file])
+        ->assertSessionHasErrors(['audio' => $message]);
+
+    expect(Article::count())->toBe(0);
+    Http::assertNothingSent();
+})->with([
+    'WAV' => [fn () => UploadedFile::fake()->create('lecture.wav', 4000, 'audio/wav'), 'Le fichier doit être un audio MP3 ou M4A.'],
+    'over 50 MB' => [fn () => UploadedFile::fake()->create('lecture.mp3', 51201, 'audio/mpeg'), 'L’audio ne doit pas dépasser 50 Mo.'],
+]);
+
+test('PUB-ART-14 a new audio file replaces the previous one, which is deleted from Cloudinary', function () {
+    fakeCloudinaryAudio();
+    $article = Article::factory()->published()->create([
+        'audio_url' => 'https://res.cloudinary.com/randy/video/upload/v1/audio/ancien.mp3',
+        'audio_duration' => 300,
+    ]);
+
+    $this->actingAs($this->author)
+        ->put(route('admin.articles.update', $article), completeArticlePayload([
+            'cover' => null,
+            'audio' => UploadedFile::fake()->create('lecture.mp3', 4000, 'audio/mpeg'),
+        ]))
+        ->assertSessionHasNoErrors();
+
+    expect($article->fresh())
+        ->audio_url->toBe('https://res.cloudinary.com/randy/video/upload/v1/audio/nouveau.mp3')
+        ->audio_duration->toBe(84);
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/video/destroy') && $request['public_id'] === 'audio/ancien');
+});
+
+test('PUB-ART-14 removing the audio clears it and deletes the file', function () {
+    fakeCloudinaryAudio();
+    $article = Article::factory()->withAudio()->create(['audio_url' => 'https://res.cloudinary.com/randy/video/upload/v1/audio/ancien.mp3']);
+
+    $this->actingAs($this->author)
+        ->put(route('admin.articles.update', $article), ['intent' => 'save', 'title' => 'Titre', 'remove_audio' => true])
+        ->assertSessionHasNoErrors();
+
+    expect($article->fresh())
+        ->audio_url->toBeNull()
+        ->audio_duration->toBeNull();
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/video/destroy') && $request['public_id'] === 'audio/ancien');
+});
+
+test('PUB-ART-14 a save without an audio change keeps the audio', function () {
+    Http::fake();
+    $article = Article::factory()->withAudio(200)->create();
+    $url = $article->audio_url;
+
+    $this->actingAs($this->author)
+        ->put(route('admin.articles.update', $article), ['intent' => 'save', 'title' => 'Titre'])
+        ->assertSessionHasNoErrors();
+
+    expect($article->fresh())->audio_url->toBe($url)->audio_duration->toBe(200);
+    Http::assertNothingSent();
+});
+
+test('PUB-ART-14 a Cloudinary failure is shown on the audio field and keeps the previous audio', function () {
+    Http::fake(['*' => Http::response(['error' => ['message' => 'Down']], 500)]);
+    $article = Article::factory()->withAudio()->create(['title' => 'Avant']);
+    $url = $article->audio_url;
+
+    $this->actingAs($this->author)
+        ->put(route('admin.articles.update', $article), ['intent' => 'save', 'title' => 'Après', 'audio' => UploadedFile::fake()->create('lecture.mp3', 4000, 'audio/mpeg')])
+        ->assertSessionHasErrors(['audio' => 'L’audio n’a pas pu être envoyé. Réessayez dans quelques instants.']);
+
+    expect($article->fresh())->title->toBe('Avant')->audio_url->toBe($url);
+});
+
+test('PUB-ART-14 the editor loads the saved audio', function () {
+    $article = Article::factory()->withAudio(360)->create();
+
+    $this->actingAs($this->author)
+        ->get(route('admin.articles.edit', $article))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('article.audioUrl', $article->audio_url)
+            ->where('article.audioDuration', 360));
+});
+
+test('PUB-ART-14 a permanently deleted article deletes its audio file, a soft delete keeps it', function () {
+    Http::fake(['https://api.cloudinary.com/v1_1/randy/video/destroy' => Http::response(['result' => 'ok'])]);
+    $article = Article::factory()->create(['audio_url' => 'https://res.cloudinary.com/randy/video/upload/v1/audio/ancien.mp3']);
+
+    $article->delete();
+    Http::assertNothingSent();
+
+    $article->forceDelete();
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/video/destroy') && $request['public_id'] === 'audio/ancien');
+});

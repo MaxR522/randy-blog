@@ -70,3 +70,18 @@ test('a failed upload keeps the previous image', function () {
 
     Http::assertSentCount(1);
 });
+
+test('deleting an audio file goes through the video endpoint', function () {
+    Http::fake(['https://api.cloudinary.com/v1_1/randy/video/destroy' => Http::response(['result' => 'ok'])]);
+
+    app(Cloudinary::class)->delete('https://res.cloudinary.com/randy/video/upload/v1731234567/audio/lecture_abc.mp3');
+
+    Http::assertSent(fn (Request $request) => $request->url() === 'https://api.cloudinary.com/v1_1/randy/video/destroy'
+        && $request['public_id'] === 'audio/lecture_abc');
+});
+
+test('an audio upload without a duration in the answer fails', function () {
+    Http::fake(['https://api.cloudinary.com/v1_1/randy/video/upload' => Http::response(['secure_url' => 'https://res.cloudinary.com/randy/video/upload/v1/audio/a.mp3'])]);
+
+    app(Cloudinary::class)->uploadAudio(UploadedFile::fake()->create('lecture.mp3', 100, 'audio/mpeg'));
+})->throws(CloudinaryException::class);

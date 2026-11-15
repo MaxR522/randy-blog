@@ -27,6 +27,11 @@ class Cloudinary
 
     private const int TimeoutSeconds = 30;
 
+    /**
+     * An audio file weighs up to 50 MB, so its upload gets more time than an image.
+     */
+    private const int AudioTimeoutSeconds = 90;
+
     public function __construct(
         #[Config('services.cloudinary.url')] private readonly ?string $url = null,
     ) {}
@@ -61,7 +66,37 @@ class Cloudinary
     }
 
     /**
-     * Delete the image behind a delivery URL. URLs of other clouds or hosts are left alone, and a failure is
+     * Upload an article's audio file (MP3 or M4A). Cloudinary stores audio under the `video` resource type and
+     * answers with its real duration, rounded up to the second.
+     *
+     * @throws CloudinaryException
+     */
+    public function uploadAudio(UploadedFile $file): UploadedAudio
+    {
+        $credentials = $this->credentials();
+
+        try {
+            $response = Http::timeout(self::AudioTimeoutSeconds)
+                ->attach('file', (string) file_get_contents($file->getRealPath()), $file->getClientOriginalName())
+                ->post(self::ApiUrl."/{$credentials['cloud']}/video/upload", $this->signed([
+                    'folder' => MediaFolder::Audio->value,
+                ], $credentials));
+        } catch (ConnectionException $exception) {
+            throw new CloudinaryException('Cloudinary is unreachable: '.$exception->getMessage(), previous: $exception);
+        }
+
+        $url = $response->json('secure_url');
+        $duration = $response->json('duration');
+
+        if ($response->failed() || ! is_string($url) || ! is_numeric($duration)) {
+            throw new CloudinaryException("Cloudinary refused the audio upload ({$response->status()}): ".$response->json('error.message', ''));
+        }
+
+        return new UploadedAudio($url, max(1, (int) ceil((float) $duration)));
+    }
+
+    /**
+     * Delete the image or audio file behind a delivery URL. URLs of other clouds or hosts are left alone, and a failure is
      * only logged: an orphan file must never block a save.
      */
     public function delete(?string $url): void
@@ -81,16 +116,16 @@ class Cloudinary
 
             $response = Http::timeout(self::TimeoutSeconds)
                 ->asForm()
-                ->post(self::ApiUrl."/{$credentials['cloud']}/image/destroy", $this->signed([
+                ->post(self::ApiUrl."/{$credentials['cloud']}/{$asset['resourceType']}/destroy", $this->signed([
                     'invalidate' => 'true',
                     'public_id' => $asset['publicId'],
                 ], $credentials));
 
             if ($response->failed() || ! in_array($response->json('result'), ['ok', 'not found'], true)) {
-                Log::warning('Cloudinary could not delete an image.', ['url' => $url, 'status' => $response->status(), 'body' => $response->body()]);
+                Log::warning('Cloudinary could not delete a file.', ['url' => $url, 'status' => $response->status(), 'body' => $response->body()]);
             }
         } catch (CloudinaryException|ConnectionException $exception) {
-            Log::warning('Cloudinary could not delete an image.', ['url' => $url, 'error' => $exception->getMessage()]);
+            Log::warning('Cloudinary could not delete a file.', ['url' => $url, 'error' => $exception->getMessage()]);
         }
     }
 

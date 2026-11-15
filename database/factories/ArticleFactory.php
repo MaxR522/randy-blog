@@ -76,4 +76,15 @@ class ArticleFactory extends Factory
             'published_date' => fake()->dateTimeBetween('-1 year', '-1 hour'),
         ]);
     }
+
+    /**
+     * Indicate that the article has an audio version, six minutes long by default.
+     */
+    public function withAudio(int $durationSeconds = 360): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'audio_url' => 'https://res.cloudinary.com/randy-blog/video/upload/v1/audio/'.Str::random(20).'.mp3',
+            'audio_duration' => $durationSeconds,
+        ]);
+    }
 }

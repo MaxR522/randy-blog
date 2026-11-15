@@ -13,4 +13,9 @@ class CloudinaryException extends RuntimeException
      * Shown to the author whatever went wrong; the details go to the log.
      */
     public const string UserMessage = 'L’image n’a pas pu être envoyée. Réessayez dans quelques instants.';
+
+    /**
+     * Same, for an article's audio file.
+     */
+    public const string AudioUserMessage = 'L’audio n’a pas pu être envoyé. Réessayez dans quelques instants.';
 }
