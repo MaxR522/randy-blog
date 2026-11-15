@@ -2,7 +2,7 @@ import { useHttp } from '@inertiajs/react';
 import { X } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 import { preview } from '@/actions/App/Http/Controllers/Admin/NewsletterController';
-import { useModalDialog } from '@/components/admin/modal';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { cn } from '@/lib/utils';
 

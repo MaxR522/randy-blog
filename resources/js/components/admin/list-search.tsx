@@ -1,49 +1,27 @@
-import { router, usePage } from '@inertiajs/react';
 import { Search } from 'lucide-react';
-import type { ChangeEvent } from 'react';
-import { useEffect, useId, useRef, useState } from 'react';
-import { listUrl, listVisitOptions } from '@/helpers/list-url';
+import { useId } from 'react';
 import { cn } from '@/lib/utils';
-
-const DEBOUNCE_MILLISECONDS = 300;
 
 type ListSearchProps = {
     label: string;
     placeholder: string;
-    /** The search in the URL. */
-    value: string;
+    /** The typed search. */
+    query: string;
+    onQueryChange: (query: string) => void;
     className?: string;
 };
 
 /**
- * Search above a list, bound to `?q=` (ADM-COM-5). The input keeps its focus across visits.
+ * Search field above a list (ADM-COM-5); the page binds it to `?q=` through `useListSearch`.
  */
 export function ListSearch({
     label,
     placeholder,
-    value,
+    query,
+    onQueryChange,
     className,
 }: ListSearchProps) {
     const id = useId();
-    const { url } = usePage();
-    const [query, setQuery] = useState(value);
-    const timeout = useRef<number | undefined>(undefined);
-
-    useEffect(() => () => window.clearTimeout(timeout.current), []);
-
-    function handleChange(event: ChangeEvent<HTMLInputElement>): void {
-        const search = event.target.value;
-
-        setQuery(search);
-        window.clearTimeout(timeout.current);
-        timeout.current = window.setTimeout(() => {
-            router.get(
-                listUrl(url, { q: search.trim() || null }),
-                {},
-                listVisitOptions,
-            );
-        }, DEBOUNCE_MILLISECONDS);
-    }
 
     return (
         <div className={cn('relative', className)}>
@@ -59,7 +37,7 @@ export function ListSearch({
                 id={id}
                 type="search"
                 value={query}
-                onChange={handleChange}
+                onChange={(event) => onQueryChange(event.target.value)}
                 placeholder={placeholder}
                 className="border-grey-medium text-body text-primary focus:border-primary h-12 w-full rounded-md border bg-white pr-4 pl-10.5"
             />

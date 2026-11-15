@@ -20,6 +20,7 @@ import {
     SubscriptionTabs,
 } from '@/components/admin/subscription-tabs';
 import { Button } from '@/components/public/button';
+import { useListSearch } from '@/hooks/use-list-search';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import type { AdminList } from '@/types/admin';
@@ -72,6 +73,7 @@ export default function Subscriptions({
     newsletterCount,
 }: SubscriptionsProps) {
     const { url } = usePage();
+    const search = useListSearch(filters.q);
     const [deleted, setDeleted] = useState<Subscription | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const shouldFocusMain = useRef(false);
@@ -160,7 +162,8 @@ export default function Subscriptions({
                         <ListSearch
                             label={text.search}
                             placeholder={text.searchPlaceholder}
-                            value={filters.q}
+                            query={search.query}
+                            onQueryChange={search.changeQuery}
                             className="tablet:w-85"
                         />
                         <StatusFilters

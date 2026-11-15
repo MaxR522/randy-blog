@@ -1,8 +1,8 @@
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Eye, Upload } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { RowAction } from '@/components/admin/row-actions-menu';
-import { RowActionsMenu } from '@/components/admin/row-actions-menu';
+import type { RowAction } from '@/helpers/row-actions-menu';
+import { RowActionsMenu } from '@/components/admin/row-actions-menu/row-actions-menu';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Button } from '@/components/public/button';
 import type { ArticleStatus } from '@/helpers/article';

@@ -111,13 +111,13 @@ Tests: `tests/Feature/Admin/ArticleEditorTest.php`, `MediaUploadTest.php`, `Clou
 
 Tests: `tests/Feature/Admin/ArticleTest.php`.
 
-- [ ] `components/admin/list-search.tsx` (68): request to `hooks/use-list-search.ts`, called by the articles, categories and subscriptions pages
-- [ ] `components/admin/row-actions-menu.tsx` (354): open, close and keyboard behaviour to `hooks/use-menu.ts`
-- [ ] `pages/admin/articles.tsx` (368): feature hook, helpers and components in `components/admin/articles/`
+- [x] `components/admin/list-search.tsx` (68): request to `hooks/use-list-search.ts`, called by the articles, categories and subscriptions pages; `ListSearch` takes `query` / `onQueryChange`
+- [x] `components/admin/row-actions-menu.tsx` (354): open and close to `hooks/use-row-actions-menu.ts`, keyboard and outside click to `hooks/use-menu-navigation.ts`, `RowAction`, viewport mode and key moves to `helpers/row-actions-menu.ts`, markup in `components/admin/row-actions-menu/` (menu, items, popover, sheet); `useModalDialog` out of `modal.tsx` into `hooks/use-modal-dialog.ts`
+- [x] `pages/admin/articles.tsx` (373 to 122): `hooks/use-articles-list.ts`, `helpers/articles.ts` (`ArticleRow` carries `editUrl`), components in `components/admin/articles/`; generic `hooks/use-row-deletion.ts` (confirm, delete, focus `#contenu`) and `helpers/admin-shell.ts` (`MAIN_ID`, used by `admin-layout.tsx`)
 
 ### 5. Categories and subscriptions pages
 
-Tests: `tests/Feature/Admin/CategoryTest.php`, `SubscriptionTest.php`. Reuses the session 4 hooks.
+Tests: `tests/Feature/Admin/CategoryTest.php`, `SubscriptionTest.php`. Reuses the session 4 hooks: `useListSearch` is already wired in both pages; replace their local deletion state and `MAIN_ID` with `useRowDeletion` and `helpers/admin-shell.ts`.
 
 - [ ] `pages/admin/categories.tsx` (387)
 - [ ] `pages/admin/subscriptions.tsx` (270) and `components/admin/subscription-tabs.tsx` (90)
