@@ -7,7 +7,7 @@ import { SectionHeader } from '@/components/public/section-header';
 import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { labels } from '@/lib/labels.fr';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import type { ArticleCard, SearchResults, SeoData } from '@/types';
 
 type SearchProps = {

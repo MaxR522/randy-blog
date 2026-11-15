@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { labels } from '@/lib/labels.fr';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import { cn } from '@/lib/utils';
 import type { ArticleCard } from '@/types';
 

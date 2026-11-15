@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { listUrl, listVisitOptions } from '@/lib/list-url';
+import { listUrl, listVisitOptions } from '@/helpers/list-url';
 import { cn } from '@/lib/utils';
 
 export type StatusFilterOption<Value extends string> = {

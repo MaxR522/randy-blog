@@ -9,7 +9,7 @@ import { PreviewBanner } from '@/components/public/preview-banner';
 import { ShareButtons } from '@/components/public/share-buttons';
 import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import { cn } from '@/lib/utils';
 import type { ArticleCard, ArticleDetail, SeoData } from '@/types';
 import type { MouseEvent } from 'react';

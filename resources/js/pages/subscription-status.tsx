@@ -5,7 +5,7 @@ import { buttonClasses } from '@/components/public/button';
 import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { labels } from '@/lib/labels.fr';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import { cn } from '@/lib/utils';
 import { home } from '@/routes';
 import type { SeoData } from '@/types';

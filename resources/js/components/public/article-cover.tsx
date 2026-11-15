@@ -1,6 +1,6 @@
 import { cloudinaryCoverSrcSet, cloudinaryCoverUrl } from '@/lib/cloudinary';
 import { labels } from '@/lib/labels.fr';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import type { PreloadImage } from '@/types';
 
 const WIDTHS = [640, 960, 1280, 1680, 2240] as const;

@@ -20,8 +20,8 @@ import { TextField } from '@/components/admin/text-field';
 import { Button } from '@/components/public/button';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { listUrl, listVisitOptions } from '@/lib/list-url';
-import { frenchTypography } from '@/lib/typography';
+import { listUrl, listVisitOptions } from '@/helpers/list-url';
+import { frenchTypography } from '@/helpers/typography';
 import type { AdminList, SortDirection } from '@/types/admin';
 
 const text = adminLabels.categories;

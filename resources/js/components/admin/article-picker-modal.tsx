@@ -7,7 +7,7 @@ import { Modal, ModalBody, ModalFooter } from '@/components/admin/modal';
 import { PickerSearch } from '@/components/admin/picker-search';
 import { Button } from '@/components/public/button';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import { cn } from '@/lib/utils';
 
 const text = adminLabels.articlePicker;

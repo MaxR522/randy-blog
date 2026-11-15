@@ -6,12 +6,12 @@ import {
     closePreferences,
     openPreferences,
     setConsent,
-    useCookieConsent,
-} from '@/lib/cookie-consent';
+} from '@/helpers/cookie-consent';
 import {
     disableGoogleAnalytics,
     loadGoogleAnalytics,
 } from '@/lib/google-analytics';
+import { useCookieConsent } from '@/hooks/use-cookie-consent';
 import { labels } from '@/lib/labels.fr';
 
 type CookieConsentProps = {

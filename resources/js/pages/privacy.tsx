@@ -5,7 +5,7 @@ import PublicLayout from '@/layouts/public-layout';
 import { labels } from '@/lib/labels.fr';
 import type { PolicyBlock, PolicyInline } from '@/lib/privacy-policy.fr';
 import { privacyPolicy } from '@/lib/privacy-policy.fr';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import type { SeoData } from '@/types';
 
 /**

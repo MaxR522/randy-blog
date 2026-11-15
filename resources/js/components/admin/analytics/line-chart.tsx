@@ -1,6 +1,6 @@
 import type { KeyboardEvent, PointerEvent } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
-import { formatDay, formatNumber } from '@/lib/analytics-format';
+import { formatDay, formatNumber } from '@/helpers/analytics-format';
 import { adminLabels } from '@/lib/labels.admin.fr';
 
 const text = adminLabels.analytics.chart;
