@@ -83,6 +83,8 @@ export default defineConfig({
         htmlWhitespaceSensitivity: 'css',
         ignorePatterns: [
             '.github/**',
+            '.mcp.json',
+            'boost.json',
             'composer.json',
             'docs/**',
             'resources/js/components/ui/*',
