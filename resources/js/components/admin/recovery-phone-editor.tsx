@@ -8,7 +8,7 @@ import { EditorActions } from '@/components/admin/avatar-editor';
 import { PasswordField } from '@/components/admin/password-field';
 import { TextField } from '@/components/admin/text-field';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { formatPhone } from '@/lib/phone';
+import { formatPhone } from '@/helpers/phone';
 
 const text = adminLabels.security;
 

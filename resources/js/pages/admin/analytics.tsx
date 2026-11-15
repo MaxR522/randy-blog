@@ -12,7 +12,7 @@ import {
     formatDay,
     formatDuration,
     formatNumber,
-} from '@/lib/analytics-format';
+} from '@/helpers/analytics-format';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { cn } from '@/lib/utils';
 import { index as analyticsIndex } from '@/routes/admin';

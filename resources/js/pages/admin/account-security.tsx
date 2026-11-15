@@ -15,7 +15,7 @@ import { StatusBadge } from '@/components/admin/status-badge';
 import { TwoFactorEditor } from '@/components/admin/two-factor-editor';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { formatPhone } from '@/lib/phone';
+import { formatPhone } from '@/helpers/phone';
 import type { AccountSecurity } from '@/types/admin';
 
 const text = adminLabels.security;

@@ -27,7 +27,7 @@ import { Button } from '@/components/public/button';
 import AdminLayout from '@/layouts/admin-layout';
 import { send, sendDraft } from '@/routes/admin/newsletters';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { cn } from '@/lib/utils';
 import type { AdminNewsletter } from '@/types/admin';

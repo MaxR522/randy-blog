@@ -1,9 +1,9 @@
 import { Link } from '@inertiajs/react';
 import { ExternalLink } from '@/components/public/external-link';
 import { socialLinks } from '@/components/public/social-links';
-import { openPreferences } from '@/lib/cookie-consent';
+import { openPreferences } from '@/helpers/cookie-consent';
 import { labels } from '@/lib/labels.fr';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import { home, privacy } from '@/routes';
 
 const columnTitleClasses =

@@ -16,9 +16,8 @@ The data flows one way: container calls the hook, the hook talks to the server, 
 ## Folders
 
 - `resources/js/hooks/`: custom hooks only, one per file, file named after the hook in kebab-case (`use-article-editor-form.ts` exports `useArticleEditorForm`).
-- `resources/js/helpers/`: pure functions and constants only, file named after the feature (`article-editor.ts`).
-- `resources/js/lib/`: what is neither, such as copy (`labels.fr.ts`, `labels.admin.fr.ts`), `utils.ts` (`cn`) and third-party setup (`cloudinary.ts`, `tinymce-configs.ts`, `google-analytics.ts`).
-- Hooks and helpers still in `lib/` (`list-url.ts`, `analytics-format.ts`, `phone.ts`, `typography.ts`, `cookie-consent.ts`) move out in session 1. Update every import when moving a file.
+- `resources/js/helpers/`: pure functions and constants only, file named after the feature (`article-editor.ts`, `list-url.ts`, `typography.ts`). A module-level store with no React (`cookie-consent.ts`) also lives here; its React binding is a hook (`hooks/use-cookie-consent.ts`).
+- `resources/js/lib/`: only what is neither: copy (`labels.fr.ts`, `labels.admin.fr.ts`, `privacy-policy.fr.ts`), `utils.ts` (`cn`), `social.ts` and third-party setup (`cloudinary.ts`, `tinymce-configs.ts`, `google-analytics.ts`). A new hook or helper never goes in `lib/`. Update every import when moving a file.
 - Types and constants shared by several features of one domain go in `helpers/<domain>.ts` (`helpers/article.ts`: `ArticleStatus`, `statusVariants`, `PreviewedArticle`), not in the component that first used them.
 
 ## The pattern
@@ -88,9 +87,9 @@ The refactor runs in sessions that each fit one context window. Work through the
 Mechanical moves, no behaviour change. Every later session imports from `hooks/` and `helpers/`. Tests: `tests/Feature/Admin/ArticleEditorTest.php`, `HomePageTest.php`.
 
 - [x] Create `resources/js/hooks/` and `resources/js/helpers/`, move the article editor hook, helpers, autosave and unsaved-changes guard (done in session 0)
-- [ ] Pure helpers `lib/list-url.ts`, `lib/analytics-format.ts`, `lib/phone.ts`, `lib/typography.ts` to `helpers/`
-- [ ] `lib/cookie-consent.ts` split: store and `setConsent` / `openPreferences` / `closePreferences` to `helpers/cookie-consent.ts`, `useCookieConsent` to `hooks/use-cookie-consent.ts`
-- [ ] `lib/` keeps only copy (`labels.fr.ts`, `labels.admin.fr.ts`, `privacy-policy.fr.ts`), `utils.ts`, `social.ts` and third-party setup (`cloudinary.ts`, `tinymce-configs.ts`, `google-analytics.ts`); update the Folders section and the reference paths in this document
+- [x] Pure helpers `lib/list-url.ts, `lib/analytics-format.ts`, `lib/phone.ts`, `lib/typography.ts` to `helpers/`
+- [x] `lib/cookie-consent.ts` split: store and `setConsent` / `openPreferences` / `closePreferences` to `helpers/cookie-consent.ts`, `useCookieConsent` to `hooks/use-cookie-consent.ts`
+- [x] `lib/` keeps only copy (`labels.fr.ts`, `labels.admin.fr.ts`, `privacy-policy.fr.ts`), `utils.ts`, `social.ts` and third-party setup (`cloudinary.ts`, `tinymce-configs.ts`, `google-analytics.ts`); update the Folders section and the reference paths in this document
 
 ### 2. Article editor satellites
 

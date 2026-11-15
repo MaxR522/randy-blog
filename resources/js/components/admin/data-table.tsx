@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { listVisitOptions } from '@/lib/list-url';
+import { listVisitOptions } from '@/helpers/list-url';
 import { cn } from '@/lib/utils';
 import type { SortDirection } from '@/types/admin';
 

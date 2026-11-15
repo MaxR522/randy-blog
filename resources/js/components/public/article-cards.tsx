@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ArticleImage } from '@/components/public/article-image';
 import { CategoryChips } from '@/components/public/category-chips';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import { cn } from '@/lib/utils';
 import type { ArticleCard } from '@/types';
 

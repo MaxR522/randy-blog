@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import type { PreloadImage, SeoData } from '@/types';
 
 type SeoProps = {

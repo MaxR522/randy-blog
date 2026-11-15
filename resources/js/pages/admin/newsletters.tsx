@@ -19,7 +19,7 @@ import {
 import { Button, buttonClasses } from '@/components/public/button';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import type { AdminList, AdminNewsletter } from '@/types/admin';
 
 const text = adminLabels.newsletters;

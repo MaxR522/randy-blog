@@ -2,7 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import { Search } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
-import { listUrl, listVisitOptions } from '@/lib/list-url';
+import { listUrl, listVisitOptions } from '@/helpers/list-url';
 import { cn } from '@/lib/utils';
 
 const DEBOUNCE_MILLISECONDS = 300;

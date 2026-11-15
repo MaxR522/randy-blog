@@ -1,6 +1,6 @@
 import { buttonClasses } from '@/components/public/button';
 import { labels } from '@/lib/labels.fr';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import { home } from '@/routes';
 
 /**

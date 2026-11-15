@@ -26,7 +26,7 @@ import AdminLayout from '@/layouts/admin-layout';
 import type { ArticleStatus, PreviewedArticle } from '@/helpers/article';
 import { statusVariants } from '@/helpers/article';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import { create, edit } from '@/routes/admin/articles';
 import type { AdminList } from '@/types/admin';
 

@@ -5,7 +5,7 @@ import { TextField } from '@/components/admin/text-field';
 import { Button } from '@/components/public/button';
 import AdminAuthLayout from '@/layouts/admin-auth-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { frenchTypography } from '@/lib/typography';
+import { frenchTypography } from '@/helpers/typography';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
