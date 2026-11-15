@@ -1,26 +1,18 @@
 import { Music, Pause, Play } from 'lucide-react';
-import type { ChangeEvent, DragEvent } from 'react';
-import { useEffect, useId, useRef, useState } from 'react';
-import { formatSize } from '@/components/admin/image-uploader';
+import { useId } from 'react';
+import { FileDropZone } from '@/components/admin/file-drop-zone';
 import { FieldError } from '@/components/admin/text-field';
 import { Button } from '@/components/public/button';
+import {
+    ACCEPTED_AUDIO_EXTENSIONS,
+    ACCEPTED_AUDIO_TYPES,
+    clock,
+    formatSize,
+} from '@/helpers/media-upload';
+import { useAudioUpload } from '@/hooks/use-audio-upload';
 import { adminLabels } from '@/lib/labels.admin.fr';
-import { cn } from '@/lib/utils';
 
 const text = adminLabels.audioUploader;
-
-/** Browsers report M4A under several names; the extension decides when the type is unknown. */
-const ACCEPTED_TYPES = [
-    'audio/mpeg',
-    'audio/mp3',
-    'audio/mp4',
-    'audio/x-m4a',
-    'audio/m4a',
-];
-
-const ACCEPTED_EXTENSIONS = ['.mp3', '.m4a'];
-
-const MAX_BYTES = 50 * 1024 * 1024;
 
 type AudioUploaderProps = {
     label: string;
@@ -37,21 +29,6 @@ type AudioUploaderProps = {
     error?: string;
 };
 
-function clock(seconds: number): string {
-    const whole = Math.max(0, Math.round(seconds));
-
-    return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
-}
-
-function isAccepted(file: File): boolean {
-    const name = file.name.toLowerCase();
-
-    return (
-        ACCEPTED_TYPES.includes(file.type) ||
-        ACCEPTED_EXTENSIONS.some((extension) => name.endsWith(extension))
-    );
-}
-
 /**
  * « Audio de l'article » (PUB-ART-14): optional MP3 or M4A, made by the author with Piper. Drop zone when empty;
  * once filled, a button to listen, the name and duration, « Remplacer » and « Retirer ». The type and size are
@@ -67,93 +44,19 @@ export function AudioUploader({
     error,
 }: AudioUploaderProps) {
     const id = useId();
-    const inputRef = useRef<HTMLInputElement>(null);
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const [fileUrl, setFileUrl] = useState<string | null>(null);
-    const [fileDuration, setFileDuration] = useState<number | null>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [localError, setLocalError] = useState<string | null>(null);
-    const [isDragging, setIsDragging] = useState(false);
-
-    useEffect(() => {
-        setIsPlaying(false);
-        setFileDuration(null);
-
-        if (!value) {
-            setFileUrl(null);
-
-            return;
-        }
-
-        const url = URL.createObjectURL(value);
-        setFileUrl(url);
-
-        return () => URL.revokeObjectURL(url);
-    }, [value]);
-
-    const sourceUrl = fileUrl ?? existingUrl;
-    const duration = value ? fileDuration : existingDuration;
-    const shownError = localError ?? error;
+    const upload = useAudioUpload({
+        value,
+        existingUrl,
+        existingDuration,
+        onChange,
+    });
+    const { sourceUrl, duration, isPlaying } = upload;
+    const shownError = upload.localError ?? error;
     const errorId = `${id}-erreur`;
     const helpId = `${id}-aide`;
     const describedBy = [helpId, shownError ? errorId : null]
         .filter(Boolean)
         .join(' ');
-
-    function pick(file: File | undefined) {
-        if (!file) {
-            return;
-        }
-
-        if (!isAccepted(file)) {
-            setLocalError(text.invalidType);
-
-            return;
-        }
-
-        if (file.size > MAX_BYTES) {
-            setLocalError(text.tooLarge);
-
-            return;
-        }
-
-        setLocalError(null);
-        onChange(file);
-    }
-
-    function handleChange(event: ChangeEvent<HTMLInputElement>) {
-        pick(event.target.files?.[0]);
-        // Picking the same file again after « Retirer » must fire a change.
-        event.target.value = '';
-    }
-
-    function handleDrop(event: DragEvent<HTMLLabelElement>) {
-        event.preventDefault();
-        setIsDragging(false);
-        pick(event.dataTransfer.files[0]);
-    }
-
-    function handleRemove() {
-        audioRef.current?.pause();
-        setLocalError(null);
-        onChange(null);
-        // The drop zone renders a new input: focus it once React has swapped them.
-        requestAnimationFrame(() => inputRef.current?.focus());
-    }
-
-    function togglePlay() {
-        const audio = audioRef.current;
-
-        if (!audio) {
-            return;
-        }
-
-        if (audio.paused) {
-            void audio.play().catch(() => setIsPlaying(false));
-        } else {
-            audio.pause();
-        }
-    }
 
     const meta = [
         duration !== null ? text.duration(clock(duration)) : null,
@@ -164,14 +67,17 @@ export function AudioUploader({
 
     const input = (
         <input
-            ref={inputRef}
+            ref={upload.inputRef}
             id={id}
             type="file"
-            accept={[...ACCEPTED_EXTENSIONS, ...ACCEPTED_TYPES].join(',')}
+            accept={[
+                ...ACCEPTED_AUDIO_EXTENSIONS,
+                ...ACCEPTED_AUDIO_TYPES,
+            ].join(',')}
             aria-describedby={describedBy}
             aria-invalid={shownError ? true : undefined}
             className="sr-only"
-            onChange={handleChange}
+            onChange={upload.changeFile}
         />
     );
 
@@ -187,7 +93,7 @@ export function AudioUploader({
                             <div className="tablet:gap-4 flex min-w-0 flex-1 items-center gap-3">
                                 <button
                                     type="button"
-                                    onClick={togglePlay}
+                                    onClick={upload.togglePlay}
                                     aria-label={
                                         isPlaying ? text.pause : text.listen
                                     }
@@ -233,7 +139,7 @@ export function AudioUploader({
                                 <Button
                                     variant="ghost"
                                     className="text-red-700"
-                                    onClick={handleRemove}
+                                    onClick={upload.remove}
                                 >
                                     {text.remove}
                                     <span className="sr-only">
@@ -265,20 +171,10 @@ export function AudioUploader({
                         )}
                     </div>
                     <audio
-                        ref={audioRef}
+                        ref={upload.audioRef}
                         src={sourceUrl}
                         preload="metadata"
-                        onPlay={() => setIsPlaying(true)}
-                        onPause={() => setIsPlaying(false)}
-                        onEnded={() => setIsPlaying(false)}
-                        onLoadedMetadata={(event) => {
-                            if (
-                                value &&
-                                Number.isFinite(event.currentTarget.duration)
-                            ) {
-                                setFileDuration(event.currentTarget.duration);
-                            }
-                        }}
+                        {...upload.audioEvents}
                     />
                     <p id={helpId} className="text-caption text-grey-dark">
                         {text.help}
@@ -292,31 +188,16 @@ export function AudioUploader({
                     >
                         {label}
                     </label>
-                    {/* The drop zone is a second label of the same input: a click opens the file picker. */}
-                    <label
+                    <FileDropZone
                         htmlFor={id}
-                        onDragOver={(event) => {
-                            event.preventDefault();
-                            setIsDragging(true);
-                        }}
-                        onDragLeave={() => setIsDragging(false)}
-                        onDrop={handleDrop}
-                        className={cn(
-                            'text-body-small has-focus-visible:outline-accent-600 flex cursor-pointer flex-col items-center gap-2.5 rounded-md border border-dashed px-6 py-7 text-center transition-colors duration-(--duration-fast) has-focus-visible:outline-2 has-focus-visible:outline-offset-2',
-                            isDragging
-                                ? 'border-primary bg-grey-subtle'
-                                : 'border-grey-medium hover:bg-grey-subtle',
-                            shownError && 'border-red-600',
-                        )}
+                        icon={Music}
+                        text={text.drop}
+                        isDragging={upload.isDragging}
+                        hasError={Boolean(shownError)}
+                        dropZoneProps={upload.dropZoneProps}
                     >
-                        <Music
-                            aria-hidden="true"
-                            className="text-primary size-7"
-                            strokeWidth={1.75}
-                        />
-                        <span className="font-medium">{text.drop}</span>
                         {input}
-                    </label>
+                    </FileDropZone>
                     <p id={helpId} className="text-caption text-grey-dark">
                         {text.help}
                     </p>

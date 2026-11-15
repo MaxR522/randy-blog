@@ -15,20 +15,17 @@ type SeoFieldsProps = {
  * « Référencement »: suggestions, meta description, keywords and the article URL.
  */
 export function SeoFields({ editor }: SeoFieldsProps) {
-    const { data, errors, setData } = editor;
+    const { data, errors, setData, seoSuggestions } = editor;
 
     return (
         <SidebarSection id="referencement" title={text.seo}>
             <SeoSuggestions
-                title={data.title}
-                leadParagraph={data.lead_paragraph}
-                content={data.content}
-                hasContent={editor.words > 0}
-                hasCurrentValues={
-                    data.description.trim() !== '' ||
-                    data.keywords.trim() !== ''
-                }
-                onSuggest={editor.applySeoSuggestions}
+                processing={seoSuggestions.processing}
+                error={seoSuggestions.error}
+                isConfirming={seoSuggestions.isConfirming}
+                onStart={seoSuggestions.start}
+                onConfirm={seoSuggestions.generate}
+                onCancel={seoSuggestions.cancelConfirm}
             />
             <div data-field="description">
                 <TextAreaField

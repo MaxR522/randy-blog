@@ -2,7 +2,7 @@ import { useForm } from '@inertiajs/react';
 import { UserRound } from 'lucide-react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
-import { ACCEPTED_TYPES, formatSize } from '@/components/admin/image-uploader';
+import { ACCEPTED_IMAGE_TYPES, formatSize } from '@/helpers/media-upload';
 import type { SquareCropperHandle } from '@/components/admin/square-cropper';
 import { SquareCropper } from '@/components/admin/square-cropper';
 import { FieldError, TextField } from '@/components/admin/text-field';
@@ -62,7 +62,7 @@ export function AvatarEditor({
             return;
         }
 
-        if (!ACCEPTED_TYPES.includes(file.type)) {
+        if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
             setLocalError(text.avatarInvalidType);
 
             return;
@@ -147,7 +147,7 @@ export function AvatarEditor({
                         <input
                             id={inputId}
                             type="file"
-                            accept={ACCEPTED_TYPES.join(',')}
+                            accept={ACCEPTED_IMAGE_TYPES.join(',')}
                             aria-describedby={[
                                 helpId,
                                 shownError ? errorId : null,

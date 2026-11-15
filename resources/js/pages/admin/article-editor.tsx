@@ -13,9 +13,11 @@ import { RestoreAutosaveBanner } from '@/components/admin/article-editor/restore
 import { SeoFields } from '@/components/admin/article-editor/seo-fields';
 import { ArticlePreviewPanel } from '@/components/admin/article-preview-panel';
 import { ConfirmModal } from '@/components/admin/confirm-modal';
-import { WordImportModal } from '@/components/admin/word-import-modal';
+import { WordImportModal } from '@/components/admin/word-import/word-import-modal';
 import { previewedArticleOf } from '@/helpers/article-editor';
 import { useArticleEditorForm } from '@/hooks/use-article-editor-form';
+import { useArticlePreview } from '@/hooks/use-article-preview';
+import { useWordImport } from '@/hooks/use-word-import';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { index } from '@/routes/admin/articles';
@@ -46,13 +48,27 @@ function Editor({ article, categories }: ArticleEditorProps) {
     const editor = useArticleEditorForm(article);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isWordImportOpen, setIsWordImportOpen] = useState(false);
+    const previewedArticle =
+        article && isPreviewOpen ? previewedArticleOf(article) : null;
+    const preview = useArticlePreview(previewedArticle);
+    const wordImport = useWordImport();
     const accessibilityWarnings = usePage().flash.accessibilityWarnings ?? [];
     const { autosave, isPublished, processing } = editor;
     const title = article ? text.editTitle : text.createTitle;
 
+    function openWordImport(): void {
+        wordImport.reset();
+        setIsWordImportOpen(true);
+    }
+
+    function closeWordImport(): void {
+        wordImport.reset();
+        setIsWordImportOpen(false);
+    }
+
     function importDocument(fields: WordImportResult['fields']): void {
         editor.importDocument(fields);
-        setIsWordImportOpen(false);
+        closeWordImport();
     }
 
     const actionButtons = (
@@ -75,7 +91,7 @@ function Editor({ article, categories }: ArticleEditorProps) {
                 isPublished={isPublished}
                 processing={processing}
                 onPreview={() => setIsPreviewOpen(true)}
-                onWordImport={() => setIsWordImportOpen(true)}
+                onWordImport={openWordImport}
                 onArchive={editor.archive}
                 actionButtons={actionButtons}
             />
@@ -124,19 +140,21 @@ function Editor({ article, categories }: ArticleEditorProps) {
 
             {/* The saved article, as in the list; publishing or archiving there reloads the status shown here. */}
             <ArticlePreviewPanel
-                article={
-                    article && isPreviewOpen
-                        ? previewedArticleOf(article)
-                        : null
-                }
+                article={previewedArticle}
                 onClose={() => setIsPreviewOpen(false)}
-                isFromEditor
+                editUrl={null}
+                isChangingStatus={preview.isChangingStatus}
+                onChangeStatus={preview.changeStatus}
+                frameVersion={preview.frameVersion}
+                isFrameLoaded={preview.isFrameLoaded}
+                onFrameLoad={preview.markFrameLoaded}
             />
 
             {!article && (
                 <WordImportModal
                     isOpen={isWordImportOpen}
-                    onClose={() => setIsWordImportOpen(false)}
+                    onClose={closeWordImport}
+                    wordImport={wordImport}
                     hasContent={editor.hasContent}
                     onImport={importDocument}
                 />

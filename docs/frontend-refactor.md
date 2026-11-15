@@ -93,19 +93,19 @@ Mechanical moves, no behaviour change. Every later session imports from `hooks/`
 
 ### 2. Article editor satellites
 
-Tests: `tests/Feature/Admin/ArticleEditorTest.php`, `ArticleSuggestionTest.php`, `WordImportTest.php`, `ArticleTest.php`.
+Tests: `tests/Feature/Admin/ArticleEditorTest.php`, `ArticleSuggestionTest.php`, `WordImportTest.php`, `ArticleTest.php`. Run together with session 3 (shared drop zone, size format and blob URL hooks).
 
-- [ ] `components/admin/seo-suggestions.tsx` (133): request to `hooks/use-seo-suggestions.ts`
-- [ ] `components/admin/word-import-modal.tsx` (406): request and parsing to `hooks/use-word-import.ts` and `helpers/`, markup split in `components/admin/word-import/` if mixed
-- [ ] `components/admin/article-preview-panel.tsx` (182): request to `hooks/use-article-preview.ts`, called by both `pages/admin/article-editor.tsx` and `pages/admin/articles.tsx`
+- [x] `components/admin/seo-suggestions.tsx` (133): request to `hooks/use-seo-suggestions.ts`, called inside `useArticleEditorForm` and exposed as `editor.seoSuggestions`
+- [x] `components/admin/word-import-modal.tsx` (406): request to `hooks/use-word-import.ts` (called by the page, `reset()` on open and close since the hook outlives the modal content), parsing to `helpers/word-import.ts`, markup in `components/admin/word-import/` (modal, drop zone, file row, report)
+- [x] `components/admin/article-preview-panel.tsx` (182): request to `hooks/use-article-preview.ts`, called by both `pages/admin/article-editor.tsx` and `pages/admin/articles.tsx`; `editUrl` prop replaces `isFromEditor` and the Wayfinder call
 
 ### 3. Article editor inputs
 
 Tests: `tests/Feature/Admin/ArticleEditorTest.php`, `MediaUploadTest.php`, `CloudinaryTest.php`.
 
-- [ ] `components/admin/image-uploader.tsx` (253) and `audio-uploader.tsx` (328): upload behaviour to hooks (`use-image-upload.ts`, `use-audio-upload.ts`), reused by `avatar-editor.tsx`
-- [ ] `components/admin/category-picker.tsx` (260): picker behaviour to a hook
-- [ ] `components/admin/tinymce-editor.tsx` (182) and `rich-text-editor.tsx` (99): setup behaviour to a hook if mixed
+- [x] `components/admin/image-uploader.tsx` (253) and `audio-uploader.tsx` (328): behaviour to `hooks/use-image-upload.ts` and `use-audio-upload.ts`, shared `hooks/use-file-drop.ts`, `hooks/use-object-url.ts`, `helpers/media-upload.ts` (types, limits, `formatSize`, `clock`; `avatar-editor.tsx` imports from it) and the generic `components/admin/file-drop-zone.tsx`
+- [x] `components/admin/category-picker.tsx` (260): behaviour to `hooks/use-category-picker.ts`, option list to `helpers/category-picker.ts`, chip to `components/admin/category-chip.tsx`
+- [x] `components/admin/tinymce-editor.tsx` (182) and `rich-text-editor.tsx` (99): setup functions and `ToolbarButton` to `helpers/tinymce-editor.ts`, ARIA sync to `hooks/use-tinymce-body-aria.ts`; `rich-text-editor.tsx` is markup only, unchanged
 
 ### 4. Articles list and shared list primitives
 

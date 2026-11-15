@@ -1,25 +1,29 @@
-import { Link, router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { ExternalLink, X } from 'lucide-react';
-import { useState } from 'react';
-import {
-    archive,
-    publish,
-} from '@/actions/App/Http/Controllers/Admin/ArticleController';
 import { useModalDialog } from '@/components/admin/modal';
 import { Button, buttonClasses } from '@/components/public/button';
 import type { PreviewedArticle } from '@/helpers/article';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { cn } from '@/lib/utils';
-import { edit } from '@/routes/admin/articles';
 
 const text = adminLabels.articles;
 
-type ArticlePreviewPanelProps = {
+type PanelContentProps = {
+    article: PreviewedArticle;
+    onClose: () => void;
+    /** « Modifier », or `null` from the editor of this article, where it would lead back to the same page. */
+    editUrl: string | null;
+    isChangingStatus: boolean;
+    onChangeStatus: () => void;
+    /** Changes after a status change, so the frame reloads. */
+    frameVersion: number;
+    isFrameLoaded: boolean;
+    onFrameLoad: () => void;
+};
+
+type ArticlePreviewPanelProps = Omit<PanelContentProps, 'article'> & {
     /** `null` when closed. */
     article: PreviewedArticle | null;
-    onClose: () => void;
-    /** Opened from the editor of this article: « Modifier » would lead back to the same page, so it is left out. */
-    isFromEditor?: boolean;
 };
 
 const iconButtonClasses =
@@ -31,9 +35,9 @@ const iconButtonClasses =
  */
 export function ArticlePreviewPanel({
     article,
-    onClose,
-    isFromEditor = false,
+    ...props
 }: ArticlePreviewPanelProps) {
+    const { onClose } = props;
     const { dialogRef, closeOnVeilClick } = useModalDialog(
         article !== null,
         onClose,
@@ -48,12 +52,7 @@ export function ArticlePreviewPanel({
             className="backdrop:bg-primary/50 text-primary tablet:mt-0 tablet:mr-0 tablet:ml-auto tablet:h-dvh tablet:max-h-none tablet:max-w-180 tablet:rounded-none tablet:border-l tablet:border-grey-light m-0 mt-auto h-[92dvh] max-h-none w-full max-w-none rounded-t-lg bg-white p-0"
         >
             {article && (
-                <PanelContent
-                    key={article.id}
-                    article={article}
-                    onClose={onClose}
-                    isFromEditor={isFromEditor}
-                />
+                <PanelContent key={article.id} article={article} {...props} />
             )}
         </dialog>
     );
@@ -62,37 +61,14 @@ export function ArticlePreviewPanel({
 function PanelContent({
     article,
     onClose,
-    isFromEditor,
-}: {
-    article: PreviewedArticle;
-    onClose: () => void;
-    isFromEditor: boolean;
-}) {
-    const [frameVersion, setFrameVersion] = useState(0);
-    const [isFrameLoaded, setIsFrameLoaded] = useState(false);
-    const [isChangingStatus, setIsChangingStatus] = useState(false);
+    editUrl,
+    isChangingStatus,
+    onChangeStatus,
+    frameVersion,
+    isFrameLoaded,
+    onFrameLoad,
+}: PanelContentProps) {
     const isPublished = article.status === 'PUBLISHED';
-
-    function changeStatus(): void {
-        const url = isPublished
-            ? archive.url(article.id)
-            : publish.url(article.id);
-
-        router.patch(
-            url,
-            {},
-            {
-                preserveScroll: true,
-                preserveState: true,
-                onStart: () => setIsChangingStatus(true),
-                onFinish: () => setIsChangingStatus(false),
-                onSuccess: () => {
-                    setIsFrameLoaded(false);
-                    setFrameVersion((version) => version + 1);
-                },
-            },
-        );
-    }
 
     return (
         <div className="flex h-full flex-col">
@@ -101,9 +77,9 @@ function PanelContent({
                 className="bg-grey-light tablet:hidden mx-auto mt-2 h-1 w-10 flex-none rounded-xs"
             />
             <div className="border-grey-light tablet:py-3 tablet:pr-3 tablet:pl-6 flex flex-none items-center gap-2 border-b py-2 pr-1 pl-4">
-                {!isFromEditor && (
+                {editUrl !== null && (
                     <Link
-                        href={edit.url(article.id)}
+                        href={editUrl}
                         className={buttonClasses(
                             'secondary',
                             'tablet:flex-none flex-1',
@@ -114,7 +90,7 @@ function PanelContent({
                 )}
                 <Button
                     variant={isPublished ? 'secondary' : 'primary'}
-                    onClick={changeStatus}
+                    onClick={onChangeStatus}
                     isLoading={isChangingStatus}
                     disabled={isChangingStatus}
                     className="tablet:flex-none flex-1"
@@ -158,7 +134,7 @@ function PanelContent({
                     key={frameVersion}
                     title={text.previewFrame(article.title)}
                     src={`${article.previewUrl}?integre=1`}
-                    onLoad={() => setIsFrameLoaded(true)}
+                    onLoad={onFrameLoad}
                     className="relative block size-full border-0"
                 />
             </div>

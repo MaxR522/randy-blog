@@ -22,7 +22,7 @@ import { RowActionsMenu } from '@/components/admin/row-actions-menu';
 import type { PickedSubscriber } from '@/components/admin/subscriber-picker-modal';
 import { SubscriberPickerModal } from '@/components/admin/subscriber-picker-modal';
 import { FieldError, TextField } from '@/components/admin/text-field';
-import type { ToolbarButton } from '@/components/admin/tinymce-editor';
+import type { ToolbarButton } from '@/helpers/tinymce-editor';
 import { Button } from '@/components/public/button';
 import AdminLayout from '@/layouts/admin-layout';
 import { send, sendDraft } from '@/routes/admin/newsletters';
