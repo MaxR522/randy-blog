@@ -184,9 +184,40 @@ Spec PUB-MISC-2, NFR-PRIV-1, `docs/public-design-system.md` §5 (Toast, cookie b
 - [x] Privacy policy checked against the tag. No Content-Security-Policy exists, so none was checked: NFR-SEC-2 headers (HSTS, `X-Content-Type-Options`, `Referrer-Policy`, CSP for TinyMCE, GA4 and Cloudinary) are still open, for a later session
 - [ ] Verify in the browser that no request to Google leaves before consent, then that data reaches the session 13 dashboard
 
+## Pre-launch fixes
+
+Feedback from 2026-11-15, to fix before the launch.
+
+### 15. Home page: each article once
+
+Spec §4.1 (PUB-HOME-1, -3, -4, -6), `docs/public-design-system.md` §6 (Home). Board: `Accueil`, `Accueil-360` (no visual change). Code: `app/Http/Controllers/HomeController.php`.
+
+Today PUB-HOME-6 lets category rows and « Tous les articles » repeat articles, so the 5 articles of « Dernières publications » show again below (for example `premiere-guerre-mondiale-gloire-et-desillusion-des-tirailleurs-malgaches` in « Histoire » and « Tous les articles »). New rule: an article appears at most once on the home page. Sections claim articles in page order: « Dernières publications », then each category row from the top, then « Tous les articles ». An article in several categories goes to the first row that still has room for it.
+
+Open decisions (asked at the start, recommendation first): a category row is shown only if it still has at least 3 articles once the ones above are removed (recommended, keeps PUB-HOME-3's minimum), or with whatever remains; `?page=n` of « Tous les articles » excludes the same articles as page 1 so « Voir plus » never repeats a card (recommended; every article stays reachable through the sitemap and its category).
+
+- [ ] Update the spec: PUB-HOME-6 becomes « an article MUST NOT appear twice on the home page », the claim order above, and PUB-HOME-3's minimum counted after exclusion
+- [ ] `HomeController`: compute the claimed IDs once per request (latest, then rows in order, with the « room left » rule for multi-category articles), exclude them from « Tous les articles » and its pagination, keep the lazy props and the « Voir plus » partial reload cheap (no refetch of every section)
+- [ ] Pest tests: no article ID twice across `latest`, `categorySections` and `articles` (page 1 and page 2), a multi-category article in one row only, a category dropped when fewer than 3 articles remain, `?page=2` still renders server-side
+
+### 16. Article audio upload and player
+
+Spec Q1 (to close), §5 article editor (ADM-ART-20…27), `docs/public-design-system.md` §5 (AudioSlot, tools bar), `docs/seo-accessibility.md`. Boards: `Article`, `Article-360` (AudioSlot default and playing states already drawn), `Admin-Article-Editeur` / `-360` (no audio field yet: draw it on the canvas before coding). Code: `resources/js/components/public/audio-slot.tsx`, the Cloudinary upload service from session 4.
+
+Decided (2026-09-30): the author generates the MP3 with Piper on their own computer and uploads it per article; no browser speech, no cloud TTS. Stored on Cloudinary (resource type `video`, which covers audio, like the V1 MP4s), whose upload answer gives the real duration.
+
+Open decisions (asked at the start, recommendation first): accepted formats and size (MP3 and M4A, 30 MB at most); whether a published article's audio can be replaced or removed (yes, delete on replace as for covers); tools bar without audio: share buttons alone, aligned left on desktop like the audio slot would be (recommended) or kept on the right.
+
+- [ ] Additive migration: `audio_url` and `audio_duration` (seconds), both nullable, on `articles`; cast and fillable; audio deleted from Cloudinary on replace, on removal and on permanent delete
+- [ ] Upload endpoint for audio (authenticated, same signed HTTP as images, `audio` folder), validation (type, size), French errors, feature tests
+- [ ] Editor: « Audio de l'article » field (pick, upload progress, file name and duration, listen, replace, remove), saved with the article; publishing does not require it; autosave does not keep the picked file
+- [ ] Public article: `AudioSlot` rendered only when the article has audio, otherwise the tools bar holds the share buttons alone and nothing announces a missing player; real player (play/pause button with `aria-label` that switches, `1:24 / 6:00`, 4 px progress bar in accent-600 that can be clicked and moved with the keyboard as a slider, `preload="none"`), duration from `audio_duration` instead of the reading time
+- [ ] Update spec Q1 as decided and the AudioSlot notes in `docs/public-design-system.md` §5 (no longer static)
+- [ ] Pest tests: article with audio exposes it to the page, article without audio does not; validation of the upload; Cloudinary delete on replace (faked HTTP)
+
 ## Launch
 
-### 15. Production setup
+### 17. Production setup
 
 Spec INF-2, INF-4, NFR-SEC-2, NFR-SEC-5, §7.8, `docs/Infrastructure.md` §7, the deploy repository below. Target: production deploy on 2026-11-14.
 
@@ -218,9 +249,9 @@ Deployment lives in a separate repository, `/home/mario/Projects/deploy-personal
 
 ## Nice to have
 
-Not needed for launch. Take it after session 15.
+Not needed for launch. Take it after session 17.
 
-### 16. Passkeys (nice to have)
+### 18. Passkeys (nice to have)
 
 Not in the spec yet: add an ADM-SEC requirement first. Boards: draw a « Clés d'accès » row on `Admin-Compte-Securite` / `-360` and a passkey button on `Admin-Connexion` / `-360` before coding.
 
