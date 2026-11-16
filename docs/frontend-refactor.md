@@ -170,9 +170,9 @@ Tests: `tests/Feature/Admin/AnalyticsTest.php`.
 
 Use the `public-design-system` and `seo-accessibility` skills. Tests: `HomePageTest.php`, `SearchPageTest.php`, `NotFoundPageTest.php`, `SubscriptionTest.php`.
 
-- [ ] `components/public/search-bar.tsx` (96): request to `hooks/use-search.ts`, called by the home, search and not-found pages
-- [ ] `components/public/subscription-block.tsx` (187): request to `hooks/use-subscription.ts`, called by `pages/home.tsx`
-- [ ] `pages/home.tsx` (279) and `pages/search.tsx` (118)
+- [x] `components/public/search-bar.tsx` (96 to 86): request to `hooks/use-search.ts` (`action` and `submit`; the input stays uncontrolled so `defaultValue` and the GET form keep working without JavaScript), called by the home, search and not-found pages
+- [x] `components/public/subscription-block.tsx` (187 to 154): request, success state and focus moves to `hooks/use-subscription.ts`, called by `pages/home.tsx`; the block takes `subscription` and `privacyUrl`
+- [x] `pages/home.tsx` (279 to 138): `AllArticles` to `components/public/home/all-articles.tsx` (takes `nextPageUrl` built by the page from `scrollProps`), its announcement and focus to `hooks/use-load-more-announcement.ts`, `BannerDescription` to `components/public/home/` with `linkedPartsOf` and `bannerLinkUrls` in `helpers/home.ts`; `pages/search.tsx` (118) only calls `useSearch`
 
 ### 13. Public article page
 

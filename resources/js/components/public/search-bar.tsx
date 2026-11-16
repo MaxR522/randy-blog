@@ -1,44 +1,34 @@
-import { router } from '@inertiajs/react';
 import { Search } from 'lucide-react';
-import type { FormEvent } from 'react';
 import { useId } from 'react';
+import type { SearchForm } from '@/hooks/use-search';
 import { labels } from '@/lib/labels.fr';
 import { cn } from '@/lib/utils';
-import { search } from '@/routes';
 
 type SearchBarProps = {
+    /** From `useSearch`, called by the page. */
+    search: SearchForm;
     defaultValue?: string;
     size?: 'large' | 'compact';
 };
 
 /**
  * Large search bar (home hero, 404) or compact one (results page: 48 px, icon square on mobile only,
- * Enter submits from tablet on). An empty query does nothing.
+ * Enter submits from tablet on).
  */
 export function SearchBar({
+    search,
     defaultValue = '',
     size = 'large',
 }: SearchBarProps) {
     const isCompact = size === 'compact';
     const inputId = useId();
 
-    const submit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-
-        const value = new FormData(event.currentTarget).get('q');
-        const query = typeof value === 'string' ? value.trim() : '';
-
-        if (query !== '') {
-            router.visit(search({ query: { q: query } }));
-        }
-    };
-
     return (
         <form
             role="search"
-            action={search.url()}
+            action={search.action}
             method="get"
-            onSubmit={submit}
+            onSubmit={search.submit}
             className={cn(
                 'border-primary focus-within:outline-primary flex w-full items-center rounded-md border bg-white focus-within:outline-2 focus-within:outline-offset-2',
                 isCompact ? 'h-12' : 'tablet:h-16 h-14',

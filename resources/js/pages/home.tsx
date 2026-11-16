@@ -1,20 +1,17 @@
-import { InfiniteScroll, usePage } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import type { ReactNode } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { usePage } from '@inertiajs/react';
 import { LargeCard, StandardCard } from '@/components/public/article-cards';
-import { buttonClasses } from '@/components/public/button';
-import { ExternalLink } from '@/components/public/external-link';
+import { AllArticles } from '@/components/public/home/all-articles';
+import { BannerDescription } from '@/components/public/home/banner-description';
 import { SearchBar } from '@/components/public/search-bar';
 import { SectionHeader } from '@/components/public/section-header';
 import { SubscriptionBlock } from '@/components/public/subscription-block';
 import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { labels } from '@/lib/labels.fr';
-import { socialUrls } from '@/lib/social';
 import { frenchTypography } from '@/helpers/typography';
-import { cn } from '@/lib/utils';
-import { home } from '@/routes';
+import { useSearch } from '@/hooks/use-search';
+import { useSubscription } from '@/hooks/use-subscription';
+import { home, privacy } from '@/routes';
 import type {
     ArticleCard,
     CategorySection,
@@ -30,158 +27,7 @@ type HomeProps = {
     articles: ScrollProp<ArticleCard>;
 };
 
-const bannerLinkUrls = [
-    socialUrls.hautetfort,
-    socialUrls.facebook,
-    socialUrls.x,
-    socialUrls.linkedin,
-    socialUrls.youtube,
-];
-
-/**
- * Banner description with its link words (`labels.home.heroLinks`, in order) turned into external links.
- */
-function BannerDescription() {
-    const parts: ReactNode[] = [];
-    let rest: string = labels.home.heroDescription;
-
-    labels.home.heroLinks.forEach((linkText, index) => {
-        const position = rest.indexOf(linkText);
-
-        parts.push(frenchTypography(rest.slice(0, position)));
-        parts.push(
-            <ExternalLink
-                key={linkText}
-                href={bannerLinkUrls[index]}
-                className="text-accent-600 hover:text-accent-800 underline underline-offset-3"
-            >
-                {linkText}
-            </ExternalLink>,
-        );
-        rest = rest.slice(position + linkText.length);
-    });
-
-    parts.push(frenchTypography(rest));
-
-    return (
-        <p className="text-body/[1.625] laptop:mt-7 laptop:text-lg/7 mt-5 text-pretty">
-            {parts}
-        </p>
-    );
-}
-
 const container = 'mx-auto w-full max-w-7xl px-gutter';
-
-/**
- * « Tous les articles » with « Voir plus ». After a load, the count is announced and focus moves
- * to the first new title, since the button may disappear and would otherwise drop focus to the page.
- */
-function AllArticles({ articles }: { articles: ScrollProp<ArticleCard> }) {
-    const listRef = useRef<HTMLUListElement>(null);
-    const countBeforeLoadRef = useRef<number | null>(null);
-    const [announcement, setAnnouncement] = useState('');
-    const nextPage = usePage().scrollProps?.articles?.nextPage;
-    const hasNextPage = nextPage != null;
-    const count = articles.data.length;
-
-    useEffect(() => {
-        const countBeforeLoad = countBeforeLoadRef.current;
-
-        if (countBeforeLoad === null || count <= countBeforeLoad) {
-            return;
-        }
-
-        countBeforeLoadRef.current = null;
-        listRef.current?.children[countBeforeLoad]
-            ?.querySelector<HTMLAnchorElement>('h3 a')
-            ?.focus();
-
-        const loaded = labels.a11y.moreArticlesLoaded(count - countBeforeLoad);
-
-        setAnnouncement(
-            hasNextPage ? loaded : `${loaded}. ${labels.a11y.allArticlesShown}`,
-        );
-    }, [count, hasNextPage]);
-
-    if (count === 0) {
-        return null;
-    }
-
-    return (
-        <section
-            id="tous-les-articles"
-            aria-labelledby="tous-les-articles-titre"
-            className={`${container} pt-section pb-section`}
-        >
-            <SectionHeader
-                id="tous-les-articles-titre"
-                title={labels.home.allArticles}
-            />
-            <InfiniteScroll
-                data="articles"
-                manual
-                onlyNext
-                preserveUrl
-                next={({ loading, fetch, hasMore }) =>
-                    hasMore &&
-                    nextPage != null && (
-                        <div className="laptop:mt-14 mt-8 flex justify-center">
-                            {/* A real link to `/?page=n`: crawlers and visitors without JavaScript reach every article (SEO-CRAWL-6). */}
-                            <a
-                                href={home.url({ query: { page: nextPage } })}
-                                aria-busy={loading || undefined}
-                                onClick={(event) => {
-                                    event.preventDefault();
-
-                                    if (loading) {
-                                        return;
-                                    }
-
-                                    countBeforeLoadRef.current = count;
-                                    fetch();
-                                }}
-                                className={buttonClasses(
-                                    'secondary',
-                                    cn(
-                                        'h-12 px-8',
-                                        loading && 'cursor-progress',
-                                    ),
-                                )}
-                            >
-                                {loading && (
-                                    <LoaderCircle
-                                        aria-hidden="true"
-                                        className="size-4.5 animate-spin"
-                                        strokeWidth={1.75}
-                                    />
-                                )}
-                                {labels.home.seeMore}
-                            </a>
-                        </div>
-                    )
-                }
-            >
-                <ul
-                    ref={listRef}
-                    role="list"
-                    className="border-grey-light tablet:grid tablet:grid-cols-2 tablet:gap-x-grid tablet:gap-y-12 tablet:border-t-0 laptop:grid-cols-3 border-t"
-                >
-                    {articles.data.map((article) => (
-                        <StandardCard
-                            key={article.id}
-                            article={article}
-                            layout="compact-below-tablet"
-                            sizes="(min-width: 1280px) 389px, (min-width: 1024px) 31vw, (min-width: 768px) 48vw, 96px"
-                        />
-                    ))}
-                </ul>
-            </InfiniteScroll>
-            <p role="status" className="sr-only">
-                {announcement}
-            </p>
-        </section>
-    );
-}
 
 export default function Home({
     seo,
@@ -191,6 +37,9 @@ export default function Home({
     articles,
 }: HomeProps) {
     const [leadArticle, ...otherLatest] = latest;
+    const search = useSearch();
+    const subscription = useSubscription();
+    const nextPage = usePage().scrollProps?.articles?.nextPage;
 
     return (
         <PublicLayout navbar="home" authorUrl={authorUrl}>
@@ -204,7 +53,7 @@ export default function Home({
                         </h1>
                         <BannerDescription />
                         <div className="laptop:mt-9 mt-6">
-                            <SearchBar />
+                            <SearchBar search={search} />
                         </div>
                     </div>
                 </div>
@@ -271,9 +120,19 @@ export default function Home({
                 </section>
             ))}
 
-            <AllArticles articles={articles} />
+            <AllArticles
+                articles={articles}
+                nextPageUrl={
+                    nextPage != null
+                        ? home.url({ query: { page: nextPage } })
+                        : null
+                }
+            />
 
-            <SubscriptionBlock />
+            <SubscriptionBlock
+                subscription={subscription}
+                privacyUrl={privacy.url()}
+            />
         </PublicLayout>
     );
 }
