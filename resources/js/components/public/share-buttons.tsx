@@ -1,6 +1,5 @@
 import { Check, Link2 } from 'lucide-react';
 import type { ComponentType, SVGProps } from 'react';
-import { useEffect, useState } from 'react';
 import {
     FacebookIcon,
     LinkedInIcon,
@@ -8,10 +7,16 @@ import {
 } from '@/components/public/brand-icons';
 import { ExternalLink } from '@/components/public/external-link';
 import { Toast } from '@/components/public/toast';
+import {
+    COPIED_DURATION_MS,
+    copyToClipboard,
+    facebookShareUrl,
+    linkedInShareUrl,
+    xShareUrl,
+} from '@/helpers/share-buttons';
+import { useCopiedFlag } from '@/hooks/use-copied-flag';
 import { labels } from '@/lib/labels.fr';
 import { cn } from '@/lib/utils';
-
-const COPIED_DURATION_MS = 2000;
 
 type ShareButtonsProps = {
     url: string;
@@ -28,20 +33,17 @@ const networks: ShareNetwork[] = [
     {
         name: labels.share.facebook,
         icon: FacebookIcon,
-        shareUrl: (url) =>
-            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+        shareUrl: facebookShareUrl,
     },
     {
         name: labels.share.x,
         icon: XIcon,
-        shareUrl: (url, title) =>
-            `https://x.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
+        shareUrl: xShareUrl,
     },
     {
         name: labels.share.linkedin,
         icon: LinkedInIcon,
-        shareUrl: (url) =>
-            `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+        shareUrl: linkedInShareUrl,
     },
 ];
 
@@ -54,53 +56,11 @@ const itemClasses =
 const iconClasses = 'size-5 tablet:size-4.5';
 
 /**
- * Copy with the Clipboard API, or with the legacy command where the API is missing or refuses.
- */
-async function copyToClipboard(text: string): Promise<void> {
-    try {
-        await navigator.clipboard.writeText(text);
-
-        return;
-    } catch {
-        // Falls through to the legacy copy below.
-    }
-
-    const field = document.createElement('textarea');
-
-    field.value = text;
-    field.setAttribute('readonly', '');
-    field.className = 'fixed -left-full opacity-0';
-    document.body.append(field);
-    field.select();
-
-    const isCopied = document.execCommand('copy');
-
-    field.remove();
-
-    if (!isCopied) {
-        throw new Error('Copy refused');
-    }
-}
-
-/**
  * Share links (new tab) and « Copier le lien », which turns green for two seconds, shows a toast
  * and announces the copy.
  */
 export function ShareButtons({ url, title }: ShareButtonsProps) {
-    const [isCopied, setIsCopied] = useState(false);
-
-    useEffect(() => {
-        if (!isCopied) {
-            return;
-        }
-
-        const timeout = window.setTimeout(
-            () => setIsCopied(false),
-            COPIED_DURATION_MS,
-        );
-
-        return () => window.clearTimeout(timeout);
-    }, [isCopied]);
+    const { isCopied, setIsCopied } = useCopiedFlag(COPIED_DURATION_MS);
 
     const copyLink = async () => {
         try {

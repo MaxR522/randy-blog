@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { buttonClasses } from '@/components/public/button';
 import { CookieConsent } from '@/components/public/cookie-consent';
@@ -26,6 +27,8 @@ export default function PublicLayout({
     isEmbedded = false,
     children,
 }: PublicLayoutProps) {
+    const { measurementId } = usePage().props.analytics;
+
     if (isEmbedded) {
         return (
             <div className="text-primary min-h-screen bg-white">
@@ -45,7 +48,7 @@ export default function PublicLayout({
             >
                 {labels.a11y.skipToContent}
             </a>
-            <CookieConsent mainId={MAIN_ID} />
+            <CookieConsent mainId={MAIN_ID} measurementId={measurementId} />
             {banner}
             <Navbar variant={navbar} authorUrl={authorUrl} />
             <main

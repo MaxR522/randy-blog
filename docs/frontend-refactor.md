@@ -178,9 +178,9 @@ Use the `public-design-system` and `seo-accessibility` skills. Tests: `HomePageT
 
 Use the `public-design-system` and `seo-accessibility` skills. Tests: `ArticlePageTest.php`.
 
-- [ ] `components/public/image-lightbox.tsx` (489): zoom and pan, keyboard and focus trap to hooks, markup in `components/public/image-lightbox/`
-- [ ] `components/public/audio-slot.tsx` (185) and `share-buttons.tsx` (178)
-- [ ] `components/public/cookie-consent.tsx` (177) and `pages/article.tsx` (185)
+- [x] `components/public/image-lightbox.tsx` (489): `hooks/use-zoom-pan.ts` (view, wheel, pointers, taps, keys), `hooks/use-lightbox-dialog.ts` (native `<dialog>`, focus, scroll lock), `hooks/use-full-image.ts`; types, constants and view math in `helpers/image-lightbox.ts`; markup in `components/public/image-lightbox/` (lightbox 84, toolbar 83)
+- [x] `components/public/audio-slot.tsx` (185 to 135): `hooks/use-audio-player.ts`, `helpers/audio-player.ts` (`playerClock` rounds down, unlike `media-upload`'s `clock`); `share-buttons.tsx` (178 to 138): `useCopiedFlag`, share URLs and `copyToClipboard` in `helpers/share-buttons.ts`
+- [x] `components/public/cookie-consent.tsx` (177 to 118): `measurementId` read by `layouts/public-layout.tsx` and passed down, GA4 loading, dialog sync and choice in `hooks/use-cookie-banner.ts`; `pages/article.tsx` (185 to 148): `zoomableImageFrom` to `helpers/article-page.ts`
 
 ### 14. Sweep
 

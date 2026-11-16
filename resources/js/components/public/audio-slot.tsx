@@ -1,5 +1,10 @@
 import { Headphones, Pause, Play } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import {
+    listenMinutesOf,
+    playerClock,
+    progressOf,
+} from '@/helpers/audio-player';
+import { useAudioPlayer } from '@/hooks/use-audio-player';
 import { labels } from '@/lib/labels.fr';
 import { cn } from '@/lib/utils';
 
@@ -11,61 +16,16 @@ type AudioSlotProps = {
 };
 
 /**
- * `1:24`, as on the board.
- */
-function clock(seconds: number): string {
-    const whole = Math.max(0, Math.floor(seconds));
-
-    return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
-}
-
-/**
  * « Écouter l'article » (PUB-ART-14): idle, the whole box is one button with the label and the duration. Once
  * started it becomes a small player: the same button pauses and resumes, the time reads `1:24 / 6:00`, and the
  * 4 px progress bar is a native range input, so it can be clicked, dragged or moved with the arrow keys.
  * The `<audio>` element loads nothing until the reader presses play (`preload="none"`), and never autoplays.
  */
 export function AudioSlot({ url, duration }: AudioSlotProps) {
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const [isStarted, setIsStarted] = useState(false);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [current, setCurrent] = useState(0);
-    const [total, setTotal] = useState(duration);
-
-    useEffect(() => {
-        const audio = audioRef.current;
-
-        return () => audio?.pause();
-    }, []);
-
-    function toggle(): void {
-        const audio = audioRef.current;
-
-        if (!audio) {
-            return;
-        }
-
-        setIsStarted(true);
-
-        if (audio.paused) {
-            void audio.play().catch(() => setIsPlaying(false));
-        } else {
-            audio.pause();
-        }
-    }
-
-    function seek(seconds: number): void {
-        const audio = audioRef.current;
-
-        if (audio) {
-            audio.currentTime = seconds;
-        }
-
-        setCurrent(seconds);
-    }
-
-    const minutes = Math.max(1, Math.ceil(duration / 60));
-    const progress = total > 0 ? Math.min(100, (current / total) * 100) : 0;
+    const player = useAudioPlayer(duration);
+    const { isStarted, isPlaying, current, total } = player;
+    const minutes = listenMinutesOf(duration);
+    const progress = progressOf(current, total);
 
     return (
         <div
@@ -79,7 +39,7 @@ export function AudioSlot({ url, duration }: AudioSlotProps) {
             {/* One element in both states, so the focus stays on it when the player opens. */}
             <button
                 type="button"
-                onClick={toggle}
+                onClick={player.toggle}
                 aria-label={
                     isStarted
                         ? isPlaying
@@ -131,7 +91,7 @@ export function AudioSlot({ url, duration }: AudioSlotProps) {
                     <div className="text-caption flex justify-between gap-3 font-semibold">
                         <span aria-hidden="true">{labels.article.listen}</span>
                         <span className="text-grey-dark font-medium tabular-nums">
-                            {clock(current)} / {clock(total)}
+                            {playerClock(current)} / {playerClock(total)}
                         </span>
                     </div>
                     <div className="has-focus-visible:outline-accent-600 relative flex h-6 items-center rounded-sm has-focus-visible:outline-2 has-focus-visible:outline-offset-2">
@@ -156,7 +116,7 @@ export function AudioSlot({ url, duration }: AudioSlotProps) {
                                 total,
                             )}
                             onChange={(event) =>
-                                seek(Number(event.target.value))
+                                player.seek(Number(event.target.value))
                             }
                             className="absolute inset-0 size-full cursor-pointer opacity-0"
                         />
@@ -165,20 +125,10 @@ export function AudioSlot({ url, duration }: AudioSlotProps) {
             )}
 
             <audio
-                ref={audioRef}
+                ref={player.audioRef}
                 src={url}
                 preload="none"
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onEnded={() => setIsPlaying(false)}
-                onTimeUpdate={(event) =>
-                    setCurrent(event.currentTarget.currentTime)
-                }
-                onLoadedMetadata={(event) => {
-                    if (Number.isFinite(event.currentTarget.duration)) {
-                        setTotal(event.currentTarget.duration);
-                    }
-                }}
+                {...player.audioEvents}
             />
         </div>
     );
