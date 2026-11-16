@@ -157,7 +157,7 @@ Tests: `tests/Feature/Admin/AccountSecurityTest.php`.
 
 Tests: `tests/Feature/Admin/AccountSecurityTest.php`, `TwoFactorAuthenticationTest.php`.
 
-- [ ] `components/admin/two-factor-editor.tsx` (338): `hooks/use-two-factor.ts` called by the security page, markup in `components/admin/account/two-factor/`
+- [x] `components/admin/two-factor-editor.tsx` (338): `hooks/use-two-factor.ts` (step, one password form and one code form, `start()`; a pending setup or codes on screen count as unsaved) called through `useAccountSecurity`, recovery codes read from the flash by the page; `helpers/two-factor.ts` (`twoFactorStepOf`, `downloadText`); generic `hooks/use-copied-flag.ts`; markup in `components/admin/account/two-factor/` (editor, start, confirm, manage, recovery codes, actions)
 
 ### 11. Analytics
 

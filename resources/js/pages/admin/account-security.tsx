@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { AccountRow } from '@/components/admin/account/account-row';
 import { AccountTabs } from '@/components/admin/account/account-tabs';
@@ -8,9 +9,9 @@ import { LoginHistory } from '@/components/admin/account/security/login-history'
 import { PasswordEditor } from '@/components/admin/account/security/password-editor';
 import { RecoveryEmailEditor } from '@/components/admin/account/security/recovery-email-editor';
 import { RecoveryPhoneEditor } from '@/components/admin/account/security/recovery-phone-editor';
+import { TwoFactorEditor } from '@/components/admin/account/two-factor/two-factor-editor';
 import { AdminHead } from '@/components/admin/admin-head';
 import { StatusBadge } from '@/components/admin/status-badge';
-import { TwoFactorEditor } from '@/components/admin/two-factor-editor';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { formatPhone } from '@/helpers/phone';
@@ -32,7 +33,7 @@ type AccountSecurityProps = {
 export default function AccountSecurityPage({
     security,
 }: AccountSecurityProps) {
-    const page = useAccountSecurity(security);
+    const page = useAccountSecurity(security, usePage().flash.recoveryCodes);
     const recoveryEmailRow = page.rowProps('recoveryEmail');
     const recoveryPhoneRow = page.rowProps('recoveryPhone');
     const passwordRow = page.rowProps('password');
@@ -137,11 +138,7 @@ export default function AccountSecurityPage({
 
                 <AccountRow label={text.twoFactorTitle} {...twoFactorRow}>
                     {twoFactorRow.isEditing ? (
-                        <TwoFactorEditor
-                            twoFactor={twoFactor}
-                            onDirtyChange={page.setIsTwoFactorDirty}
-                            onDone={page.close}
-                        />
+                        <TwoFactorEditor twoFactor={page.twoFactor} />
                     ) : (
                         <>
                             <p className="flex min-h-6 items-center">
