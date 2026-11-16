@@ -1,56 +1,27 @@
-import { router } from '@inertiajs/react';
 import { X } from 'lucide-react';
-import type { MouseEvent } from 'react';
-import { useEffect, useRef } from 'react';
 import { SidebarNav } from '@/components/admin/sidebar-nav';
+import { useSidebarDrawer } from '@/hooks/use-sidebar-drawer';
 import { adminLabels } from '@/lib/labels.admin.fr';
 
 const text = adminLabels.shell;
 
-const LAPTOP_QUERY = '(min-width: 64rem)';
-
 type SidebarDrawerProps = {
     isOpen: boolean;
     onClose: () => void;
+    /** The current page path, from the layout. */
+    currentUrl: string;
 };
 
 /**
  * Sidebar under 1024 px, in a native modal `<dialog>` (focus trap, Escape, focus return).
  * Closes on a click on the veil, on navigation, and when the window grows to the desktop layout.
  */
-export function SidebarDrawer({ isOpen, onClose }: SidebarDrawerProps) {
-    const dialogRef = useRef<HTMLDialogElement>(null);
-
-    useEffect(() => {
-        const dialog = dialogRef.current;
-
-        if (!dialog || !isOpen) {
-            return;
-        }
-
-        dialog.showModal();
-        document.documentElement.style.overflow = 'hidden';
-
-        const removeNavigateListener = router.on('navigate', onClose);
-        const laptopQuery = window.matchMedia(LAPTOP_QUERY);
-        laptopQuery.addEventListener('change', onClose);
-
-        return () => {
-            removeNavigateListener();
-            laptopQuery.removeEventListener('change', onClose);
-            document.documentElement.style.overflow = '';
-
-            if (dialog.open) {
-                dialog.close();
-            }
-        };
-    }, [isOpen, onClose]);
-
-    function handleClick(event: MouseEvent<HTMLDialogElement>): void {
-        if (event.target === dialogRef.current) {
-            onClose();
-        }
-    }
+export function SidebarDrawer({
+    isOpen,
+    onClose,
+    currentUrl,
+}: SidebarDrawerProps) {
+    const { dialogRef, handleClick } = useSidebarDrawer(isOpen, onClose);
 
     return (
         <dialog
@@ -78,7 +49,12 @@ export function SidebarDrawer({ isOpen, onClose }: SidebarDrawerProps) {
                         />
                     </button>
                 </div>
-                {isOpen && <SidebarNav label={text.drawerNav} />}
+                {isOpen && (
+                    <SidebarNav
+                        label={text.drawerNav}
+                        currentUrl={currentUrl}
+                    />
+                )}
             </div>
         </dialog>
     );

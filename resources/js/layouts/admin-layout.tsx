@@ -7,45 +7,23 @@ import { SidebarNav } from '@/components/admin/sidebar-nav';
 import { TopBar } from '@/components/admin/top-bar';
 import { buttonClasses } from '@/components/public/button';
 import { MAIN_ID } from '@/helpers/admin-shell';
+import { useFlashToasts } from '@/hooks/use-flash-toasts';
+import { useSidebarCollapse } from '@/hooks/use-sidebar-collapse';
 import { PageAnnouncer } from '@/components/public/page-announcer';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { cn } from '@/lib/utils';
 
-const COLLAPSED_STORAGE_KEY = 'admin-sidebar-collapsed';
-
-function readIsCollapsed(): boolean {
-    try {
-        return window.localStorage.getItem(COLLAPSED_STORAGE_KEY) === '1';
-    } catch {
-        return false;
-    }
-}
-
-function storeIsCollapsed(isCollapsed: boolean): void {
-    try {
-        window.localStorage.setItem(
-            COLLAPSED_STORAGE_KEY,
-            isCollapsed ? '1' : '0',
-        );
-    } catch {
-        // Storage can be blocked: the sidebar just forgets its state.
-    }
-}
-
 /**
  * Shell of the logged-in admin pages, used as a persistent layout so the sidebar survives page visits.
- * Client-rendered only (`HandleInertiaRequests::$withoutSsr`), so it can read `localStorage` on first render.
+ * Client-rendered only (`HandleInertiaRequests::$withoutSsr`). It reads the page's URL, flash and user for the
+ * shell widgets.
  */
 export default function AdminLayout({ children }: { children: ReactNode }) {
-    const { url } = usePage();
-    const [isCollapsed, setIsCollapsed] = useState(readIsCollapsed);
+    const { url, flash, props } = usePage();
+    const sidebar = useSidebarCollapse();
+    const toasts = useFlashToasts(flash);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
-
-    function toggleSidebar(): void {
-        storeIsCollapsed(!isCollapsed);
-        setIsCollapsed(!isCollapsed);
-    }
 
     return (
         <div className="text-primary flex min-h-screen flex-col bg-white">
@@ -59,20 +37,22 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 {adminLabels.shell.skipToContent}
             </a>
             <TopBar
-                isSidebarCollapsed={isCollapsed}
-                onToggleSidebar={toggleSidebar}
+                isSidebarCollapsed={sidebar.isCollapsed}
+                onToggleSidebar={sidebar.toggle}
                 onOpenDrawer={() => setIsDrawerOpen(true)}
+                avatarUrl={props.auth.user?.avatar ?? null}
             />
             <div className="flex flex-1">
                 <aside
                     className={cn(
                         'border-grey-light laptop:flex sticky top-16 hidden h-[calc(100dvh-4rem)] flex-none flex-col border-r px-3 py-4',
-                        isCollapsed ? 'w-20' : 'w-64',
+                        sidebar.isCollapsed ? 'w-20' : 'w-64',
                     )}
                 >
                     <SidebarNav
                         label={adminLabels.shell.nav}
-                        isCollapsed={isCollapsed}
+                        currentUrl={url}
+                        isCollapsed={sidebar.isCollapsed}
                     />
                 </aside>
                 <main
@@ -85,8 +65,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                     </div>
                 </main>
             </div>
-            <SidebarDrawer isOpen={isDrawerOpen} onClose={closeDrawer} />
-            <FlashToasts />
+            <SidebarDrawer
+                isOpen={isDrawerOpen}
+                onClose={closeDrawer}
+                currentUrl={url}
+            />
+            <FlashToasts toasts={toasts} />
             {/* Keyed by path: the layout persists, so this remounts to announce each new page, but not a `?q=` change. */}
             <PageAnnouncer key={url.split('?')[0]} mainId={MAIN_ID} />
         </div>

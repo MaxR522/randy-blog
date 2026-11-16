@@ -1,7 +1,6 @@
-import { usePage } from '@inertiajs/react';
 import { Menu } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { StatusBadge } from '@/components/admin/status-badge';
+import { useIsScrolled } from '@/hooks/use-is-scrolled';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { labels } from '@/lib/labels.fr';
 import { cn } from '@/lib/utils';
@@ -15,6 +14,8 @@ type TopBarProps = {
     isSidebarCollapsed: boolean;
     onToggleSidebar: () => void;
     onOpenDrawer: () => void;
+    /** The logged-in user's avatar, from the layout. */
+    avatarUrl: string | null;
 };
 
 /**
@@ -24,18 +25,9 @@ export function TopBar({
     isSidebarCollapsed,
     onToggleSidebar,
     onOpenDrawer,
+    avatarUrl,
 }: TopBarProps) {
-    const { auth } = usePage().props;
-    const [isScrolled, setIsScrolled] = useState(false);
-
-    useEffect(() => {
-        const updateIsScrolled = () => setIsScrolled(window.scrollY > 0);
-
-        updateIsScrolled();
-        window.addEventListener('scroll', updateIsScrolled, { passive: true });
-
-        return () => window.removeEventListener('scroll', updateIsScrolled);
-    }, []);
+    const isScrolled = useIsScrolled();
 
     return (
         <header
@@ -88,9 +80,9 @@ export function TopBar({
                 <span className="text-body-small laptop:inline hidden font-medium">
                     {labels.brand.name}
                 </span>
-                {auth.user?.avatar ? (
+                {avatarUrl ? (
                     <img
-                        src={auth.user.avatar}
+                        src={avatarUrl}
                         alt=""
                         className="size-8 rounded-sm object-cover"
                     />

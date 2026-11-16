@@ -1,9 +1,9 @@
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, House } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { buttonClasses } from '@/components/public/button';
 import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/helpers/typography';
+import { useIsScrolled } from '@/hooks/use-is-scrolled';
 import { cn } from '@/lib/utils';
 import { home } from '@/routes';
 
@@ -67,16 +67,7 @@ function ContextualLink({ variant, authorUrl }: NavbarProps) {
  * one row on every device. On phones the back link is a home-icon button.
  */
 export function Navbar({ variant, authorUrl }: NavbarProps) {
-    const [isScrolled, setIsScrolled] = useState(false);
-
-    useEffect(() => {
-        const updateIsScrolled = () => setIsScrolled(window.scrollY > 0);
-
-        updateIsScrolled();
-        window.addEventListener('scroll', updateIsScrolled, { passive: true });
-
-        return () => window.removeEventListener('scroll', updateIsScrolled);
-    }, []);
+    const isScrolled = useIsScrolled();
 
     const subscribeHref =
         variant === 'home' ? '#abonnement' : `${home.url()}#abonnement`;

@@ -67,7 +67,7 @@ The data flows one way: container calls the hook, the hook talks to the server, 
 
 ## Sessions
 
-The refactor runs in sessions that each fit one context window. Work through them in order: take the first session with an open box. Features that share a component are grouped in one session so its hook moves once. Line counts are from 2026-11-15.
+The refactor ran in sessions that each fit one context window, in order; sessions 8 to 14 ran together on 2026-11-16. Features that share a component are grouped in one session so its hook moves once. Line counts are from 2026-11-15.
 
 ### Session rules
 
@@ -186,15 +186,15 @@ Use the `public-design-system` and `seo-accessibility` skills. Tests: `ArticlePa
 
 Tests: `tests/Feature/Admin/AuthenticationTest.php`, `AdminShellTest.php`, `SubscriptionTest.php`, `ProfilePageTest.php`.
 
-- [ ] Auth pages: `pages/admin/login.tsx`, `forgot-password.tsx`, `reset-password.tsx`, `two-factor-challenge.tsx`
-- [ ] Shell: `layouts/admin-layout.tsx`, `components/admin/flash-toasts.tsx`, `sidebar-nav.tsx`
-- [ ] `pages/subscription-status.tsx` and `pages/profile.tsx`
-- [ ] No component makes a request: `grep -lE "useHttp|useForm|router\.(post|put|patch|delete|visit|get|reload)" -r resources/js/components` returns nothing
-- [ ] Re-run `wc -l`, update the reference paths of this document and the project memory
+- [x] Auth pages: `pages/admin/login.tsx`, `forgot-password.tsx`, `reset-password.tsx`, `two-factor-challenge.tsx` are already containers (Inertia `<Form>`, a local toggle), no change
+- [x] Shell: `layouts/admin-layout.tsx` reads `url`, `flash` and the user and passes them down; collapse storage in `helpers/admin-shell.ts` with `hooks/use-sidebar-collapse.ts`; `flash-toasts.tsx` fed by `hooks/use-flash-toasts.ts` (also in `admin-auth-layout.tsx`) and `helpers/flash-toasts.ts` (`toastOf` builds `sendUrl`); `sidebar-nav.tsx` takes `currentUrl`, items and active check in `helpers/sidebar-nav.ts`; drawer behaviour in `hooks/use-sidebar-drawer.ts`; `top-bar.tsx` takes `avatarUrl`; shared `hooks/use-is-scrolled.ts` (top bar and public navbar)
+- [x] `pages/subscription-status.tsx` and `pages/profile.tsx`: markup with a lookup table, no change
+- [x] No component makes a request: `grep -lE "useHttp|useForm|router\.(post|put|patch|delete|visit|get|reload)" -r resources/js/components` returns nothing, and no component calls `usePage()`. Left for later: `public/navbar.tsx`, `footer.tsx` and `article-end-cta.tsx` still build static links with Wayfinder
+- [x] Re-run `wc -l` (2026-11-16: largest pages are `account-security.tsx` 182, `article-editor.tsx` 173, `subscription-status.tsx` 159; 92 files in `hooks/` and `helpers/`), update the reference paths of this document and the project memory
 
 ## Prompt
 
-Paste this in a new session:
+All sessions are done (2026-11-16). Keep the prompt for a new long page or component that needs the same split. Paste this in a new session:
 
 ```text
 Run the next session of docs/frontend-refactor.md: the first session with an open box in the Sessions section (the article editor split is the reference: resources/js/pages/admin/article-editor.tsx, resources/js/components/admin/article-editor/, and the article editor hook and helpers in resources/js/hooks/ and resources/js/helpers/).
