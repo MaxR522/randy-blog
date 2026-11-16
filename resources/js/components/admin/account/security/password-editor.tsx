@@ -1,39 +1,27 @@
-import { useForm } from '@inertiajs/react';
-import type { FormEvent } from 'react';
-import { useEffect } from 'react';
-import { updatePassword } from '@/actions/App/Http/Controllers/Admin/AccountSecurityController';
-import type { EditorProps } from '@/helpers/account';
-import { useFocusOnOpen } from '@/hooks/use-focus-on-open';
 import { EditorActions } from '@/components/admin/account/editor-actions';
 import { PasswordField } from '@/components/admin/password-field';
 import { PasswordRules } from '@/components/admin/password-rules';
+import { useFocusOnOpen } from '@/hooks/use-focus-on-open';
+import type { PasswordForm } from '@/hooks/use-password-form';
 import { adminLabels } from '@/lib/labels.admin.fr';
 
 const text = adminLabels.security;
 
-export function PasswordEditor({ onDirtyChange, onDone }: EditorProps) {
-    const form = useForm({
-        current_password: '',
-        password: '',
-        password_confirmation: '',
-    });
+type PasswordEditorProps = {
+    form: PasswordForm;
+    onCancel: () => void;
+};
+
+/**
+ * Inline editor of the password: current one, new one with its rules, confirmation.
+ */
+export function PasswordEditor({ form, onCancel }: PasswordEditorProps) {
     const formRef = useFocusOnOpen();
-
-    useEffect(() => onDirtyChange(form.isDirty), [form.isDirty, onDirtyChange]);
-
-    function submit(event: FormEvent<HTMLFormElement>): void {
-        event.preventDefault();
-        form.put(updatePassword.url(), {
-            preserveScroll: true,
-            onSuccess: onDone,
-            onError: () => form.reset(),
-        });
-    }
 
     return (
         <form
             ref={formRef}
-            onSubmit={submit}
+            onSubmit={form.submit}
             className="flex max-w-110 flex-col gap-4"
             noValidate
         >
@@ -43,7 +31,7 @@ export function PasswordEditor({ onDirtyChange, onDone }: EditorProps) {
                 autoComplete="current-password"
                 value={form.data.current_password}
                 onChange={(event) =>
-                    form.setData('current_password', event.target.value)
+                    form.change('current_password', event.target.value)
                 }
                 error={form.errors.current_password}
                 required
@@ -54,7 +42,7 @@ export function PasswordEditor({ onDirtyChange, onDone }: EditorProps) {
                 autoComplete="new-password"
                 value={form.data.password}
                 onChange={(event) =>
-                    form.setData('password', event.target.value)
+                    form.change('password', event.target.value)
                 }
                 error={form.errors.password}
                 aria-describedby="regles-mot-de-passe"
@@ -70,7 +58,7 @@ export function PasswordEditor({ onDirtyChange, onDone }: EditorProps) {
                 autoComplete="new-password"
                 value={form.data.password_confirmation}
                 onChange={(event) =>
-                    form.setData('password_confirmation', event.target.value)
+                    form.change('password_confirmation', event.target.value)
                 }
                 error={form.errors.password_confirmation}
                 required
@@ -78,7 +66,7 @@ export function PasswordEditor({ onDirtyChange, onDone }: EditorProps) {
             <p className="text-caption text-grey-dark">
                 {text.otherDevicesLoggedOut}
             </p>
-            <EditorActions isBusy={form.processing} onCancel={onDone} />
+            <EditorActions isBusy={form.isBusy} onCancel={onCancel} />
         </form>
     );
 }

@@ -1,28 +1,25 @@
 import type { ReactNode } from 'react';
-import { useState } from 'react';
 import { AccountRow } from '@/components/admin/account/account-row';
 import { AccountTabs } from '@/components/admin/account/account-tabs';
 import { FieldValue } from '@/components/admin/account/field-value';
 import { LeaveAccountModal } from '@/components/admin/account/leave-account-modal';
+import { ConnectedDevices } from '@/components/admin/account/security/connected-devices';
+import { LoginHistory } from '@/components/admin/account/security/login-history';
+import { PasswordEditor } from '@/components/admin/account/security/password-editor';
+import { RecoveryEmailEditor } from '@/components/admin/account/security/recovery-email-editor';
+import { RecoveryPhoneEditor } from '@/components/admin/account/security/recovery-phone-editor';
 import { AdminHead } from '@/components/admin/admin-head';
-import { ConnectedDevices } from '@/components/admin/connected-devices';
-import { LoginHistory } from '@/components/admin/login-history';
-import { PasswordEditor } from '@/components/admin/password-editor';
-import { RecoveryEmailEditor } from '@/components/admin/recovery-email-editor';
-import { RecoveryPhoneEditor } from '@/components/admin/recovery-phone-editor';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { TwoFactorEditor } from '@/components/admin/two-factor-editor';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { formatPhone } from '@/helpers/phone';
-import { useInlineEditing } from '@/hooks/use-inline-editing';
+import { useAccountSecurity } from '@/hooks/use-account-security';
 import { account } from '@/routes/admin';
 import { security as securityRoute } from '@/routes/admin/account';
 import type { AccountSecurity } from '@/types/admin';
 
 const text = adminLabels.security;
-
-type Field = 'recoveryEmail' | 'recoveryPhone' | 'password' | 'twoFactor';
 
 type AccountSecurityProps = {
     security: AccountSecurity;
@@ -35,13 +32,11 @@ type AccountSecurityProps = {
 export default function AccountSecurityPage({
     security,
 }: AccountSecurityProps) {
-    const [isDirty, setIsDirty] = useState(false);
-    const { rowProps, close, isLeaving, confirmLeave, cancelLeave } =
-        useInlineEditing<Field>({ isDirtyOf: () => isDirty });
-    const recoveryEmailRow = rowProps('recoveryEmail');
-    const recoveryPhoneRow = rowProps('recoveryPhone');
-    const passwordRow = rowProps('password');
-    const twoFactorRow = rowProps('twoFactor');
+    const page = useAccountSecurity(security);
+    const recoveryEmailRow = page.rowProps('recoveryEmail');
+    const recoveryPhoneRow = page.rowProps('recoveryPhone');
+    const passwordRow = page.rowProps('password');
+    const twoFactorRow = page.rowProps('twoFactor');
     const { twoFactor } = security;
 
     return (
@@ -60,9 +55,8 @@ export default function AccountSecurityPage({
                 <AccountRow label={text.recoveryEmail} {...recoveryEmailRow}>
                     {recoveryEmailRow.isEditing ? (
                         <RecoveryEmailEditor
-                            value={security.recoveryEmail}
-                            onDirtyChange={setIsDirty}
-                            onDone={close}
+                            form={page.recoveryEmail}
+                            onCancel={page.close}
                         />
                     ) : (
                         <>
@@ -91,9 +85,8 @@ export default function AccountSecurityPage({
                 <AccountRow label={text.recoveryPhone} {...recoveryPhoneRow}>
                     {recoveryPhoneRow.isEditing ? (
                         <RecoveryPhoneEditor
-                            value={security.recoveryPhone}
-                            onDirtyChange={setIsDirty}
-                            onDone={close}
+                            form={page.recoveryPhone}
+                            onCancel={page.close}
                         />
                     ) : (
                         <>
@@ -124,8 +117,8 @@ export default function AccountSecurityPage({
                 <AccountRow label={text.password} {...passwordRow}>
                     {passwordRow.isEditing ? (
                         <PasswordEditor
-                            onDirtyChange={setIsDirty}
-                            onDone={close}
+                            form={page.password}
+                            onCancel={page.close}
                         />
                     ) : (
                         <>
@@ -146,8 +139,8 @@ export default function AccountSecurityPage({
                     {twoFactorRow.isEditing ? (
                         <TwoFactorEditor
                             twoFactor={twoFactor}
-                            onDirtyChange={setIsDirty}
-                            onDone={close}
+                            onDirtyChange={page.setIsTwoFactorDirty}
+                            onDone={page.close}
                         />
                     ) : (
                         <>
@@ -171,14 +164,17 @@ export default function AccountSecurityPage({
                     )}
                 </AccountRow>
 
-                <ConnectedDevices devices={security.devices} />
+                <ConnectedDevices
+                    devices={security.devices}
+                    signOut={page.signOut}
+                />
                 <LoginHistory events={security.loginEvents} />
             </div>
 
             <LeaveAccountModal
-                isOpen={isLeaving}
-                onClose={cancelLeave}
-                onConfirm={confirmLeave}
+                isOpen={page.isLeaving}
+                onClose={page.cancelLeave}
+                onConfirm={page.confirmLeave}
             />
         </>
     );

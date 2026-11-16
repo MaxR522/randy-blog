@@ -143,15 +143,15 @@ Tests: `tests/Feature/Admin/AccountProfileTest.php`, `AccountSecurityTest.php`.
 - [x] `components/admin/account-row.tsx` (196) split: `hooks/use-inline-editing.ts` (no JSX: `isDirtyOf` and `onOpen` options, returns `isLeaving` / `confirmLeave` / `cancelLeave`), `hooks/use-focus-on-open.ts`; `AccountTabs` (takes `profileUrl` / `securityUrl`), `AccountRow`, `FieldValue` and `LeaveAccountModal` in `components/admin/account/`; `EditorProps` (until session 9), `ProfileField` and `AVATAR_MAX_BYTES` in `helpers/account.ts`
 - [x] `EditorActions` and `AvatarPlaceholder` out of `avatar-editor.tsx` into `components/admin/account/`
 - [x] `avatar-editor.tsx` (236) and `square-cropper.tsx` (322): crop behaviour to `hooks/use-square-crop.ts` (reuses `useObjectUrl`), clamp and JPEG export to `helpers/square-crop.ts`, cropper to `components/admin/account/square-cropper.tsx`; avatar request to `hooks/use-avatar-form.ts`, markup in `components/admin/account/profile/avatar-editor.tsx`
-- [x] `pages/admin/account-profile.tsx` (299 to 148): `hooks/use-account-profile.ts` puts `useInlineEditing` and one form hook per field together (`use-display-name-form.ts`, `use-biography-form.ts`, `use-login-email-form.ts`; each has `start()` that refills it when its editor opens), editors in `components/admin/account/profile/`
+- [x] `pages/admin/account-profile.tsx` (299 to 141): `hooks/use-account-profile.ts` puts `useInlineEditing` and one form hook per field together (`use-display-name-form.ts`, `use-biography-form.ts`, `use-login-email-form.ts`; each has `start()` that refills it when its editor opens), editors in `components/admin/account/profile/`
 
 ### 9. Account security editors
 
 Tests: `tests/Feature/Admin/AccountSecurityTest.php`.
 
-- [ ] `components/admin/password-editor.tsx` (84), `recovery-email-editor.tsx` (97), `recovery-phone-editor.tsx` (72): requests to hooks called by `pages/admin/account-security.tsx`
-- [ ] `components/admin/connected-devices.tsx` (186) and `login-history.tsx` (121)
-- [ ] `pages/admin/account-security.tsx` (178)
+- [x] `components/admin/password-editor.tsx` (84), `recovery-email-editor.tsx` (97), `recovery-phone-editor.tsx` (72): requests to `hooks/use-password-form.ts`, `use-recovery-email-form.ts`, `use-recovery-phone-form.ts` (each with `start()`), markup in `components/admin/account/security/`
+- [x] `components/admin/connected-devices.tsx` (186 to 164): logout request and confirmation to `hooks/use-device-sign-out.ts`, `DeviceSignOutTarget` in `helpers/account.ts`; `login-history.tsx` (121) is markup with a local toggle, moved unchanged; both in `components/admin/account/security/`
+- [x] `pages/admin/account-security.tsx` (178 to 185, read-only views only): `hooks/use-account-security.ts` puts `useInlineEditing`, the three forms and `useDeviceSignOut` together
 
 ### 10. Two-factor
 
