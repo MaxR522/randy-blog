@@ -67,7 +67,7 @@ The data flows one way: container calls the hook, the hook talks to the server, 
 
 ## Sessions
 
-The refactor runs in sessions that each fit one context window. Work through them in order: take the first session with an open box. Features that share a component are grouped in one session so its hook moves once. Line counts are from 2026-11-15.
+The refactor ran in sessions that each fit one context window, in order; sessions 8 to 14 ran together on 2026-11-16. Features that share a component are grouped in one session so its hook moves once. Line counts are from 2026-11-15.
 
 ### Session rules
 
@@ -140,60 +140,61 @@ Tests: `tests/Feature/Admin/NewsletterTest.php`.
 
 Tests: `tests/Feature/Admin/AccountProfileTest.php`, `AccountSecurityTest.php`.
 
-- [ ] `components/admin/account-row.tsx` (196) split: `useInlineEditing` and `useFocusOnOpen` to `hooks/`, `AccountTabs`, `AccountRow`, `FieldValue` and `EditorProps` to `components/admin/account/`
-- [ ] `EditorActions` and `AvatarPlaceholder` out of `avatar-editor.tsx` into their own files
-- [ ] `components/admin/avatar-editor.tsx` (236) and `square-cropper.tsx` (322): crop behaviour to `hooks/use-square-crop.ts`, avatar request to a hook called by the page
-- [ ] `pages/admin/account-profile.tsx` (299)
+- [x] `components/admin/account-row.tsx` (196) split: `hooks/use-inline-editing.ts` (no JSX: `isDirtyOf` and `onOpen` options, returns `isLeaving` / `confirmLeave` / `cancelLeave`), `hooks/use-focus-on-open.ts`; `AccountTabs` (takes `profileUrl` / `securityUrl`), `AccountRow`, `FieldValue` and `LeaveAccountModal` in `components/admin/account/`; `EditorProps` (until session 9), `ProfileField` and `AVATAR_MAX_BYTES` in `helpers/account.ts`
+- [x] `EditorActions` and `AvatarPlaceholder` out of `avatar-editor.tsx` into `components/admin/account/`
+- [x] `avatar-editor.tsx` (236) and `square-cropper.tsx` (322): crop behaviour to `hooks/use-square-crop.ts` (reuses `useObjectUrl`), clamp and JPEG export to `helpers/square-crop.ts`, cropper to `components/admin/account/square-cropper.tsx`; avatar request to `hooks/use-avatar-form.ts`, markup in `components/admin/account/profile/avatar-editor.tsx`
+- [x] `pages/admin/account-profile.tsx` (299 to 141): `hooks/use-account-profile.ts` puts `useInlineEditing` and one form hook per field together (`use-display-name-form.ts`, `use-biography-form.ts`, `use-login-email-form.ts`; each has `start()` that refills it when its editor opens), editors in `components/admin/account/profile/`
 
 ### 9. Account security editors
 
 Tests: `tests/Feature/Admin/AccountSecurityTest.php`.
 
-- [ ] `components/admin/password-editor.tsx` (84), `recovery-email-editor.tsx` (97), `recovery-phone-editor.tsx` (72): requests to hooks called by `pages/admin/account-security.tsx`
-- [ ] `components/admin/connected-devices.tsx` (186) and `login-history.tsx` (121)
-- [ ] `pages/admin/account-security.tsx` (178)
+- [x] `components/admin/password-editor.tsx` (84), `recovery-email-editor.tsx` (97), `recovery-phone-editor.tsx` (72): requests to `hooks/use-password-form.ts`, `use-recovery-email-form.ts`, `use-recovery-phone-form.ts` (each with `start()`), markup in `components/admin/account/security/`
+- [x] `components/admin/connected-devices.tsx` (186 to 164): logout request and confirmation to `hooks/use-device-sign-out.ts`, `DeviceSignOutTarget` in `helpers/account.ts`; `login-history.tsx` (121) is markup with a local toggle, moved unchanged; both in `components/admin/account/security/`
+- [x] `pages/admin/account-security.tsx` (178 to 185, read-only views only): `hooks/use-account-security.ts` puts `useInlineEditing`, the three forms and `useDeviceSignOut` together
 
 ### 10. Two-factor
 
 Tests: `tests/Feature/Admin/AccountSecurityTest.php`, `TwoFactorAuthenticationTest.php`.
 
-- [ ] `components/admin/two-factor-editor.tsx` (338): `hooks/use-two-factor.ts` called by the security page, markup in `components/admin/account/two-factor/`
+- [x] `components/admin/two-factor-editor.tsx` (338): `hooks/use-two-factor.ts` (step, one password form and one code form, `start()`; a pending setup or codes on screen count as unsaved) called through `useAccountSecurity`, recovery codes read from the flash by the page; `helpers/two-factor.ts` (`twoFactorStepOf`, `downloadText`); generic `hooks/use-copied-flag.ts`; markup in `components/admin/account/two-factor/` (editor, start, confirm, manage, recovery codes, actions)
 
 ### 11. Analytics
 
 Tests: `tests/Feature/Admin/AnalyticsTest.php`.
 
-- [ ] `pages/admin/analytics.tsx` (314) and `components/admin/analytics/line-chart.tsx` (chart behaviour to a hook if mixed)
+- [x] `pages/admin/analytics.tsx` (314 to 68): period request to `hooks/use-analytics-period.ts`, `helpers/analytics.ts` (`PERIODS`, `analyticsFiguresOf` adds `editUrl` to the top articles, caption and newsletter date), components in `components/admin/analytics/` (panel, skeleton, unavailable, period picker, Google figures, top articles table, blog figures)
+- [x] `components/admin/analytics/line-chart.tsx` (303 to 223, markup): width, active day, keys and table toggle to `hooks/use-line-chart.ts`; scales, extremes, tooltip side and key moves to `helpers/line-chart.ts`
 
 ### 12. Public search and subscription
 
 Use the `public-design-system` and `seo-accessibility` skills. Tests: `HomePageTest.php`, `SearchPageTest.php`, `NotFoundPageTest.php`, `SubscriptionTest.php`.
 
-- [ ] `components/public/search-bar.tsx` (96): request to `hooks/use-search.ts`, called by the home, search and not-found pages
-- [ ] `components/public/subscription-block.tsx` (187): request to `hooks/use-subscription.ts`, called by `pages/home.tsx`
-- [ ] `pages/home.tsx` (279) and `pages/search.tsx` (118)
+- [x] `components/public/search-bar.tsx` (96 to 86): request to `hooks/use-search.ts` (`action` and `submit`; the input stays uncontrolled so `defaultValue` and the GET form keep working without JavaScript), called by the home, search and not-found pages
+- [x] `components/public/subscription-block.tsx` (187 to 154): request, success state and focus moves to `hooks/use-subscription.ts`, called by `pages/home.tsx`; the block takes `subscription` and `privacyUrl`
+- [x] `pages/home.tsx` (279 to 138): `AllArticles` to `components/public/home/all-articles.tsx` (takes `nextPageUrl` built by the page from `scrollProps`), its announcement and focus to `hooks/use-load-more-announcement.ts`, `BannerDescription` to `components/public/home/` with `linkedPartsOf` and `bannerLinkUrls` in `helpers/home.ts`; `pages/search.tsx` (118) only calls `useSearch`
 
 ### 13. Public article page
 
 Use the `public-design-system` and `seo-accessibility` skills. Tests: `ArticlePageTest.php`.
 
-- [ ] `components/public/image-lightbox.tsx` (489): zoom and pan, keyboard and focus trap to hooks, markup in `components/public/image-lightbox/`
-- [ ] `components/public/audio-slot.tsx` (185) and `share-buttons.tsx` (178)
-- [ ] `components/public/cookie-consent.tsx` (177) and `pages/article.tsx` (185)
+- [x] `components/public/image-lightbox.tsx` (489): `hooks/use-zoom-pan.ts` (view, wheel, pointers, taps, keys), `hooks/use-lightbox-dialog.ts` (native `<dialog>`, focus, scroll lock), `hooks/use-full-image.ts`; types, constants and view math in `helpers/image-lightbox.ts`; markup in `components/public/image-lightbox/` (lightbox 84, toolbar 83)
+- [x] `components/public/audio-slot.tsx` (185 to 135): `hooks/use-audio-player.ts`, `helpers/audio-player.ts` (`playerClock` rounds down, unlike `media-upload`'s `clock`); `share-buttons.tsx` (178 to 138): `useCopiedFlag`, share URLs and `copyToClipboard` in `helpers/share-buttons.ts`
+- [x] `components/public/cookie-consent.tsx` (177 to 118): `measurementId` read by `layouts/public-layout.tsx` and passed down, GA4 loading, dialog sync and choice in `hooks/use-cookie-banner.ts`; `pages/article.tsx` (185 to 148): `zoomableImageFrom` to `helpers/article-page.ts`
 
 ### 14. Sweep
 
 Tests: `tests/Feature/Admin/AuthenticationTest.php`, `AdminShellTest.php`, `SubscriptionTest.php`, `ProfilePageTest.php`.
 
-- [ ] Auth pages: `pages/admin/login.tsx`, `forgot-password.tsx`, `reset-password.tsx`, `two-factor-challenge.tsx`
-- [ ] Shell: `layouts/admin-layout.tsx`, `components/admin/flash-toasts.tsx`, `sidebar-nav.tsx`
-- [ ] `pages/subscription-status.tsx` and `pages/profile.tsx`
-- [ ] No component makes a request: `grep -lE "useHttp|useForm|router\.(post|put|patch|delete|visit|get|reload)" -r resources/js/components` returns nothing
-- [ ] Re-run `wc -l`, update the reference paths of this document and the project memory
+- [x] Auth pages: `pages/admin/login.tsx`, `forgot-password.tsx`, `reset-password.tsx`, `two-factor-challenge.tsx` are already containers (Inertia `<Form>`, a local toggle), no change
+- [x] Shell: `layouts/admin-layout.tsx` reads `url`, `flash` and the user and passes them down; collapse storage in `helpers/admin-shell.ts` with `hooks/use-sidebar-collapse.ts`; `flash-toasts.tsx` fed by `hooks/use-flash-toasts.ts` (also in `admin-auth-layout.tsx`) and `helpers/flash-toasts.ts` (`toastOf` builds `sendUrl`); `sidebar-nav.tsx` takes `currentUrl`, items and active check in `helpers/sidebar-nav.ts`; drawer behaviour in `hooks/use-sidebar-drawer.ts`; `top-bar.tsx` takes `avatarUrl`; shared `hooks/use-is-scrolled.ts` (top bar and public navbar)
+- [x] `pages/subscription-status.tsx` and `pages/profile.tsx`: markup with a lookup table, no change
+- [x] No component makes a request: `grep -lE "useHttp|useForm|router\.(post|put|patch|delete|visit|get|reload)" -r resources/js/components` returns nothing, and no component calls `usePage()`. No component imports Wayfinder either: the public chrome's links come from `helpers/public-shell.ts` (`publicLinksOf`), passed down by `layouts/public-layout.tsx` (navbar, footer) and `pages/article.tsx` (`ArticleEndCta`)
+- [x] Re-run `wc -l` (2026-11-16: largest pages are `account-security.tsx` 182, `article-editor.tsx` 173, `subscription-status.tsx` 159; 92 files in `hooks/` and `helpers/`), update the reference paths of this document and the project memory
 
 ## Prompt
 
-Paste this in a new session:
+All sessions are done (2026-11-16). Keep the prompt for a new long page or component that needs the same split. Paste this in a new session:
 
 ```text
 Run the next session of docs/frontend-refactor.md: the first session with an open box in the Sessions section (the article editor split is the reference: resources/js/pages/admin/article-editor.tsx, resources/js/components/admin/article-editor/, and the article editor hook and helpers in resources/js/hooks/ and resources/js/helpers/).

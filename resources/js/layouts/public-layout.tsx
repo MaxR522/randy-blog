@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { buttonClasses } from '@/components/public/button';
 import { CookieConsent } from '@/components/public/cookie-consent';
@@ -5,6 +6,7 @@ import { Footer } from '@/components/public/footer';
 import type { NavbarVariant } from '@/components/public/navbar';
 import { Navbar } from '@/components/public/navbar';
 import { PageAnnouncer } from '@/components/public/page-announcer';
+import { publicLinksOf } from '@/helpers/public-shell';
 import { labels } from '@/lib/labels.fr';
 
 type PublicLayoutProps = {
@@ -26,6 +28,9 @@ export default function PublicLayout({
     isEmbedded = false,
     children,
 }: PublicLayoutProps) {
+    const { measurementId } = usePage().props.analytics;
+    const { homeUrl, privacyUrl } = publicLinksOf();
+
     if (isEmbedded) {
         return (
             <div className="text-primary min-h-screen bg-white">
@@ -45,9 +50,9 @@ export default function PublicLayout({
             >
                 {labels.a11y.skipToContent}
             </a>
-            <CookieConsent mainId={MAIN_ID} />
+            <CookieConsent mainId={MAIN_ID} measurementId={measurementId} />
             {banner}
-            <Navbar variant={navbar} authorUrl={authorUrl} />
+            <Navbar variant={navbar} authorUrl={authorUrl} homeUrl={homeUrl} />
             <main
                 id={MAIN_ID}
                 tabIndex={-1}
@@ -55,7 +60,7 @@ export default function PublicLayout({
             >
                 {children}
             </main>
-            <Footer />
+            <Footer homeUrl={homeUrl} privacyUrl={privacyUrl} />
             <PageAnnouncer mainId={MAIN_ID} />
         </div>
     );

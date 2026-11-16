@@ -1,57 +1,26 @@
-import { Link, useForm } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { CircleAlert } from 'lucide-react';
-import type { FormEvent } from 'react';
-import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/public/button';
-import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/helpers/typography';
-import { privacy } from '@/routes';
-import { store } from '@/routes/subscriptions';
+import type { Subscription } from '@/hooks/use-subscription';
+import { labels } from '@/lib/labels.fr';
 
 const [consentText] = labels.subscription.consent.split(labels.footer.privacy);
 
+type SubscriptionBlockProps = {
+    /** From `useSubscription`, called by the page. */
+    subscription: Subscription;
+    privacyUrl: string;
+};
+
 /**
- * Newsletter band (`#abonnement`), double opt-in (PUB-SUB-1…5). The server answers every valid
- * address the same way, so the success message never tells whether it was already known.
+ * Newsletter band (`#abonnement`), double opt-in (PUB-SUB-1…5): the form, then the success message.
  */
-export function SubscriptionBlock() {
-    const form = useForm({ email: '', website: '' });
-    const [isSubscribed, setIsSubscribed] = useState(false);
-    const status = isSubscribed
-        ? 'success'
-        : form.processing
-          ? 'loading'
-          : 'idle';
-    const error = form.errors.email ?? null;
-
-    function submit(event: FormEvent<HTMLFormElement>): void {
-        event.preventDefault();
-        form.post(store.url(), {
-            preserveScroll: true,
-            preserveState: true,
-            onFlash: (flash) => {
-                if (flash.subscribed) {
-                    setIsSubscribed(true);
-                }
-            },
-        });
-    }
-
-    const isLoading = status === 'loading';
-    const emailRef = useRef<HTMLInputElement>(null);
-    const successRef = useRef<HTMLParagraphElement>(null);
-
-    useEffect(() => {
-        if (error) {
-            emailRef.current?.focus();
-        }
-    }, [error]);
-
-    useEffect(() => {
-        if (status === 'success') {
-            successRef.current?.focus();
-        }
-    }, [status]);
+export function SubscriptionBlock({
+    subscription,
+    privacyUrl,
+}: SubscriptionBlockProps) {
+    const { error, isLoading } = subscription;
 
     return (
         <section
@@ -72,9 +41,9 @@ export function SubscriptionBlock() {
                     </p>
                 </div>
                 <div className="flex flex-col gap-4">
-                    {isSubscribed ? (
+                    {subscription.isSubscribed ? (
                         <p
-                            ref={successRef}
+                            ref={subscription.successRef}
                             role="status"
                             tabIndex={-1}
                             className="text-body-small rounded-md border border-green-600 bg-green-50 p-4 font-medium text-green-700"
@@ -84,7 +53,7 @@ export function SubscriptionBlock() {
                     ) : (
                         <form
                             noValidate
-                            onSubmit={submit}
+                            onSubmit={subscription.submit}
                             className="flex flex-col gap-2"
                         >
                             {/* Honeypot (PUB-SUB-3): off screen, out of the tab order and hidden from assistive technology. */}
@@ -101,10 +70,9 @@ export function SubscriptionBlock() {
                                     type="text"
                                     tabIndex={-1}
                                     autoComplete="off"
-                                    value={form.data.website}
+                                    value={subscription.website}
                                     onChange={(event) =>
-                                        form.setData(
-                                            'website',
+                                        subscription.changeWebsite(
                                             event.target.value,
                                         )
                                     }
@@ -118,16 +86,15 @@ export function SubscriptionBlock() {
                             </label>
                             <div className="tablet:flex-row flex flex-col gap-3">
                                 <input
-                                    ref={emailRef}
+                                    ref={subscription.emailRef}
                                     id="abonnement-email"
                                     name="email"
                                     type="email"
                                     autoComplete="email"
                                     required
-                                    value={form.data.email}
+                                    value={subscription.email}
                                     onChange={(event) =>
-                                        form.setData(
-                                            'email',
+                                        subscription.changeEmail(
                                             event.target.value,
                                         )
                                     }
@@ -173,7 +140,7 @@ export function SubscriptionBlock() {
                     >
                         {consentText}
                         <Link
-                            href={privacy()}
+                            href={privacyUrl}
                             className="text-accent-700 hover:text-accent-800 underline underline-offset-3"
                         >
                             {labels.footer.privacy}

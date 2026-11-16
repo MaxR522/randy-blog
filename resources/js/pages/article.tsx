@@ -3,12 +3,14 @@ import { AudioSlot } from '@/components/public/audio-slot';
 import { ArticleEndCta } from '@/components/public/article-end-cta';
 import { ArticleHeader } from '@/components/public/article-header';
 import { ArticlePagination } from '@/components/public/article-pagination';
-import type { LightboxImage } from '@/components/public/image-lightbox';
-import { ImageLightbox } from '@/components/public/image-lightbox';
+import { ImageLightbox } from '@/components/public/image-lightbox/image-lightbox';
 import { PreviewBanner } from '@/components/public/preview-banner';
 import { ShareButtons } from '@/components/public/share-buttons';
 import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
+import { zoomableImageFrom } from '@/helpers/article-page';
+import { publicLinksOf } from '@/helpers/public-shell';
+import type { LightboxImage } from '@/helpers/image-lightbox';
 import { frenchTypography } from '@/helpers/typography';
 import { cn } from '@/lib/utils';
 import type { ArticleCard, ArticleDetail, SeoData } from '@/types';
@@ -28,44 +30,6 @@ type ArticleProps = {
 };
 
 const container = 'mx-auto w-full max-w-7xl px-gutter';
-
-/**
- * Image behind an `a.image-zoom` link (the cover, or a body image wrapped by the server), or `null` for any other
- * click. The link points at the original image, so the cover opens whole rather than as its 16:9 crop.
- * Modified and middle clicks keep the link's own behaviour, such as opening the image in a new tab.
- */
-function zoomableImageFrom(
-    event: MouseEvent<HTMLElement>,
-): LightboxImage | null {
-    if (
-        event.button !== 0 ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.shiftKey ||
-        event.altKey ||
-        !(event.target instanceof Element)
-    ) {
-        return null;
-    }
-
-    const link = event.target.closest<HTMLAnchorElement>('a.image-zoom');
-    const image = link?.querySelector('img');
-
-    if (!link || !image) {
-        return null;
-    }
-
-    return {
-        src: link.href,
-        previewSrc: image.currentSrc || image.src,
-        alt: image.alt,
-        caption:
-            image
-                .closest('figure')
-                ?.querySelector('figcaption')
-                ?.textContent?.trim() || null,
-    };
-}
 
 export default function Article({
     seo,
@@ -166,7 +130,9 @@ export default function Article({
                 </div>
 
                 <div className={`${container} laptop:pt-4 pt-2`}>
-                    <ArticleEndCta />
+                    <ArticleEndCta
+                        subscribeUrl={publicLinksOf().subscribeUrl}
+                    />
                 </div>
             </article>
 

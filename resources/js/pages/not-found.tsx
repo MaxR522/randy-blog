@@ -5,6 +5,7 @@ import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/helpers/typography';
+import { useSearch } from '@/hooks/use-search';
 import { home } from '@/routes';
 import type { SeoData } from '@/types';
 
@@ -13,6 +14,8 @@ import type { SeoData } from '@/types';
  * Left-aligned on mobile, centred from tablet.
  */
 export default function NotFound({ seo }: { seo: SeoData }) {
+    const search = useSearch();
+
     return (
         <PublicLayout navbar="back">
             <Seo seo={seo} />
@@ -29,7 +32,7 @@ export default function NotFound({ seo }: { seo: SeoData }) {
                         {frenchTypography(labels.notFound.text)}
                     </p>
                     <div className="laptop:mt-10 mt-7 w-full max-w-140">
-                        <SearchBar size="large" />
+                        <SearchBar search={search} size="large" />
                     </div>
                     <Link
                         href={home()}

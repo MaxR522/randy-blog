@@ -20,7 +20,7 @@ Target: every public page crawlable and fully described to search engines, and f
 - Every public page uses `resources/js/layouts/public-layout.tsx` (skip link, `main#contenu`, page announcer).
 - Links to other sites: `ExternalLink` (`resources/js/components/public/external-link.tsx`).
 - Card groups: `StandardCard` renders an `<li>`, so wrap cards in `<ul role="list">`.
-- Load-more lists: copy the `AllArticles` pattern in `resources/js/pages/home.tsx` (status announcement + focus on the first new item).
+- Load-more lists: reuse `useLoadMoreAnnouncement` (`resources/js/hooks/use-load-more-announcement.ts`) as `AllArticles` does in `resources/js/components/public/home/all-articles.tsx` (status announcement + focus on the first new item).
 - Screen-reader-only copy: `labels.a11y` in `resources/js/lib/labels.fr.ts`.
 
 ## SEO rules

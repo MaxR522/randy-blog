@@ -287,7 +287,7 @@ Already in place for the home page (commit after `fd62b63`); reuse them on every
 - `resources/js/layouts/public-layout.tsx`: skip link « Aller au contenu », `<main id="contenu" tabindex="-1">`, and `PageAnnouncer` (`resources/js/components/public/page-announcer.tsx`), which moves focus to `main` and announces the page `h1` after each Inertia visit (A11Y-STRUCT-2, A11Y-STRUCT-7). Every public page MUST use this layout.
 - `resources/js/components/public/external-link.tsx`: `ExternalLink` for every link to another site (`target="_blank"`, `rel="noopener noreferrer"`, « (nouvel onglet) » for screen readers).
 - `StandardCard` renders an `<li>`: put cards in a `<ul role="list">` (A11Y-STRUCT-6).
-- « Voir plus » pattern in `resources/js/pages/home.tsx` (`AllArticles`): status region announcing the count, focus on the first new title.
+- « Voir plus » pattern in `resources/js/components/public/home/all-articles.tsx` (`AllArticles`, behaviour in `resources/js/hooks/use-load-more-announcement.ts`): status region announcing the count, focus on the first new title.
 - `SubscriptionBlock`: focus on the input after an error, on the message after success; the consent notice is part of the input's description.
 - Screen-reader-only strings live in `labels.a11y` in `resources/js/lib/labels.fr.ts`.
 

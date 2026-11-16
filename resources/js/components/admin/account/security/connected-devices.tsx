@@ -1,54 +1,32 @@
-import { router } from '@inertiajs/react';
-import { useState } from 'react';
-import {
-    destroyOtherSessions,
-    destroySession,
-} from '@/actions/App/Http/Controllers/Admin/AccountSecurityController';
 import { ConfirmModal } from '@/components/admin/confirm-modal';
 import type { DataTableColumn } from '@/components/admin/data-table';
 import { DataTable } from '@/components/admin/data-table';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Button } from '@/components/public/button';
+import type { DeviceSignOut } from '@/hooks/use-device-sign-out';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import type { AccountDevice } from '@/types/admin';
 
 const text = adminLabels.security;
 
+type ConnectedDevicesProps = {
+    devices: AccountDevice[];
+    signOut: DeviceSignOut;
+};
+
 /**
- * « Appareils connectés » (ADM-SEC-5): both logouts ask for confirmation (ADM-COM-6).
+ * « Appareils connectés » (ADM-SEC-5): both logouts ask for confirmation (ADM-COM-6); the requests live in
+ * `useDeviceSignOut`.
  */
-export function ConnectedDevices({ devices }: { devices: AccountDevice[] }) {
-    const [target, setTarget] = useState<AccountDevice | 'others' | null>(null);
-    const [isConfirming, setIsConfirming] = useState(false);
+export function ConnectedDevices({ devices, signOut }: ConnectedDevicesProps) {
+    const { target } = signOut;
     const hasOtherDevices = devices.some((device) => !device.isCurrent);
-
-    function logOut(): void {
-        const url =
-            target === 'others'
-                ? destroyOtherSessions.url()
-                : target
-                  ? destroySession.url({ device: target.key })
-                  : null;
-
-        if (!url) {
-            return;
-        }
-
-        router.delete(url, {
-            preserveScroll: true,
-            onStart: () => setIsConfirming(true),
-            onFinish: () => {
-                setIsConfirming(false);
-                setTarget(null);
-            },
-        });
-    }
 
     function logOutButton(device: AccountDevice, className: string) {
         return (
             <Button
                 variant="ghost"
-                onClick={() => setTarget(device)}
+                onClick={() => signOut.ask(device)}
                 aria-label={text.logOutDeviceLabel(device.device)}
                 className={className}
             >
@@ -109,7 +87,7 @@ export function ConnectedDevices({ devices }: { devices: AccountDevice[] }) {
                 {hasOtherDevices && (
                     <Button
                         variant="secondary"
-                        onClick={() => setTarget('others')}
+                        onClick={() => signOut.ask('others')}
                         className="tablet:inline-flex hidden"
                     >
                         {text.logOutOthers}
@@ -149,7 +127,7 @@ export function ConnectedDevices({ devices }: { devices: AccountDevice[] }) {
             {hasOtherDevices ? (
                 <Button
                     variant="secondary"
-                    onClick={() => setTarget('others')}
+                    onClick={() => signOut.ask('others')}
                     className="tablet:hidden mt-3 w-full"
                 >
                     {text.logOutOthers}
@@ -162,9 +140,9 @@ export function ConnectedDevices({ devices }: { devices: AccountDevice[] }) {
 
             <ConfirmModal
                 isOpen={target !== null}
-                onClose={() => setTarget(null)}
-                onConfirm={logOut}
-                isConfirming={isConfirming}
+                onClose={signOut.cancel}
+                onConfirm={signOut.confirm}
+                isConfirming={signOut.isConfirming}
                 title={
                     target === 'others'
                         ? text.logOutOthersTitle

@@ -8,6 +8,7 @@ import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/helpers/typography';
+import { useSearch } from '@/hooks/use-search';
 import type { ArticleCard, SearchResults, SeoData } from '@/types';
 
 type SearchProps = {
@@ -22,6 +23,7 @@ const container = 'mx-auto w-full max-w-7xl px-gutter';
 const column = 'mx-auto max-w-220';
 
 export default function Search({ seo, query, results, latest }: SearchProps) {
+    const searchForm = useSearch();
     const title = frenchTypography(labels.search.resultsFor(query));
     const hasResults = results.total > 0;
 
@@ -36,6 +38,7 @@ export default function Search({ seo, query, results, latest }: SearchProps) {
                     </h1>
                     <div className="mt-5">
                         <SearchBar
+                            search={searchForm}
                             key={query}
                             defaultValue={query}
                             size="compact"

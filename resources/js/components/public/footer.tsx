@@ -4,7 +4,6 @@ import { socialLinks } from '@/components/public/social-links';
 import { openPreferences } from '@/helpers/cookie-consent';
 import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/helpers/typography';
-import { home, privacy } from '@/routes';
 
 const columnTitleClasses =
     'mb-2 text-overline font-semibold text-grey-dark uppercase';
@@ -12,14 +11,22 @@ const columnTitleClasses =
 const footerLinkClasses =
     'flex min-h-11 items-center gap-2.5 text-button font-medium text-primary hover:text-accent-800';
 
-export function Footer() {
+type FooterProps = {
+    homeUrl: string;
+    privacyUrl: string;
+};
+
+/**
+ * Site footer: wordmark and tagline, social links, privacy page and cookie preferences.
+ */
+export function Footer({ homeUrl, privacyUrl }: FooterProps) {
     return (
         <footer className="border-primary border-t-2 bg-white">
             <div className="px-gutter laptop:pt-14 mx-auto w-full max-w-7xl pt-12 pb-9">
                 <div className="tablet:grid-cols-[1.3fr_1fr_1fr] tablet:gap-12 grid gap-10">
                     <div>
                         <Link
-                            href={home()}
+                            href={homeUrl}
                             className="text-primary font-sans text-[1.875rem] leading-none font-semibold tracking-[-0.015em]"
                         >
                             {labels.brand.name}
@@ -53,7 +60,7 @@ export function Footer() {
                         <ul>
                             <li>
                                 <Link
-                                    href={privacy()}
+                                    href={privacyUrl}
                                     className={footerLinkClasses}
                                 >
                                     <span className="border-b border-current">

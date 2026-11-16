@@ -1,33 +1,21 @@
-import type { KeyboardEvent, PointerEvent } from 'react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId } from 'react';
 import { formatDay, formatNumber } from '@/helpers/analytics-format';
+import type { ChartPoint } from '@/helpers/line-chart';
+import {
+    chartGeometryOf,
+    extremesOf,
+    HEIGHT,
+    MARGIN,
+    TOOLTIP_WIDTH,
+    tooltipXOf,
+} from '@/helpers/line-chart';
+import { useLineChart } from '@/hooks/use-line-chart';
 import { adminLabels } from '@/lib/labels.admin.fr';
 
 const text = adminLabels.analytics.chart;
 
-type Point = { date: string; views: number };
-
-const HEIGHT = 244;
-const MARGIN = { top: 20, right: 20, bottom: 28, left: 48 };
-const TICK_SPACING = 110;
-const DEFAULT_WIDTH = 828;
-
-/** Rounds the top of the axis up to 1, 2, 2.5 or 5 times a power of ten, so the gridlines fall on round numbers. */
-function niceMax(value: number): number {
-    if (value <= 0) {
-        return 4;
-    }
-
-    const magnitude = 10 ** Math.floor(Math.log10(value));
-    const step = [1, 2, 2.5, 5, 10].find(
-        (factor) => factor * magnitude >= value,
-    );
-
-    return (step ?? 10) * magnitude;
-}
-
 type LineChartProps = {
-    data: Point[];
+    data: ChartPoint[];
 };
 
 /**
@@ -37,100 +25,32 @@ type LineChartProps = {
  */
 export function LineChart({ data }: LineChartProps) {
     const hintId = useId();
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [width, setWidth] = useState(DEFAULT_WIDTH);
-    const [activeIndex, setActiveIndex] = useState<number | null>(null);
-    const [isTable, setIsTable] = useState(false);
-
-    useEffect(() => {
-        const container = containerRef.current;
-
-        if (container === null) {
-            return;
-        }
-
-        const observer = new ResizeObserver(([entry]) => {
-            setWidth(Math.max(280, Math.round(entry.contentRect.width)));
-        });
-        observer.observe(container);
-
-        return () => observer.disconnect();
-    }, [isTable]);
+    const chart = useLineChart(data.length);
+    const { width, activeIndex, isTable } = chart;
 
     const longDay = (date: string) =>
         formatDay(date, { day: 'numeric', month: 'long', year: 'numeric' });
     const shortDay = (date: string) =>
         formatDay(date, { day: 'numeric', month: 'short' });
 
-    const views = data.map((point) => point.views);
-    const peak = Math.max(0, ...views);
-    const lowest = views.length === 0 ? 0 : Math.min(...views);
-    const peakPoint = data.find((point) => point.views === peak);
-    const lowestPoint = data.find((point) => point.views === lowest);
+    const { peak, lowest, peakPoint, lowestPoint } = extremesOf(data);
 
     if (data.length === 0 || peak === 0) {
         return <p className="text-body-small text-grey-dark">{text.empty}</p>;
     }
 
-    const top = niceMax(peak);
-    const plotWidth = width - MARGIN.left - MARGIN.right;
-    const plotHeight = HEIGHT - MARGIN.top - MARGIN.bottom;
-    const x = (index: number) =>
-        MARGIN.left +
-        (data.length === 1 ? 0 : (index / (data.length - 1)) * plotWidth);
-    const y = (value: number) =>
-        MARGIN.top + plotHeight - (value / top) * plotHeight;
-
-    const points = data.map((point, index) => `${x(index)},${y(point.views)}`);
-    const area = `M${x(0)},${y(0)} L${points.join(' L')} L${x(data.length - 1)},${y(0)} Z`;
-    const gridValues = [0, 1, 2, 3, 4].map((step) => (top / 4) * step);
-    const tickEvery = Math.max(
-        1,
-        Math.ceil(data.length / Math.floor(plotWidth / TICK_SPACING)),
-    );
+    const { plotWidth, x, y, points, area, gridValues, tickEvery } =
+        chartGeometryOf(data, width, peak);
     const active = activeIndex === null ? null : data[activeIndex];
-
-    const moveTo = (event: PointerEvent<HTMLDivElement>) => {
-        const bounds = event.currentTarget.getBoundingClientRect();
-        const ratio = (event.clientX - bounds.left - MARGIN.left) / plotWidth;
-
-        setActiveIndex(
-            Math.min(
-                data.length - 1,
-                Math.max(0, Math.round(ratio * (data.length - 1))),
-            ),
-        );
-    };
-
-    const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-        const moves: Record<string, (index: number) => number> = {
-            ArrowRight: (index) => Math.min(data.length - 1, index + 1),
-            ArrowLeft: (index) => Math.max(0, index - 1),
-            Home: () => 0,
-            End: () => data.length - 1,
-        };
-        const move = moves[event.key];
-
-        if (move !== undefined) {
-            event.preventDefault();
-            setActiveIndex((index) => move(index ?? data.length - 1));
-        }
-    };
-
-    // Tooltip on the side of the crosshair that has room.
-    const tooltipWidth = 156;
     const tooltipX =
-        activeIndex !== null &&
-        x(activeIndex) + tooltipWidth + 12 > width - MARGIN.right
-            ? x(activeIndex) - tooltipWidth - 12
-            : (activeIndex === null ? 0 : x(activeIndex)) + 12;
+        activeIndex === null ? 12 : tooltipXOf(x(activeIndex), width);
 
     return (
         <div>
             <div className="mb-2 flex justify-end">
                 <button
                     type="button"
-                    onClick={() => setIsTable((value) => !value)}
+                    onClick={chart.toggleTable}
                     className="text-body-small text-accent-600 inline-flex min-h-11 cursor-pointer items-center font-medium underline underline-offset-4"
                 >
                     {isTable ? text.showChart : text.showTable}
@@ -174,15 +94,15 @@ export function LineChart({ data }: LineChartProps) {
                 </div>
             ) : (
                 <div
-                    ref={containerRef}
+                    ref={chart.containerRef}
                     tabIndex={0}
                     role="group"
                     aria-label={text.title}
                     aria-describedby={hintId}
-                    onPointerMove={moveTo}
-                    onPointerLeave={() => setActiveIndex(null)}
-                    onKeyDown={onKeyDown}
-                    onBlur={() => setActiveIndex(null)}
+                    onPointerMove={(event) => chart.moveTo(event, plotWidth)}
+                    onPointerLeave={chart.clearActive}
+                    onKeyDown={chart.handleKeyDown}
+                    onBlur={chart.clearActive}
                     className="rounded-sm"
                     style={{ touchAction: 'pan-y' }}
                 >
@@ -262,7 +182,7 @@ export function LineChart({ data }: LineChartProps) {
                                 <rect
                                     x={tooltipX}
                                     y={MARGIN.top - 2}
-                                    width={tooltipWidth}
+                                    width={TOOLTIP_WIDTH}
                                     height={48}
                                     rx={4}
                                     className="fill-primary"

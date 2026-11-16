@@ -1,6 +1,8 @@
+import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { AdminHead } from '@/components/admin/admin-head';
 import { FlashToasts } from '@/components/admin/flash-toasts';
+import { useFlashToasts } from '@/hooks/use-flash-toasts';
 import { labels } from '@/lib/labels.fr';
 
 type AdminAuthLayoutProps = {
@@ -21,10 +23,12 @@ export default function AdminAuthLayout({
     after,
     children,
 }: AdminAuthLayoutProps) {
+    const toasts = useFlashToasts(usePage().flash);
+
     return (
         <div className="text-primary tablet:bg-grey-subtle flex min-h-screen flex-col bg-white">
             <AdminHead title={title} />
-            <FlashToasts />
+            <FlashToasts toasts={toasts} />
             <header className="border-grey-light tablet:h-16 tablet:px-8 flex h-14 flex-none items-center border-b bg-white px-4">
                 <span className="tablet:text-lg text-[1.0625rem] font-semibold tracking-[-0.01em]">
                     {labels.brand.name}
