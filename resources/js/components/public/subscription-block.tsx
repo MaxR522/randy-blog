@@ -139,10 +139,7 @@ export function SubscriptionBlock({
                         className="text-caption text-grey-dark"
                     >
                         {consentText}
-                        <Link
-                            href={privacyUrl}
-                            className="text-accent-700 hover:text-accent-800 underline underline-offset-3"
-                        >
+                        <Link href={privacyUrl} className="link">
                             {labels.footer.privacy}
                         </Link>
                         .

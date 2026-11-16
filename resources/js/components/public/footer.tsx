@@ -9,7 +9,7 @@ const columnTitleClasses =
     'mb-2 text-overline font-semibold text-grey-dark uppercase';
 
 const footerLinkClasses =
-    'flex min-h-11 items-center gap-2.5 text-button font-medium text-primary hover:text-accent-800';
+    'flex min-h-11 items-center gap-2.5 text-button font-medium text-primary';
 
 type FooterProps = {
     homeUrl: string;
@@ -47,7 +47,7 @@ export function Footer({ homeUrl, privacyUrl }: FooterProps) {
                                         className={footerLinkClasses}
                                     >
                                         <Icon className="size-5 flex-none" />
-                                        {label}
+                                        <span className="link">{label}</span>
                                     </ExternalLink>
                                 </li>
                             ))}
@@ -63,7 +63,7 @@ export function Footer({ homeUrl, privacyUrl }: FooterProps) {
                                     href={privacyUrl}
                                     className={footerLinkClasses}
                                 >
-                                    <span className="border-b border-current">
+                                    <span className="link">
                                         {labels.footer.privacy}
                                     </span>
                                 </Link>
@@ -74,7 +74,7 @@ export function Footer({ homeUrl, privacyUrl }: FooterProps) {
                                     onClick={openPreferences}
                                     className={`${footerLinkClasses} cursor-pointer`}
                                 >
-                                    <span className="border-b border-current">
+                                    <span className="link">
                                         {labels.footer.manageCookies}
                                     </span>
                                 </button>
@@ -88,7 +88,7 @@ export function Footer({ homeUrl, privacyUrl }: FooterProps) {
                         {labels.footer.credit}{' '}
                         <ExternalLink
                             href={labels.footer.developer.url}
-                            className="hover:text-primary underline underline-offset-2"
+                            className="link"
                         >
                             {labels.footer.developer.name}
                         </ExternalLink>

@@ -81,7 +81,7 @@ export default function Article({
         >
             <Seo
                 seo={seo}
-                preloadImage={
+                preloadImages={
                     article.cover ? coverPreload(article.cover) : undefined
                 }
             />
@@ -93,13 +93,13 @@ export default function Article({
                 <ArticleHeader article={article} />
 
                 <div className={`${container} tablet:pt-10 pt-6`}>
-                    {/* Without audio the share buttons stay on the right and nothing announces a missing player. */}
+                    {/* Without audio the share buttons sit in the centre and nothing announces a missing player. */}
                     <div
                         className={cn(
                             'max-w-article-header laptop:max-w-article-cover border-grey-light tablet:flex-row tablet:items-center tablet:gap-6 tablet:py-3 mx-auto flex flex-col gap-3.5 border-y py-3.5',
                             article.audio
                                 ? 'tablet:justify-between'
-                                : 'tablet:justify-end',
+                                : 'tablet:justify-center',
                         )}
                     >
                         {article.audio && (

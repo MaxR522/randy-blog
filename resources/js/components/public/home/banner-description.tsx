@@ -18,7 +18,7 @@ export function BannerDescription() {
                     <ExternalLink
                         key={part.text}
                         href={bannerLinkUrls[part.index]}
-                        className="text-accent-600 hover:text-accent-800 underline underline-offset-3"
+                        className="link"
                     >
                         {part.text}
                     </ExternalLink>

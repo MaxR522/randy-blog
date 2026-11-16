@@ -142,7 +142,7 @@ export const labels = {
     },
     share: {
         facebook: 'Facebook',
-        x: 'X',
+        x: 'Twitter',
         linkedin: 'LinkedIn',
         youtube: 'YouTube',
     },

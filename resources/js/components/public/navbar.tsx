@@ -17,7 +17,7 @@ type NavbarProps = {
 
 function ContextualLink({ variant, authorUrl, homeUrl }: NavbarProps) {
     const linkClasses =
-        'inline-flex min-h-11 items-center gap-2 text-button font-medium text-primary hover:text-accent-800';
+        'inline-flex min-h-11 items-center gap-2 text-button font-medium text-primary';
 
     if (variant === 'home') {
         if (!authorUrl) {
@@ -26,9 +26,7 @@ function ContextualLink({ variant, authorUrl, homeUrl }: NavbarProps) {
 
         return (
             <Link href={authorUrl} className={linkClasses}>
-                <span className="border-b border-current">
-                    {labels.nav.aboutMe}
-                </span>
+                <span className="link">{labels.nav.aboutMe}</span>
             </Link>
         );
     }
@@ -55,7 +53,7 @@ function ContextualLink({ variant, authorUrl, homeUrl }: NavbarProps) {
                     className="size-4.5"
                     strokeWidth={1.75}
                 />
-                <span className="border-b border-current">
+                <span className="link">
                     {frenchTypography(labels.nav.backHome)}
                 </span>
             </Link>

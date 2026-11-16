@@ -60,7 +60,7 @@
     --text-display--letter-spacing: -0.025em;
     --text-display--font-weight: 600;
 
-    --text-h1: 1.875rem; /* 30 on mobile (was 34: long French titles ran 5+ lines) */
+    --text-h1: 1.9375rem; /* 31 on mobile (was 32, 30, and 34 before that: long French titles ran 5+ lines) */
     --text-h1--line-height: 1.3; /* mobile; 1.12 from tablet */
     --text-h1--letter-spacing: -0.02em;
     --text-h1--font-weight: 600;
@@ -95,9 +95,9 @@
     --text-card-compact: 1.0625rem; /* 17 */
     --text-card-compact--line-height: 1.3;
 
-    --text-chapo: 1.1875rem; /* 19 */
-    --text-chapo--line-height: 1.45;
-    --text-prose: 1.125rem; /* 18, article body */
+    --text-chapo: 1.15rem; /* 19 */
+    --text-chapo--line-height: 1.6;
+    --text-prose: 1rem; /* 17, article body (was 18) */
     --text-prose--line-height: 1.65;
     --text-body: 1rem; /* 16, Inter */
     --text-body--line-height: 1.6;
@@ -164,7 +164,7 @@
 @media (min-width: 48rem) {
     :root {
         --text-display: 3.5rem; /* 56 */
-        --text-h1: 2.5rem; /* 40 */
+        --text-h1: 2.375rem; /* 38 (was 40) */
         --text-h2: 1.75rem; /* 28 */
         --text-chapo: 1.25rem; /* 20 */
         /* Titles get extra air on mobile only; tablet and up keep the tighter set. */
@@ -183,14 +183,14 @@
 @media (min-width: 64rem) {
     :root {
         --text-display: 4.5rem; /* 72 */
-        --text-h1: 3.25rem; /* 52 */
+        --text-h1: 3rem; /* 48 (was 52) */
         --text-h2: 2rem; /* 32 */
         --text-h3: 1.5rem; /* 24 */
         --text-section: 1.875rem; /* 30 */
         --text-card-large: 1.625rem; /* 26 */
         --text-card: 1.125rem; /* 18 */
         --text-chapo: 1.375rem; /* 22 */
-        --text-prose: 1.25rem; /* 20 */
+        --text-prose: 1.15rem; /* 19 (was 20) */
         --text-prose--line-height: 1.7;
         --spacing-gutter: 2rem; /* 32 */
         --spacing-block: 3rem; /* 48 */
@@ -283,14 +283,27 @@
         margin-block: 2rem 0.625rem;
         font: 600 var(--text-h4) / var(--text-h4--line-height) var(--font-sans);
     }
-    .article-body a {
-        color: var(--color-link);
+    /* V1 links, everywhere on the public site: underlined near-black text that turns white on a near-black
+       band on hover. `.link` goes on a text link, or on the label span of a link that also holds an icon (the
+       band then covers the label only, and shows when the whole link is hovered). Image links (a.image-zoom)
+       are left out of the article body rule so no band shows behind a picture. */
+    .link,
+    .article-body a:not(.image-zoom),
+    .article-chapo a {
+        color: var(--color-primary);
         text-decoration: underline;
+        text-decoration-color: var(--color-primary);
         text-underline-offset: 3px;
+        transition:
+            color var(--duration-fast) var(--ease-standard),
+            background-color var(--duration-fast) var(--ease-standard);
     }
-    .article-body a:hover {
-        color: var(--color-link-hover);
-        text-decoration-thickness: 2px;
+    .link:hover,
+    :is(a, button):hover > .link,
+    .article-body a:not(.image-zoom):hover,
+    .article-chapo a:hover {
+        color: var(--color-white, #fff);
+        background-color: var(--color-primary);
     }
     .article-body > :first-child {
         margin-top: 0;
@@ -396,6 +409,16 @@
         width: 100%;
         height: 100%;
         border: 0;
+    }
+    /* V1 media keep their source size: from tablet, cap the height so a square
+       image or a portrait clip does not fill the screen. The box clamps, the
+       picture keeps its ratio inside it. */
+    @media (min-width: 48rem) {
+        .article-body img,
+        .article-body video {
+            max-height: min(75svh, 36rem); /* 576 */
+            object-fit: contain;
+        }
     }
 
     /* Encadré: <div class="callout-box">…</div> */

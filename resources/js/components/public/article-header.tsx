@@ -5,16 +5,14 @@ import { frenchTypography } from '@/helpers/typography';
 import type { ArticleDetail } from '@/types';
 
 /**
- * Chips, date and reading time, title, chapô and byline. Left-aligned on phones, centred from tablet.
+ * Chips, date and reading time, title, chapô and byline. Left-aligned on every screen, against the page gutter
+ * (the left edge of the navbar); the title and chapô span the full page container.
  */
 export function ArticleHeader({ article }: { article: ArticleDetail }) {
     return (
         <header className="px-gutter tablet:pt-12 laptop:pt-16 mx-auto w-full max-w-7xl pt-8">
-            <div className="max-w-article-header tablet:items-center tablet:text-center mx-auto flex flex-col items-start">
-                <CategoryChips
-                    categories={article.categories}
-                    className="tablet:justify-center"
-                />
+            <div className="flex flex-col items-start">
+                <CategoryChips categories={article.categories} />
                 <p className="text-body-small text-grey-dark tablet:mt-4.5 mt-3.5 font-medium">
                     {article.date && (
                         <>
@@ -31,7 +29,7 @@ export function ArticleHeader({ article }: { article: ArticleDetail }) {
                 </h1>
                 {article.chapoHtml && (
                     <div
-                        className="text-chapo text-grey-dark tablet:mt-5.5 mt-4 font-sans text-pretty [&_p+p]:mt-3"
+                        className="article-chapo text-chapo text-grey-dark tablet:mt-5.5 mt-4 font-sans text-pretty [&_p+p]:mt-3"
                         dangerouslySetInnerHTML={{ __html: article.chapoHtml }}
                     />
                 )}
@@ -40,7 +38,7 @@ export function ArticleHeader({ article }: { article: ArticleDetail }) {
                         {labels.article.byline}{' '}
                         <Link
                             href={article.author.url}
-                            className="text-accent-600 hover:text-accent-800 font-semibold underline underline-offset-3"
+                            className="link font-semibold"
                         >
                             {article.author.name}
                         </Link>

@@ -122,3 +122,31 @@ export function cloudinaryCoverSrcSet(
 ): string | undefined {
     return srcSetFor(url, widths, cloudinaryCoverUrl);
 }
+
+/**
+ * Article cover on phones. Same rules as `cloudinaryCoverUrl`, except that a portrait or square source is framed
+ * in a 1:1 square instead of 16:9, so it is not shown tiny on a narrow screen. Cloudinary conditions cannot nest,
+ * so each case is its own block, keyed on the source's initial width (`iw`) and ratio (`iar`).
+ */
+export function cloudinaryCoverMobileUrl(url: string, width: number): string {
+    const height = Math.round((width * 9) / 16);
+    const frame = `b_rgb:${COVER_FRAME_COLOR}`;
+
+    return withTransformation(
+        url,
+        [
+            `if_iw_lt_${COVER_MIN_WIDTH}/c_scale,w_2.0/if_end`,
+            `if_iar_lt_${COVER_MIN_RATIO}/c_lpad,w_${width},h_${width},${frame}/if_end`,
+            `if_iar_gte_${COVER_MIN_RATIO}_and_iw_lt_${COVER_MIN_WIDTH}/c_lpad,w_${width},h_${height},${frame}/if_end`,
+            `if_iar_gte_${COVER_MIN_RATIO}_and_iw_gte_${COVER_MIN_WIDTH}/c_fill,g_auto,ar_16:9/c_limit,w_${width}/if_end`,
+            DELIVERY,
+        ].join('/'),
+    );
+}
+
+export function cloudinaryCoverMobileSrcSet(
+    url: string,
+    widths: readonly number[],
+): string | undefined {
+    return srcSetFor(url, widths, cloudinaryCoverMobileUrl);
+}

@@ -36,14 +36,14 @@ export default function NotFound({ seo }: { seo: SeoData }) {
                     </div>
                     <Link
                         href={home()}
-                        className="text-button text-accent-600 hover:text-accent-700 laptop:mt-7 mt-5 inline-flex min-h-11 items-center gap-2 font-medium"
+                        className="text-button text-primary laptop:mt-7 mt-5 inline-flex min-h-11 items-center gap-2 font-medium"
                     >
                         <ArrowLeft
                             aria-hidden="true"
                             className="size-4.5 flex-none"
                             strokeWidth={2}
                         />
-                        <span className="underline underline-offset-4">
+                        <span className="link">
                             {frenchTypography(labels.nav.backHome)}
                         </span>
                     </Link>

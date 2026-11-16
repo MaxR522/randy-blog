@@ -4,7 +4,8 @@ import type { PreloadImage, SeoData } from '@/types';
 
 type SeoProps = {
     seo: SeoData;
-    preloadImage?: PreloadImage;
+    /** Each `<picture>` source of the LCP image, with its media query, so a screen preloads only its own. */
+    preloadImages?: PreloadImage[];
 };
 
 /**
@@ -13,7 +14,7 @@ type SeoProps = {
  * The title goes through `Head`'s `title` prop, which escapes it in the server output. `Head` prints every
  * prop it is given, `undefined` included, so optional attributes are left out rather than set to `undefined`.
  */
-export function Seo({ seo, preloadImage }: SeoProps) {
+export function Seo({ seo, preloadImages }: SeoProps) {
     const title = frenchTypography(seo.title);
     const description = frenchTypography(seo.description);
     const isIndexable = seo.robots.startsWith('index');
@@ -35,19 +36,21 @@ export function Seo({ seo, preloadImage }: SeoProps) {
                     href={seo.canonical}
                 />
             )}
-            {preloadImage && (
+            {preloadImages?.map((image, index) => (
                 <link
-                    head-key="preload-image"
+                    key={image.href}
+                    head-key={`preload-image-${index}`}
                     rel="preload"
                     as="image"
-                    href={preloadImage.href}
-                    {...(preloadImage.srcSet && {
-                        imageSrcSet: preloadImage.srcSet,
-                        imageSizes: preloadImage.sizes,
+                    href={image.href}
+                    {...(image.srcSet && {
+                        imageSrcSet: image.srcSet,
+                        imageSizes: image.sizes,
                     })}
+                    {...(image.media && { media: image.media })}
                     fetchPriority="high"
                 />
-            )}
+            ))}
             {seo.alternates.map((alternate) => (
                 <link
                     key={alternate.href}

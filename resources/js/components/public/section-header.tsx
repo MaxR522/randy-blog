@@ -28,11 +28,9 @@ export function SectionHeader({
             {moreHref && (
                 <a
                     href={moreHref}
-                    className="text-body-small text-accent-600 hover:text-accent-800 inline-flex min-h-11 items-center gap-1.5 font-medium whitespace-nowrap"
+                    className="text-body-small text-primary inline-flex min-h-11 items-center gap-1.5 font-medium whitespace-nowrap"
                 >
-                    <span className="underline underline-offset-4">
-                        {labels.home.seeMore}
-                    </span>
+                    <span className="link">{labels.home.seeMore}</span>
                     <ArrowRight
                         aria-hidden="true"
                         className="size-4"

@@ -35,4 +35,6 @@ export type PreloadImage = {
     href: string;
     srcSet?: string;
     sizes: string;
+    /** Media query matching the `<picture>` source this preload stands for. */
+    media?: string;
 };
