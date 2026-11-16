@@ -8,8 +8,8 @@ import {
     enableTwoFactor,
     regenerateRecoveryCodes,
 } from '@/actions/App/Http/Controllers/Admin/AccountSecurityController';
-import type { EditorProps } from '@/components/admin/account-row';
-import { useFocusOnOpen } from '@/components/admin/account-row';
+import type { EditorProps } from '@/helpers/account';
+import { useFocusOnOpen } from '@/hooks/use-focus-on-open';
 import { PasswordField } from '@/components/admin/password-field';
 import { TextField } from '@/components/admin/text-field';
 import { Button } from '@/components/public/button';

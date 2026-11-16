@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
-import {
-    AccountRow,
-    AccountTabs,
-    FieldValue,
-    useInlineEditing,
-} from '@/components/admin/account-row';
+import { useState } from 'react';
+import { AccountRow } from '@/components/admin/account/account-row';
+import { AccountTabs } from '@/components/admin/account/account-tabs';
+import { FieldValue } from '@/components/admin/account/field-value';
+import { LeaveAccountModal } from '@/components/admin/account/leave-account-modal';
 import { AdminHead } from '@/components/admin/admin-head';
 import { ConnectedDevices } from '@/components/admin/connected-devices';
 import { LoginHistory } from '@/components/admin/login-history';
@@ -16,6 +15,9 @@ import { TwoFactorEditor } from '@/components/admin/two-factor-editor';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLabels } from '@/lib/labels.admin.fr';
 import { formatPhone } from '@/helpers/phone';
+import { useInlineEditing } from '@/hooks/use-inline-editing';
+import { account } from '@/routes/admin';
+import { security as securityRoute } from '@/routes/admin/account';
 import type { AccountSecurity } from '@/types/admin';
 
 const text = adminLabels.security;
@@ -33,8 +35,9 @@ type AccountSecurityProps = {
 export default function AccountSecurityPage({
     security,
 }: AccountSecurityProps) {
-    const { rowProps, close, setIsDirty, leaveModal } =
-        useInlineEditing<Field>();
+    const [isDirty, setIsDirty] = useState(false);
+    const { rowProps, close, isLeaving, confirmLeave, cancelLeave } =
+        useInlineEditing<Field>({ isDirtyOf: () => isDirty });
     const recoveryEmailRow = rowProps('recoveryEmail');
     const recoveryPhoneRow = rowProps('recoveryPhone');
     const passwordRow = rowProps('password');
@@ -48,7 +51,11 @@ export default function AccountSecurityPage({
                 <h1 className="text-section tablet:mb-4 mb-3">
                     {adminLabels.account.title}
                 </h1>
-                <AccountTabs current="security" />
+                <AccountTabs
+                    current="security"
+                    profileUrl={account.url()}
+                    securityUrl={securityRoute.url()}
+                />
 
                 <AccountRow label={text.recoveryEmail} {...recoveryEmailRow}>
                     {recoveryEmailRow.isEditing ? (
@@ -168,7 +175,11 @@ export default function AccountSecurityPage({
                 <LoginHistory events={security.loginEvents} />
             </div>
 
-            {leaveModal}
+            <LeaveAccountModal
+                isOpen={isLeaving}
+                onClose={cancelLeave}
+                onConfirm={confirmLeave}
+            />
         </>
     );
 }

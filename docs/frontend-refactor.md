@@ -140,10 +140,10 @@ Tests: `tests/Feature/Admin/NewsletterTest.php`.
 
 Tests: `tests/Feature/Admin/AccountProfileTest.php`, `AccountSecurityTest.php`.
 
-- [ ] `components/admin/account-row.tsx` (196) split: `useInlineEditing` and `useFocusOnOpen` to `hooks/`, `AccountTabs`, `AccountRow`, `FieldValue` and `EditorProps` to `components/admin/account/`
-- [ ] `EditorActions` and `AvatarPlaceholder` out of `avatar-editor.tsx` into their own files
-- [ ] `components/admin/avatar-editor.tsx` (236) and `square-cropper.tsx` (322): crop behaviour to `hooks/use-square-crop.ts`, avatar request to a hook called by the page
-- [ ] `pages/admin/account-profile.tsx` (299)
+- [x] `components/admin/account-row.tsx` (196) split: `hooks/use-inline-editing.ts` (no JSX: `isDirtyOf` and `onOpen` options, returns `isLeaving` / `confirmLeave` / `cancelLeave`), `hooks/use-focus-on-open.ts`; `AccountTabs` (takes `profileUrl` / `securityUrl`), `AccountRow`, `FieldValue` and `LeaveAccountModal` in `components/admin/account/`; `EditorProps` (until session 9), `ProfileField` and `AVATAR_MAX_BYTES` in `helpers/account.ts`
+- [x] `EditorActions` and `AvatarPlaceholder` out of `avatar-editor.tsx` into `components/admin/account/`
+- [x] `avatar-editor.tsx` (236) and `square-cropper.tsx` (322): crop behaviour to `hooks/use-square-crop.ts` (reuses `useObjectUrl`), clamp and JPEG export to `helpers/square-crop.ts`, cropper to `components/admin/account/square-cropper.tsx`; avatar request to `hooks/use-avatar-form.ts`, markup in `components/admin/account/profile/avatar-editor.tsx`
+- [x] `pages/admin/account-profile.tsx` (299 to 148): `hooks/use-account-profile.ts` puts `useInlineEditing` and one form hook per field together (`use-display-name-form.ts`, `use-biography-form.ts`, `use-login-email-form.ts`; each has `start()` that refills it when its editor opens), editors in `components/admin/account/profile/`
 
 ### 9. Account security editors
 
