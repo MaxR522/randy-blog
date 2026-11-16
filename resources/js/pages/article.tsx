@@ -9,6 +9,7 @@ import { ShareButtons } from '@/components/public/share-buttons';
 import { Seo } from '@/components/public/seo';
 import PublicLayout from '@/layouts/public-layout';
 import { zoomableImageFrom } from '@/helpers/article-page';
+import { publicLinksOf } from '@/helpers/public-shell';
 import type { LightboxImage } from '@/helpers/image-lightbox';
 import { frenchTypography } from '@/helpers/typography';
 import { cn } from '@/lib/utils';
@@ -129,7 +130,9 @@ export default function Article({
                 </div>
 
                 <div className={`${container} laptop:pt-4 pt-2`}>
-                    <ArticleEndCta />
+                    <ArticleEndCta
+                        subscribeUrl={publicLinksOf().subscribeUrl}
+                    />
                 </div>
             </article>
 

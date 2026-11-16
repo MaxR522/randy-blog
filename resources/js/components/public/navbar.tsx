@@ -5,16 +5,17 @@ import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/helpers/typography';
 import { useIsScrolled } from '@/hooks/use-is-scrolled';
 import { cn } from '@/lib/utils';
-import { home } from '@/routes';
 
 export type NavbarVariant = 'home' | 'back';
 
 type NavbarProps = {
+    /** Home page URL, from the layout. */
+    homeUrl: string;
     variant: NavbarVariant;
     authorUrl?: string | null;
 };
 
-function ContextualLink({ variant, authorUrl }: NavbarProps) {
+function ContextualLink({ variant, authorUrl, homeUrl }: NavbarProps) {
     const linkClasses =
         'inline-flex min-h-11 items-center gap-2 text-button font-medium text-primary hover:text-accent-800';
 
@@ -35,7 +36,7 @@ function ContextualLink({ variant, authorUrl }: NavbarProps) {
     return (
         <>
             <Link
-                href={home()}
+                href={homeUrl}
                 aria-label={labels.nav.backHome}
                 className="text-primary hover:text-accent-800 tablet:hidden flex size-11 items-center justify-center"
             >
@@ -46,7 +47,7 @@ function ContextualLink({ variant, authorUrl }: NavbarProps) {
                 />
             </Link>
             <Link
-                href={home()}
+                href={homeUrl}
                 className={cn(linkClasses, 'tablet:inline-flex hidden')}
             >
                 <ArrowLeft
@@ -66,11 +67,11 @@ function ContextualLink({ variant, authorUrl }: NavbarProps) {
  * Sticky public navbar, without wordmark: contextual link left, « S'abonner » right,
  * one row on every device. On phones the back link is a home-icon button.
  */
-export function Navbar({ variant, authorUrl }: NavbarProps) {
+export function Navbar({ variant, authorUrl, homeUrl }: NavbarProps) {
     const isScrolled = useIsScrolled();
 
     const subscribeHref =
-        variant === 'home' ? '#abonnement' : `${home.url()}#abonnement`;
+        variant === 'home' ? '#abonnement' : `${homeUrl}#abonnement`;
 
     return (
         <header
@@ -81,7 +82,11 @@ export function Navbar({ variant, authorUrl }: NavbarProps) {
         >
             <div className="px-gutter tablet:h-17 tablet:py-0 mx-auto flex min-h-11 w-full max-w-7xl items-center justify-between gap-4 py-3">
                 <nav aria-label={labels.a11y.mainNav} className="min-w-0">
-                    <ContextualLink variant={variant} authorUrl={authorUrl} />
+                    <ContextualLink
+                        variant={variant}
+                        authorUrl={authorUrl}
+                        homeUrl={homeUrl}
+                    />
                 </nav>
                 <a href={subscribeHref} className={buttonClasses('primary')}>
                     {frenchTypography(labels.nav.subscribe)}

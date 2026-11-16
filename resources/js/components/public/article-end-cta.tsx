@@ -1,12 +1,11 @@
 import { buttonClasses } from '@/components/public/button';
 import { labels } from '@/lib/labels.fr';
 import { frenchTypography } from '@/helpers/typography';
-import { home } from '@/routes';
 
 /**
  * One-line invitation to subscribe after the article, linking to the home page subscription block.
  */
-export function ArticleEndCta() {
+export function ArticleEndCta({ subscribeUrl }: { subscribeUrl: string }) {
     return (
         <aside
             aria-label={labels.a11y.subscription}
@@ -16,7 +15,7 @@ export function ArticleEndCta() {
                 {frenchTypography(labels.article.ctaText)}
             </p>
             <a
-                href={`${home.url()}#abonnement`}
+                href={subscribeUrl}
                 className={buttonClasses('secondary', 'flex-none')}
             >
                 {frenchTypography(labels.nav.subscribe)}
