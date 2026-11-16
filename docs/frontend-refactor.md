@@ -163,7 +163,8 @@ Tests: `tests/Feature/Admin/AccountSecurityTest.php`, `TwoFactorAuthenticationTe
 
 Tests: `tests/Feature/Admin/AnalyticsTest.php`.
 
-- [ ] `pages/admin/analytics.tsx` (314) and `components/admin/analytics/line-chart.tsx` (chart behaviour to a hook if mixed)
+- [x] `pages/admin/analytics.tsx` (314 to 68): period request to `hooks/use-analytics-period.ts`, `helpers/analytics.ts` (`PERIODS`, `analyticsFiguresOf` adds `editUrl` to the top articles, caption and newsletter date), components in `components/admin/analytics/` (panel, skeleton, unavailable, period picker, Google figures, top articles table, blog figures)
+- [x] `components/admin/analytics/line-chart.tsx` (303 to 223, markup): width, active day, keys and table toggle to `hooks/use-line-chart.ts`; scales, extremes, tooltip side and key moves to `helpers/line-chart.ts`
 
 ### 12. Public search and subscription
 
